@@ -1,0 +1,23 @@
+<project name="jacknji11" default="jar" basedir=".">
+
+  <target name="init">
+    <mkdir dir="target/classes" />
+  </target>
+
+  <target name="compile" depends="init" description="compile">
+    <javac srcdir="src/main/java" destdir="target/classes"
+		debug="on" source="1.5" target="1.5" includeAntRuntime="false">
+      <classpath>
+        <fileset dir="lib" />
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="jar">
+    <jar jarfile="target/jacknji11-1.0.jar" basedir="target/classes" />
+  </target>
+
+  <target name="clean" description="clean">
+    <delete dir="target" />
+  </target>
+</project>
