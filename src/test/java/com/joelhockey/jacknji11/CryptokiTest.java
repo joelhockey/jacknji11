@@ -26,6 +26,11 @@ import com.joelhockey.jacknji11.CK_TOKEN_INFO;
 import junit.framework.TestCase;
 
 public class CryptokiTest extends TestCase {
+    private static final byte[] SO_PIN = "sopin".getBytes();
+    private static final byte[] USER_PIN = "userpin".getBytes();
+    private static final int TESTSLOT = 0;
+    private static final int INITSLOT = 1;
+    
     public void setUp() {
         CE.Initialize();
     }
@@ -37,39 +42,67 @@ public class CryptokiTest extends TestCase {
     public void testGetInfo() {
         CK_INFO info = new CK_INFO();
         CE.GetInfo(info);
-        System.out.println(info);
+//        System.out.println(info);
     }
 
     public void testGetSlotList() {
         int[] slots = CE.GetSlotList(true);
-        System.out.println("num slots: " + slots.length);
+//        System.out.println("num slots: " + slots.length);
     }
     
     public void testGetSlotInfo() {
         CK_SLOT_INFO info = new CK_SLOT_INFO();
-        CE.GetSlotInfo(0, info);
-        System.out.println(info);
+        CE.GetSlotInfo(TESTSLOT, info);
+//        System.out.println(info);
     }
 
     public void testGetTokenInfo() {
         CK_TOKEN_INFO info = new CK_TOKEN_INFO();
-        CE.GetTokenInfo(0, info);
-        System.out.println(info);
+        CE.GetTokenInfo(TESTSLOT, info);
+//        System.out.println(info);
     }
 
     public void testGetMechanismList() {
-        for (int mech : CE.GetMechanismList(0)) {
-            System.out.println(String.format("0x%08x : %s", mech, CKM.I2S.get(mech)));
+        for (int mech : CE.GetMechanismList(TESTSLOT)) {
+//            System.out.println(String.format("0x%08x : %s", mech, CKM.I2S.get(mech)));
         }
     }
     
     public void testGetMechanismInfo() {
         CK_MECHANISM_INFO info = new CK_MECHANISM_INFO();
-        CE.GetMechanismInfo(0, CKM.AES_CBC, info);
-        System.out.println(info);
+        CE.GetMechanismInfo(TESTSLOT, CKM.AES_CBC, info);
+//        System.out.println(info);
     }
     
-    public void testInitToken() {
-        CE.InitToken(3, "ytrewq".getBytes(), "TEST".getBytes());
+    public void testInitTokenInitPinSetPin() {
+        CE.InitToken(INITSLOT, SO_PIN, "TEST".getBytes());
+        int session = CE.OpenSession(1, CKS.RW_PUBLIC_SESSION, null, null);
+        CE.Login(session, CKU.SO, SO_PIN);
+        CE.InitPIN(session, USER_PIN);
+        CE.Logout(session);
+        CE.Login(session, CKU.USER, USER_PIN);
+        byte[] somenewpin = "somenewpin".getBytes();
+        CE.SetPIN(session, USER_PIN, somenewpin);
+        CE.SetPIN(session, somenewpin, USER_PIN);
+    }
+    
+    public void testGetSessionInfo() {
+        int session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
+        CK_SESSION_INFO sessionInfo = new CK_SESSION_INFO();
+        CE.GetSessionInfo(session, sessionInfo);
+        System.out.println(sessionInfo);
+    }
+    
+    public void testCreateCopyDestroyObject() {
+        int session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
+        CE.Login(session, CKU.USER, USER_PIN);
+        CK_ATTRIBUTE[] templ = {
+                new CK_ATTRIBUTE(CKA.CLASS, CKO.DATA),
+                new CK_ATTRIBUTE(CKA.VALUE, "datavalue"),
+        };
+        int o1 = CE.CreateObject(session, templ);
+        int o2 = CE.CopyObject(session, o1, null);
+        CE.DestroyObject(session, o1);
+        CE.DestroyObject(session, o2);
     }
 }

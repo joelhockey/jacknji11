@@ -113,7 +113,7 @@ public class CE {
         int rv = C.SetOperationState(session, operation_state, encryption_key, authentication_key);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
-    public static void Login(int session, int user_type, byte[] pin, NativeLong pin_len) {
+    public static void Login(int session, int user_type, byte[] pin) {
         int rv = C.Login(session, user_type, pin);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
