@@ -60,5 +60,4 @@ public class Template extends PointerType {
             }
         }
     }
-    
 }

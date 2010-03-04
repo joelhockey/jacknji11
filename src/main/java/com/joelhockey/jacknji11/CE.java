@@ -16,6 +16,7 @@
 
 package com.joelhockey.jacknji11;
 
+import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 
@@ -155,6 +156,61 @@ public class CE {
     public static void GetAttributeValue(int session, int object, CK_ATTRIBUTE[] templ) {
         int rv = C.GetAttributeValue(session, object, templ);
         if (rv != CKR.OK) throw new CKRException(rv);
+    }
+    public static CK_ATTRIBUTE[] GetAttributeValue(int session, int object, int[] types) {
+        if (types == null || types.length == 0) return new CK_ATTRIBUTE[0];
+        CK_ATTRIBUTE[] templ = new CK_ATTRIBUTE[types.length];
+        for (int i = 0; i < types.length; i++) {
+            templ[i] = new CK_ATTRIBUTE(types[i], null);
+        }
+        GetAttributeValue(session, object, templ);
+        // allocate memory and go again
+        for (CK_ATTRIBUTE att : templ) {
+            att.pValue = att.ulValueLen > 0 ? new Memory(att.ulValueLen) : null;
+        }
+        GetAttributeValue(session, object, templ);
+        return templ;
+    }
+    public static byte[] GetAttributeValueBuf(int session, int object, int ckaType) {
+        CK_ATTRIBUTE att = new CK_ATTRIBUTE(ckaType, null);
+        CK_ATTRIBUTE[] templ = { att };
+        int rv = C.GetAttributeValue(session, object, templ);
+        if (rv == -1 || rv == CKR.ATTRIBUTE_TYPE_INVALID) return null; // null if attribute not exists or cannot be extracted
+        if (rv != CKR.OK) throw new CKRException(rv);
+        // allocate memory and go again
+        if (att.ulValueLen == 0) return new byte[0]; 
+        att.pValue = new Memory(att.ulValueLen);
+        rv = C.GetAttributeValue(session, object, templ);
+        if (rv != CKR.OK) throw new CKRException(rv);
+        return att.getValue();
+    }
+    public static String GetAttributeValueStr(int session, int object, int ckaType) {
+        byte[] buf = GetAttributeValueBuf(session, object, ckaType);
+        return buf == null ? null : new String(buf);
+    }
+    public static Integer GetAttributeValueInt(int session, int object, int ckaType) {
+        CK_ATTRIBUTE att = new CK_ATTRIBUTE(ckaType, 0);
+        CK_ATTRIBUTE[] templ = { att };
+        int rv = C.GetAttributeValue(session, object, templ);
+        if (rv == -1 || rv == CKR.ATTRIBUTE_TYPE_INVALID) return null; // null if attribute not exists or cannot be extracted
+        if (rv != CKR.OK) throw new CKRException(rv);
+        // allocate memory and go again
+        att.pValue = new Memory(att.ulValueLen);
+        rv = C.GetAttributeValue(session, object, templ);
+        if (rv != CKR.OK) throw new CKRException(rv);
+        return att.getValueInt();
+    }
+    public static Boolean GetAttributeValueBool(int session, int object, int ckaType) {
+        CK_ATTRIBUTE att = new CK_ATTRIBUTE(ckaType, 0);
+        CK_ATTRIBUTE[] templ = { att };
+        int rv = C.GetAttributeValue(session, object, templ);
+        if (rv == -1 || rv == CKR.ATTRIBUTE_TYPE_INVALID) return null; // null if attribute not exists or cannot be extracted
+        if (rv != CKR.OK) throw new CKRException(rv);
+        // allocate memory and go again
+        att.pValue = new Memory(att.ulValueLen);
+        rv = C.GetAttributeValue(session, object, templ);
+        if (rv != CKR.OK) throw new CKRException(rv);
+        return att.getValueBool();
     }
     public static void SetAttributeValue(int session, int object, CK_ATTRIBUTE[] templ) {
         int rv = C.SetAttributeValue(session, object, templ);

@@ -19,22 +19,22 @@ package com.joelhockey.jacknji11;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
-import com.sun.jna.Structure;
 import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.NativeLongByReference;
+import com.joelhockey.codec.Hex;
 
-public class CK_ATTRIBUTE extends Structure {
+public class CK_ATTRIBUTE {
     public int type;
     public Pointer pValue;
     public int ulValueLen;
 
-    public CK_ATTRIBUTE() {
+    private CK_ATTRIBUTE() {
     }
 
     public CK_ATTRIBUTE(int type, Object value) {
         this.type = type;
         if (value == null) {
-            pValue = new Memory(0);
+            pValue = null;
             ulValueLen = 0;
         } else if (value instanceof Boolean) {
             pValue = new ByteByReference((Boolean) value ? (byte) 1 : (byte) 0).getPointer();
@@ -53,9 +53,26 @@ public class CK_ATTRIBUTE extends Structure {
             pValue.write(0, v, 0, v.length);
             ulValueLen = v.length;
         } else {
-            throw new RuntimeException("Unknown type for template: " + pValue.getClass());
+            throw new RuntimeException("Unknown type: " + pValue.getClass());
         }
-        
-        System.out.println("att: type: " + CKA.I2S.get(type) + ", valLen: " + ulValueLen);
+    }
+    
+    public byte[] getValue() { return pValue == null ? null : pValue.getByteArray(0, ulValueLen); }
+    public String getValueStr() { return pValue == null ? null : new String(pValue.getByteArray(0, ulValueLen)); }
+    public int getValueInt() {
+        if (ulValueLen != NativeLong.SIZE) {
+            throw new IllegalStateException(String.format(
+                    "Method getValueInt called when value is not int type of length %d.  Got length: %d, CKA type: 0x%08x(%s), value: %s",
+                    NativeLong.SIZE, ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
+        }
+        return NativeLong.SIZE == 4 ? pValue.getInt(0) : (int) pValue.getLong(0);
+    }
+    public boolean getValueBool() { 
+        if (ulValueLen != 1) {
+            throw new IllegalStateException(String.format(
+                    "Method getValueBool called when value is not boolean type of length 1.  Got length: %d, CKA type: 0x%08x(%s), value: %s",
+                    ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
+        }
+        return pValue.getByte(0) != 0;
     }
 }
