@@ -11,7 +11,7 @@ public class Template extends PointerType {
     public Template() {
         this(null);
     }
-    public Template(CK_ATTRIBUTE[] list) {
+    public Template(CKA[] list) {
         listLen = list == null ? 0 : list.length;
         if (listLen == 0) {
             return;
@@ -41,7 +41,7 @@ public class Template extends PointerType {
         
     }
 
-    public void update(CK_ATTRIBUTE[] list) {
+    public void update(CKA[] list) {
         if (listLen == 0) {
             return;
         }

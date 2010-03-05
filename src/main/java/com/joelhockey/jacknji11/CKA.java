@@ -17,8 +17,16 @@
 package com.joelhockey.jacknji11;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.joelhockey.codec.Hex;
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.ByteByReference;
+import com.sun.jna.ptr.NativeLongByReference;
 
 /**
  * CKA_? constants.
@@ -146,14 +154,68 @@ public class CKA {
     public static final Map<Integer, String> I2S = new HashMap<Integer, String>();
     static {
         try {
-            Field[] fields = CKA.class.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                if (fields[i].getType() == int.class) {
-                    I2S.put(fields[i].getInt(null), fields[i].getName());
+            for (Field f : CKA.class.getDeclaredFields()) {
+                // only put 'public static final int' in map
+                if (f.getType() == int.class && Modifier.isPublic(f.getModifiers())
+                        && Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers())) {
+                    I2S.put(f.getInt(null), f.getName());
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+    public int type;
+    public Pointer pValue;
+    public int ulValueLen;
+
+    private CKA() {
+    }
+
+    public CKA(int type, Object value) {
+        this.type = type;
+        if (value == null) {
+            pValue = null;
+            ulValueLen = 0;
+        } else if (value instanceof Boolean) {
+            pValue = new ByteByReference((Boolean) value ? (byte) 1 : (byte) 0).getPointer();
+            ulValueLen = 1;
+        } else if (value instanceof byte[]) {
+            byte[] v = (byte[]) value;
+            pValue = new Memory(v.length);
+            pValue.write(0, v, 0, v.length);
+            ulValueLen = v.length;
+        } else if (value instanceof Number) {
+            pValue = new NativeLongByReference(new NativeLong(((Number) value).longValue())).getPointer();
+            ulValueLen = NativeLong.SIZE;
+        } else if (value instanceof String) {
+            byte[] v = ((String) value).getBytes();
+            pValue = new Memory(v.length);
+            pValue.write(0, v, 0, v.length);
+            ulValueLen = v.length;
+        } else {
+            throw new RuntimeException("Unknown type: " + pValue.getClass());
+        }
+    }
+    
+    public byte[] getValue() { return pValue == null ? null : pValue.getByteArray(0, ulValueLen); }
+    public String getValueStr() { return pValue == null ? null : new String(pValue.getByteArray(0, ulValueLen)); }
+    public int getValueInt() {
+        if (ulValueLen != NativeLong.SIZE) {
+            throw new IllegalStateException(String.format(
+                    "Method getValueInt called when value is not int type of length %d.  Got length: %d, CKA type: 0x%08x(%s), value: %s",
+                    NativeLong.SIZE, ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
+        }
+        return NativeLong.SIZE == 4 ? pValue.getInt(0) : (int) pValue.getLong(0);
+    }
+    public boolean getValueBool() { 
+        if (ulValueLen != 1) {
+            throw new IllegalStateException(String.format(
+                    "Method getValueBool called when value is not boolean type of length 1.  Got length: %d, CKA type: 0x%08x(%s), value: %s",
+                    ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
+        }
+        return pValue.getByte(0) != 0;
+    }
+
 }

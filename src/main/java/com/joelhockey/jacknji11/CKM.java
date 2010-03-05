@@ -17,14 +17,20 @@
 package com.joelhockey.jacknji11;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
+import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
 
 
 /**
  * CKM_? constants.
  */
-public class CKM {
+public class CKM extends Structure {
 
     public static final int RSA_PKCS_KEY_PAIR_GEN       = 0x00000000;
     public static final int RSA_PKCS                    = 0x00000001;
@@ -285,10 +291,11 @@ public class CKM {
     public static final Map<Integer, byte[]> DEFAULT_PARAMS = new HashMap<Integer, byte[]>();
     static {
         try {
-            Field[] fields = CKM.class.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                if (fields[i].getType() == int.class) {
-                    I2S.put(fields[i].getInt(null), fields[i].getName());
+            for (Field f : CKM.class.getDeclaredFields()) {
+                // only put 'static final int' in map
+                if (f.getType() == int.class && Modifier.isPublic(f.getModifiers())
+                        && Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers())) {
+                    I2S.put(f.getInt(null), f.getName());
                 }
             }
         } catch (Exception e) {
@@ -319,5 +326,24 @@ public class CKM {
         }
         // OAEP is a special case
         DEFAULT_PARAMS.put(RSA_PKCS_OAEP, U.cat(U.i2b(new int[] {SHA_1, 1, 1, 0, 0})));
+    }
+    
+    public NativeLong mechanism;
+    public Pointer pParameter;
+    public NativeLong ulParameterLen;
+    
+    protected CKM(int mechanism, byte[] param) {
+        this.mechanism = new NativeLong(mechanism);
+        if (param != null && param.length > 0) {
+            pParameter = new Memory(param.length);
+            pParameter.write(0, param, 0, param.length);
+            ulParameterLen = new NativeLong(param.length);
+        } else {
+            ulParameterLen = new NativeLong(0);
+        }
+    }
+    
+    protected CKM(int mech) {
+        this(mech, CKM.DEFAULT_PARAMS.get(mech));
     }
 }
