@@ -17,24 +17,12 @@
 package com.joelhockey.jacknji11;
 
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
+import junit.framework.TestCase;
 
 import com.joelhockey.codec.Buf;
 import com.joelhockey.codec.Hex;
-import com.joelhockey.jacknji11.CE;
-import com.joelhockey.jacknji11.CKM;
-import com.joelhockey.jacknji11.CK_INFO;
-import com.joelhockey.jacknji11.CK_MECHANISM_INFO;
-import com.joelhockey.jacknji11.CK_SLOT_INFO;
-import com.joelhockey.jacknji11.CK_TOKEN_INFO;
-
-import junit.framework.TestCase;
 
 public class CryptokiTest extends TestCase {
     private static final byte[] SO_PIN = "sopin".getBytes();

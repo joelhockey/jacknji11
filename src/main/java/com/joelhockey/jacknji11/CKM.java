@@ -21,6 +21,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.joelhockey.codec.Buf;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
@@ -325,7 +326,7 @@ public class CKM extends Structure {
             DEFAULT_PARAMS.put(i, zero16);
         }
         // OAEP is a special case
-        DEFAULT_PARAMS.put(RSA_PKCS_OAEP, U.cat(U.i2b(new int[] {SHA_1, 1, 1, 0, 0})));
+        DEFAULT_PARAMS.put(RSA_PKCS_OAEP, Buf.cat(Buf.i2b(new int[] {SHA_1, 1, 1, 0, 0})));
     }
     
     public NativeLong mechanism;
