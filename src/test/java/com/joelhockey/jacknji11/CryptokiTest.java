@@ -282,18 +282,16 @@ public class CryptokiTest extends TestCase {
         CE.VerifyUpdate(session, new byte[50]);
         CE.VerifyUpdate(session, new byte[50]);
         CE.VerifyFinal(session, sig1);
-        
-//        public static native int C_SignRecoverInit(NativeLong session, CK_MECHANISM mechanism, NativeLong key);
-//        public static native int C_SignRecover(NativeLong session, byte[] data, NativeLong data_len, byte[] signature, LongRef signature_len);
-//        public static native int C_VerifyInit(NativeLong session, CK_MECHANISM mechanism, NativeLong key);
-//        public static native int C_Verify(NativeLong session, byte[] data, NativeLong data_en, byte[] signature, NativeLong signature_len);
-//        public static native int C_VerifyUpdate(NativeLong session, byte[] part, NativeLong part_len);
-//        public static native int C_VerifyFinal(NativeLong session, byte[] signature, NativeLong signature_len);
-        
+
+        data = new byte[10];
+        CE.SignRecoverInit(session, new CKM(CKM.RSA_PKCS), privKey.val());
+        byte[] sigrec1 = CE.SignRecover(session, data);
+        assertEquals(64, sig1.length);
+        CE.VerifyRecoverInit(session, new CKM(CKM.RSA_PKCS), pubKey.val());
+        byte[] recdata = CE.VerifyRecover(session, sigrec1);
+        assertTrue(Arrays.equals(data, recdata));
     }
 
-//    public static native int C_VerifyRecoverInit(NativeLong session, CK_MECHANISM mechanism, NativeLong key);
-//    public static native int C_VerifyRecover(NativeLong session, byte[] signature, NativeLong signature_len, byte[] data, LongRef data_len);
 //    public static native int C_DigestEncryptUpdate(NativeLong session, byte[] part, NativeLong part_len, byte[] encrypted_part, LongRef encrypted_part_len);
 //    public static native int C_DecryptDigestUpdate(NativeLong session, byte[] encrypted_part, NativeLong encrypted_part_len, byte[] part, LongRef part_len);
 //    public static native int C_SignEncryptUpdate(NativeLong session, byte[] part, NativeLong part_len, byte[] encrypted_part, LongRef encrypted_part_len);
