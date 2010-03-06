@@ -16,6 +16,17 @@
 
 package com.joelhockey.jacknji11;
 
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+
+import com.joelhockey.codec.Buf;
+import com.joelhockey.codec.Hex;
 import com.joelhockey.jacknji11.CE;
 import com.joelhockey.jacknji11.CKM;
 import com.joelhockey.jacknji11.CK_INFO;
@@ -170,48 +181,108 @@ public class CryptokiTest extends TestCase {
     
         templ = new CKA[] {new CKA(CKA.LABEL, "label1")};
         CE.FindObjectsInit(session, templ);
-        int[] found = new int[2];
-        assertEquals(2, CE.FindObjects(session, found));
-        assertEquals(1, CE.FindObjects(session, found));
-        assertEquals(0, CE.FindObjects(session, found));
+        assertEquals(2, CE.FindObjects(session, 2).length);
+        assertEquals(1, CE.FindObjects(session, 2).length);
+        assertEquals(0, CE.FindObjects(session, 2).length);
         CE.FindObjectsFinal(session);
         templ = new CKA[] {new CKA(CKA.LABEL, "label2")};
         CE.FindObjectsInit(session, templ);
-        assertEquals(1, CE.FindObjects(session, found));
+        int[] found = CE.FindObjects(session, 2);
+        assertEquals(1, found.length);
         assertEquals(o4, found[0]);
-        assertEquals(0, CE.FindObjects(session, found));
+        assertEquals(0, CE.FindObjects(session, 2).length);
         CE.FindObjectsFinal(session);
     }
     
 
     public void testEncryptDecrypt() {
+        int session = CE.OpenSession(TESTSLOT);
+        CE.LoginUser(session, USER_PIN);
         
-        
-//        public static native int C_EncryptInit(NativeLong session, CK_MECHANISM mechanism, NativeLong key);
-//        public static native int C_Encrypt(NativeLong session, byte[] data, NativeLong data_len, byte[] encrypted_data, LongRef encrypted_data_len);
-//        public static native int C_EncryptUpdate(NativeLong session, byte[] part, NativeLong part_len, byte[] encrypted_part, LongRef encrypted_part_len);
-//        public static native int C_EncryptFinal(NativeLong session, byte[] last_encrypted_part, LongRef last_encrypted_part_len);
-//        public static native int C_DecryptInit(NativeLong session, CK_MECHANISM mechanism, NativeLong key);
-//        public static native int C_Decrypt(NativeLong session, byte[] encrypted_data, NativeLong encrypted_data_len, byte[] data, LongRef data_lens);
-//        public static native int C_DecryptUpdate(NativeLong session, byte[] encrypted_part, NativeLong encrypted_part_len, byte[] data, LongRef data_len);
-//        public static native int C_DecryptFinal(NativeLong session, byte[] last_part, LongRef last_part_len);
-        
+        int des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
+                new CKA(CKA.VALUE_LEN, 24),
+                new CKA(CKA.LABEL, "label"),
+                new CKA(CKA.SENSITIVE, false),
+                new CKA(CKA.DERIVE, true));
+
+        CE.EncryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
+        byte[] plaintext = new byte[10];
+        byte[] encrypted1 = CE.Encrypt(session, plaintext);
+        CE.EncryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
+        byte[] encrypted2a = CE.EncryptUpdate(session, new byte[6]);
+        byte[] encrypted2b = CE.EncryptUpdate(session, new byte[4]);
+        byte[] encrypted2c = CE.EncryptFinal(session);
+        assertTrue(Arrays.equals(encrypted1, Buf.cat(encrypted2a, encrypted2b, encrypted2c)));
+
+        CE.DecryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
+        byte[] decrypted1 = CE.Decrypt(session, encrypted1);
+        assertTrue(Arrays.equals(plaintext, decrypted1));
+        CE.DecryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
+        byte[] decrypted2a = CE.DecryptUpdate(session, Buf.substring(encrypted1, 0, 8));
+        byte[] decrypted2b = CE.DecryptUpdate(session, Buf.substring(encrypted1, 8, 8));
+        byte[] decrypted2c = CE.DecryptFinal(session);
+        assertTrue(Arrays.equals(plaintext, Buf.cat(decrypted2a, decrypted2b, decrypted2c)));
     }
 
     public void testDigest() {
-//        public static native int C_DigestInit(NativeLong session, CK_MECHANISM mechanism);
-//        public static native int C_Digest(NativeLong session, byte[] data, NativeLong data_len, byte[] digest, LongRef digest_len);
-//        public static native int C_DigestUpdate(NativeLong session, byte[] part, NativeLong part_len);
-//        public static native int C_DigestKey(NativeLong session, NativeLong key);
-//        public static native int C_DigestFinal(NativeLong session, byte[] digest, LongRef digest_len);
+        int session = CE.OpenSession(TESTSLOT);
+        CE.DigestInit(session, new CKM(CKM.SHA256));
+        byte[] digested1 = CE.Digest(session, new byte[100]);
+        assertEquals(32, digested1.length);
+        CE.DigestInit(session, new CKM(CKM.SHA256));
+        CE.DigestUpdate(session, new byte[50]);
+        CE.DigestUpdate(session, new byte[50]);
+        byte[] digested2 = CE.DigestFinal(session);
+        assertTrue(Arrays.equals(digested1, digested2));
         
+        int des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
+                new CKA(CKA.VALUE_LEN, 24),
+                new CKA(CKA.LABEL, "label"),
+                new CKA(CKA.SENSITIVE, false),
+                new CKA(CKA.DERIVE, true));
+
+        CE.DigestInit(session, new CKM(CKM.SHA256));
+        CE.DigestKey(session, des3key);
+        byte[] digestedKey = CE.DigestFinal(session);
     }
 
     public void testSignVerify() {
-//        public static native int C_SignInit(NativeLong session, CK_MECHANISM mechanism, NativeLong key);
-//        public static native int C_Sign(NativeLong session, byte[] data, NativeLong data_len, byte[] signature, LongRef signature_len);
-//        public static native int C_SignUpdate(NativeLong session, byte[] part, NativeLong part_len);
-//        public static native int C_SignFinal(NativeLong session, byte[] signature, LongRef signature_len);
+        int session = CE.OpenSession(TESTSLOT);
+        CE.LoginUser(session, USER_PIN);
+        CKA[] pubTempl = new CKA[] {
+            new CKA(CKA.MODULUS_BITS, 512),
+            new CKA(CKA.UNWRAP, true),
+            new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
+            new CKA(CKA.VERIFY, true),
+        };
+        CKA[] privTempl = new CKA[] {
+            new CKA(CKA.SIGN, true),
+        };
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        CE.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+
+        byte[] data = new byte[100];
+        CE.SignInit(session, new CKM(CKM.SHA256_RSA_PKCS), privKey.val());
+        byte[] sig1 = CE.Sign(session, data);
+        assertEquals(64, sig1.length);
+
+        // TODO: SignUpdate causes JVM crash
+//        CE.SignInit(session, new CKM(CKM.RSA_PKCS), privKey.val());
+//        CE.SignUpdate(session, new byte[50]);
+//        CE.SignUpdate(session, new byte[50]);
+//        byte[] sig2 = CE.SignFinal(session);
+//        assertTrue(Arrays.equals(sig1, sig2));
+        
+        CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.val());
+        CE.Verify(session, data, sig1);
+        assertEquals(CKR.SIGNATURE_INVALID, C.Verify(session, data, new byte[32]));
+
+        CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.val());
+        CE.VerifyUpdate(session, new byte[50]);
+        CE.VerifyUpdate(session, new byte[50]);
+        CE.VerifyFinal(session, sig1);
+        
 //        public static native int C_SignRecoverInit(NativeLong session, CK_MECHANISM mechanism, NativeLong key);
 //        public static native int C_SignRecover(NativeLong session, byte[] data, NativeLong data_len, byte[] signature, LongRef signature_len);
 //        public static native int C_VerifyInit(NativeLong session, CK_MECHANISM mechanism, NativeLong key);
@@ -232,17 +303,42 @@ public class CryptokiTest extends TestCase {
     public void testGenerateKeyWrapUnwrap() {
         int session = CE.OpenSession(TESTSLOT);
         CE.LoginUser(session, USER_PIN);
-        CKA[] templ = {
-            new CKA(CKA.VALUE_LEN, 16),
-            new CKA(CKA.LABEL, "label"),
-        };
         
-        int key = CE.GenerateKey(session, new CKM(CKM.AES_KEY_GEN), templ);
-//        public static native int C_GenerateKey(NativeLong session, CK_MECHANISM mechanism, Template templ, NativeLong count, LongRef key);
-//        public static native int C_GenerateKeyPair(NativeLong session, CK_MECHANISM mechanism, Template public_key_template, NativeLong public_key_attribute_count, Template private_key_template, NativeLong private_key_attribute_count, LongRef public_key, LongRef private_key);
-//        public static native int C_WrapKey(NativeLong session, CK_MECHANISM mechanism, NativeLong wrapping_key, NativeLong key, byte[] wrapped_key, LongRef wrapped_key_len);
-//        public static native int C_UnwrapKey(NativeLong session, CK_MECHANISM mechanism, NativeLong unwrapping_key, byte[] wrapped_key, NativeLong wrapped_key_len, Template templ, NativeLong attribute_count, LongRef key);
-//        public static native int C_DeriveKey(NativeLong session, CK_MECHANISM mechanism, NativeLong base_key, Template templ, NativeLong attribute_count, LongRef key); 
+        int des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
+                new CKA(CKA.VALUE_LEN, 24),
+                new CKA(CKA.LABEL, "label"),
+                new CKA(CKA.SENSITIVE, false),
+                new CKA(CKA.DERIVE, true));
+        byte[] des3keybuf = CE.GetAttributeValueBuf(session, des3key, CKA.VALUE);
+        
+        CKA[] pubTempl = new CKA[] {
+            new CKA(CKA.MODULUS_BITS, 512),
+            new CKA(CKA.UNWRAP, true),
+            new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
+        };
+        CKA[] privTempl = new CKA[] {
+            new CKA(CKA.WRAP, true),
+        };
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        CE.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+        final CKA[] pubExpMod = CE.GetAttributeValue(session, pubKey.val(), new int[] {CKA.PUBLIC_EXPONENT, CKA.MODULUS});
+        System.out.println("pubExp: " + Hex.b2s(pubExpMod[0].getValue()));
+        System.out.println("mod   : " + Hex.b2s(pubExpMod[1].getValue()));
+        
+        byte[] wrappedDes3 = CE.WrapKey(session, new CKM(CKM.RSA_PKCS), privKey.val(), des3key);
+
+        BigInteger pubExp = new BigInteger(1, pubExpMod[0].getValue());
+        BigInteger mod = new BigInteger(1, pubExpMod[1].getValue());
+        byte[] unwrappedDes3 = Buf.substring(new BigInteger(1, wrappedDes3).modPow(pubExp, mod).toByteArray(), -24, 24);
+        System.out.println("unwrapped: " + Hex.dump(unwrappedDes3));
+        assertTrue(Arrays.equals(des3keybuf, unwrappedDes3));
+
+        int des3key2 = CE.UnwrapKey(session, new CKM(CKM.RSA_PKCS), pubKey.val(), wrappedDes3);
+        byte[] des3key2buf = CE.GetAttributeValueBuf(session, des3key2, CKA.VALUE);
+        assertTrue(Arrays.equals(des3key2buf, des3keybuf));
+        
+        CE.DeriveKey(session, new CKM(CKM.VENDOR_PTK_DES3_DERIVE_CBC, new byte[32]), des3key);
     }
     
     public void testRandom() {

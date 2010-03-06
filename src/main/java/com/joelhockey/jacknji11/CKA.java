@@ -198,6 +198,10 @@ public class CKA {
             throw new RuntimeException("Unknown type: " + pValue.getClass());
         }
     }
+
+    public CKA(int type) {
+        this(type, null);
+    }
     
     public byte[] getValue() { return pValue == null ? null : pValue.getByteArray(0, ulValueLen); }
     public String getValueStr() { return pValue == null ? null : new String(pValue.getByteArray(0, ulValueLen)); }

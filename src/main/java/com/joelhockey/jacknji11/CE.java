@@ -36,7 +36,6 @@ public class CE {
         int rv = C.GetSlotList(tokenPresent, slotList, count);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
-    
     public static int[] GetSlotList(boolean tokenPresent) {
         LongRef count = new LongRef();
         GetSlotList(tokenPresent, null, count);
@@ -44,7 +43,6 @@ public class CE {
         GetSlotList(tokenPresent, result, count);
         return result;
     }
-    
     public static void GetSlotInfo(int slotID, CK_SLOT_INFO info) {
         int rv = C.GetSlotInfo(slotID, info);
         if (rv != CKR.OK) throw new CKRException(rv);
@@ -134,7 +132,7 @@ public class CE {
         int rv = C.CreateObject(session, templ, object);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
-    public static int CreateObject(int session, CKA[] templ) {
+    public static int CreateObject(int session, CKA... templ) {
         LongRef object = new LongRef();
         CreateObject(session, templ, object);
         return object.val();
@@ -143,7 +141,7 @@ public class CE {
         int rv = C.CopyObject(session, object, templ, new_object);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
-    public static int CopyObject(int session, int object, CKA[] templ) {
+    public static int CopyObject(int session, int object, CKA... templ) {
         LongRef new_object = new LongRef();
         CopyObject(session, object, templ, new_object);
         return new_object.val();
@@ -161,11 +159,11 @@ public class CE {
         GetObjectSize(session, object, size);
         return size.val();
     }
-    public static void GetAttributeValue(int session, int object, CKA[] templ) {
+    public static void GetAttributeValue(int session, int object, CKA... templ) {
         int rv = C.GetAttributeValue(session, object, templ);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
-    public static CKA[] GetAttributeValue(int session, int object, int[] types) {
+    public static CKA[] GetAttributeValue(int session, int object, int... types) {
         if (types == null || types.length == 0) return new CKA[0];
         CKA[] templ = new CKA[types.length];
         for (int i = 0; i < types.length; i++) {
@@ -220,11 +218,11 @@ public class CE {
         if (rv != CKR.OK) throw new CKRException(rv);
         return att.getValueBool();
     }
-    public static void SetAttributeValue(int session, int object, CKA[] templ) {
+    public static void SetAttributeValue(int session, int object, CKA... templ) {
         int rv = C.SetAttributeValue(session, object, templ);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
-    public static void FindObjectsInit(int session, CKA[] templ) {
+    public static void FindObjectsInit(int session, CKA... templ) {
         int rv = C.FindObjectsInit(session, templ);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
@@ -232,10 +230,18 @@ public class CE {
         int rv = C.FindObjects(session, found, object_count);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
-    public static int FindObjects(int session, int[] found) {
+    public static int[] FindObjects(int session, int maxObjects) {
+        int[] found = new int[maxObjects];
         LongRef len = new LongRef();
         FindObjects(session, found, len);
-        return len.val();
+        int count = len.val();
+        if (count == maxObjects) {
+            return found;
+        } else {
+            int[] result = new int[count];
+            System.arraycopy(found, 0, result, 0, result.length);
+            return result;
+        }
     }
     public static void FindObjectsFinal(int session) {
         int rv = C.FindObjectsFinal(session);
@@ -473,13 +479,13 @@ public class CE {
         int rv = C.GenerateKey(session, mechanism, templ, key);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
-    public static int GenerateKey(int session, CKM mechanism, CKA[] templ) {
+    public static int GenerateKey(int session, CKM mechanism, CKA... templ) {
         LongRef key = new LongRef();
         GenerateKey(session, mechanism, templ, key);
         return key.val();
     }
-    public static void GenerateKeyPair(int session, CKM mechanism, CKA[] publikey_template, CKA[] private_key_template, LongRef publikey, LongRef private_key) {
-        int rv = C.GenerateKeyPair(session, mechanism, private_key_template, private_key_template, publikey, private_key);
+    public static void GenerateKeyPair(int session, CKM mechanism, CKA[] public_key_template, CKA[] private_key_template, LongRef publikey, LongRef private_key) {
+        int rv = C.GenerateKeyPair(session, mechanism, public_key_template, private_key_template, publikey, private_key);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
     public static void WrapKey(int session, CKM mechanism, int wrapping_key, int key, byte[] wrapped_key, LongRef wrapped_key_len) {
@@ -497,9 +503,19 @@ public class CE {
         int rv = C.UnwrapKey(session, mechanism, unwrapping_key, wrapped_key, templ, key);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
+    public static int UnwrapKey(int session, CKM mechanism, int unwrapping_key, byte[] wrapped_key, CKA... templ) {
+        LongRef result = new LongRef();
+        UnwrapKey(session, mechanism, unwrapping_key, wrapped_key, templ, result);
+        return result.val();
+    }
     public static void DeriveKey(int session, CKM mechanism, int base_key, CKA[] templ, LongRef key) {
         int rv = C.DeriveKey(session, mechanism, base_key, templ, key);
         if (rv != CKR.OK) throw new CKRException(rv);
+    } 
+    public static int DeriveKey(int session, CKM mechanism, int base_key, CKA... templ) {
+        LongRef key = new LongRef();
+        DeriveKey(session, mechanism, base_key, templ, key);
+        return key.val();
     } 
     public static void SeedRandom(int session, byte[] seed) {
         int rv = C.SeedRandom(session, seed);
