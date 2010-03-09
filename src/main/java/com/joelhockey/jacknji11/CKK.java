@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * CKO_? constants.
+ * CKK_? constants.
  */
 public class CKK {
 

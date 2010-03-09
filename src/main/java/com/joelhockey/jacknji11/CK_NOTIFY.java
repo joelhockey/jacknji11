@@ -20,6 +20,10 @@ import com.sun.jna.Callback;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 
+/**
+ * JNA wrapper for PKCS#11 CK_NOTIFY.
+ * @author Joel Hockey
+ */
 public interface CK_NOTIFY extends Callback {
     NativeLong invoke(NativeLong session, NativeLong event, Pointer application);
 }

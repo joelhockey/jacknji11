@@ -24,6 +24,12 @@ import junit.framework.TestCase;
 import com.joelhockey.codec.Buf;
 import com.joelhockey.codec.Hex;
 
+/**
+ * JUnit tests for jacknji11.
+ * Tests all the cryptoki functions that I have ever used and understand.
+ * The functions not tested are in commented lines.
+ * @author Joel Hockey
+ */
 public class CryptokiTest extends TestCase {
     private static final byte[] SO_PIN = "sopin".getBytes();
     private static final byte[] USER_PIN = "userpin".getBytes();

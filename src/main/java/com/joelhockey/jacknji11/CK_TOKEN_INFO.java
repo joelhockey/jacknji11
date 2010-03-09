@@ -19,6 +19,10 @@ package com.joelhockey.jacknji11;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
+/**
+ * JNA wrapper for PKCS#11 CK_TOKEN_INFO struct.
+ * @author Joel Hockey
+ */
 public class CK_TOKEN_INFO extends Structure {
     public byte[] label = new byte[32];
     public byte[] manufacturerID = new byte[32];

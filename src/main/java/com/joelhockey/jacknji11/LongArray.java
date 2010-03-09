@@ -21,15 +21,23 @@ import com.sun.jna.NativeLong;
 import com.sun.jna.PointerType;
 
 /**
- * Implements a LongArray type for JNA.  Allows simple conversion with int[]. 
+ * Implements a ULONG[] type for JNA.  Allows simple conversion with java int[].
+ * JNA direct memory mapping doesn't seem to support struct arrays,
+ * so this class is required to map the ints into a contiguous block of memory. 
  * @author Joel Hockey
  */
 public class LongArray extends PointerType {
     private int listLen;
 
+    /** Default no-arg constructor required by JNA. */
     public LongArray() {
         this(null);
     }
+    
+    /**
+     * Allocates JNA Memory and writes int values.
+     * @param list ints
+     */
     public LongArray(int[] list) {
         listLen = list == null ? 0 : list.length;
         if (listLen == 0) {
@@ -45,6 +53,13 @@ public class LongArray extends PointerType {
         }
     }
 
+    /**
+     * Reads (updated) JNA Memory and modifies values in list.
+     * This must be called after native PKCS#11 calls in {@link Native} that modify
+     * ULONG values such as {@link Native#C_FindObjects(NativeLong, LongArray, NativeLong, LongRef)}. 
+     * This is automatically done by the {@link C} and {@link CE} interfaces.
+     * @param list template
+     */
     public void update(int[] list) {
         if (listLen == 0) {
             return;

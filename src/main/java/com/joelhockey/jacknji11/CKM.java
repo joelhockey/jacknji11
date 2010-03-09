@@ -29,7 +29,7 @@ import com.sun.jna.Structure;
 
 
 /**
- * CKM_? constants.
+ * CKM_? constants and CK_MECHANISM struct wrapper.
  */
 public class CKM extends Structure {
 
@@ -332,8 +332,13 @@ public class CKM extends Structure {
     public NativeLong mechanism;
     public Pointer pParameter;
     public NativeLong ulParameterLen;
-    
-    protected CKM(int mechanism, byte[] param) {
+
+    /**
+     * PKCS#11 CK_MECHANISM struct constructor.
+     * @param mechanism CKM_? mechanism.  Use one of the public static final int fields in this class.
+     * @param param param for mechanism 
+     */
+    public CKM(int mechanism, byte[] param) {
         this.mechanism = new NativeLong(mechanism);
         if (param != null && param.length > 0) {
             pParameter = new Memory(param.length);
@@ -344,7 +349,11 @@ public class CKM extends Structure {
         }
     }
     
-    protected CKM(int mech) {
+    /**
+     * PKCS#11 CK_MECHANISM struct constructor using default (possibly no) params.
+     * @param mechanism CKM_? mechanism.  Use one of the public static final int fields in this class.
+     */
+    public CKM(int mech) {
         this(mech, CKM.DEFAULT_PARAMS.get(mech));
     }
 }

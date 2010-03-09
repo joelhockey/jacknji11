@@ -20,10 +20,21 @@ import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.PointerType;
 
+/**
+ * JNA wrapper for ULONG.  It is exactly like NativeLong except that I didn't
+ * like having JNA namespaces all through application code and I like typing
+ * 'val()' better than 'intValue()'.
+ * @author Joel Hockey
+ */
 public class LongRef extends PointerType {
     public LongRef() {
         this(0);
     }
+    /**
+     * Constructor taking java int.  Allocates JNA Memory object
+     * using NativeLong.SIZE and sets to this value.
+     * @param val value
+     */
     public LongRef(int val) {
         setPointer(new Memory(NativeLong.SIZE));
         if (NativeLong.SIZE == 4) {
@@ -33,6 +44,7 @@ public class LongRef extends PointerType {
         }
     }
     
+    /** @return current value from JNA Memory object */
     public int val() {
         if (NativeLong.SIZE == 4) {
             return getPointer().getInt(0);

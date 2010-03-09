@@ -21,12 +21,39 @@ import java.util.Arrays;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 
+/**
+ * Low-level java interface that maps to {@link Native} cryptoki calls.
+ * 
+ * jacknji11 provides 3 interfaces for calling cryptoki functions.
+ * <ol>
+ * <li>{@link Native} provides the lowest level JNA direct mapping to the C_* functions.
+ * There is little reason why you would ever want to invoke it directly, but you can.
+ * <li>{@link C} provides the exact same interface as {@link Native} by
+ * calling through to the correspoding native method.  The 'C_' at the start
+ * of the function is removed since 'C.' when you call the static methods looks
+ * equivalent.  In addition to {@link Native}, {@link C} handles some of the low-level
+ * JNA plumbing such as 'pushing' any values changed within the native call back into 
+ * java objects.  You can use this if you require fine-grain control over something.
+ * <li>{@link CE} provides the most user-friendly interface.  It calls the
+ * {link C} equivalnt function, and converts any non-zero return values into
+ * a {@link CKRException}, and automatically resizes arrays and other helpful things.
+ * I recommend that you use it exclusively if possible.
+ * </ol>
+ * @author Joel Hockey
+ */
 public class C {
     private static final byte TRUE = 1;
     private static final byte FALSE = 0;
     
+    /**
+     * Initialise Cryptoki with null mutexes, and CKF_OS_LOCKING_OK flag set.
+     * @see Native#C_Initialize(CK_C_INITIALIZE_ARGS)
+     * @return {@link CKR} return code
+     */
     public static int Initialize() {
-        return Native.C_Initialize(null);
+        CK_C_INITIALIZE_ARGS args = new CK_C_INITIALIZE_ARGS(null, null, null, null,
+                CK_C_INITIALIZE_ARGS.CKF_OS_LOCKING_OK);
+        return Native.C_Initialize(args);
     }
     public static int Finalize() {
         return Native.C_Finalize(null);

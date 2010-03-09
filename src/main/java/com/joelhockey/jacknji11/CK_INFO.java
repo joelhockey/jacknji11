@@ -19,6 +19,12 @@ package com.joelhockey.jacknji11;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
+/**
+ * JNA wrapper for PKCS#11 CK_INFO struct.  It sets align type to {@link Structure#ALIGN_NONE}
+ * since the ULONGS (NativeLongs) dont line up on a 4 byte boundary.  You wouldn't care to know
+ * how painful that learning experience was.
+ * @author Joel Hockey
+ */
 public class CK_INFO extends Structure {
     public CK_VERSION cryptokiVersion;
     public byte[] manufacturerID = new byte[32];

@@ -18,6 +18,11 @@ package com.joelhockey.jacknji11;
 
 import com.sun.jna.Structure;
 
+/**
+ * JNA wrapper for PKCS#11 CK_VERSION.  It hardly seems worthwhile
+ * wrapping 2 bytes, but we have.
+ * @author Joel Hockey
+ */
 public class CK_VERSION extends Structure {
     public byte major;
     public byte minor;

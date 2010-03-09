@@ -19,11 +19,35 @@ package com.joelhockey.jacknji11;
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 
+/**
+ * This is the preferred java interface for calling cryptoki functions.
+ * 
+ * jacknji11 provides 3 interfaces for calling cryptoki functions.
+ * <ol>
+ * <li>{@link Native} provides the lowest level JNA direct mapping to the C_* functions.
+ * There is little reason why you would ever want to invoke it directly, but you can.
+ * <li>{@link C} provides the exact same interface (although the 'C_' at the start
+ * of the function is removed since 'C.' when you call the static methods looks
+ * equivalent), but it handles some of the low-level JNA plumbing such as 'pushing'
+ * any values changed within the native call back into java objects.  You can use
+ * this if you require fine-grain control over something.
+ * <li>{@link CE} provides the most user-friendly interface.  It converts any
+ * non-zero return values into a {@link CKRException}, and automatically resizes arrays
+ * and other helpful things.  I recommend that you use it exclusively if possible.
+ * </ol>
+ * @author Joel Hockey
+ */
 public class CE {
+    /**
+     * Initialize cryptoki.
+     * @see C#Initialize()
+     * @see Native#C_Initialize(CK_C_INITIALIZE_ARGS)
+     */
     public static void Initialize() {
         int rv = C.Initialize();
         if (rv != CKR.OK) throw new CKRException(rv);
     }
+    
     public static void Finalize() {
         int rv = C.Finalize();
         if (rv != CKR.OK) throw new CKRException(rv);

@@ -19,6 +19,10 @@ package com.joelhockey.jacknji11;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
+/**
+ * JNA wrapper for PKCS#11 CK_SESSION_INFO struct.
+ * @author Joel Hockey
+ */
 public class CK_SESSION_INFO extends Structure {
     public NativeLong slotID;
     public NativeLong state;

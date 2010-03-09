@@ -29,7 +29,7 @@ import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.NativeLongByReference;
 
 /**
- * CKA_? constants.
+ * CKA_? constants and wrapper for CK_ATTRIBUTE struct.
  */
 public class CKA {
     public static final int CLASS                       = 0x00000000;
@@ -169,10 +169,16 @@ public class CKA {
     public int type;
     public Pointer pValue;
     public int ulValueLen;
-
+    
+    // disallow zero-arg constructor
     private CKA() {
     }
 
+    /**
+     * PKCS#11 CK_ATTRIBUTE struct constructor.
+     * @param type CKA_? type.  Use one of the public static final int fields in this class.
+     * @param value supports java types Boolean, byte[], Number (int, long), String 
+     */
     public CKA(int type, Object value) {
         this.type = type;
         if (value == null) {
@@ -199,12 +205,19 @@ public class CKA {
         }
     }
 
+    /**
+     * PKCS#11 CK_ATTRIBUTE struct constructor with null value.
+     * @param type CKA_? type.  Use one of the public static final int fields in this class.
+     */
     public CKA(int type) {
         this(type, null);
     }
-    
+
+    /** @return value as byte[] */
     public byte[] getValue() { return pValue == null ? null : pValue.getByteArray(0, ulValueLen); }
+    /** @return value as String */
     public String getValueStr() { return pValue == null ? null : new String(pValue.getByteArray(0, ulValueLen)); }
+    /** @return value as int */
     public int getValueInt() {
         if (ulValueLen != NativeLong.SIZE) {
             throw new IllegalStateException(String.format(
@@ -213,6 +226,7 @@ public class CKA {
         }
         return NativeLong.SIZE == 4 ? pValue.getInt(0) : (int) pValue.getLong(0);
     }
+    /** return value as boolean */
     public boolean getValueBool() { 
         if (ulValueLen != 1) {
             throw new IllegalStateException(String.format(
@@ -221,5 +235,4 @@ public class CKA {
         }
         return pValue.getByte(0) != 0;
     }
-
 }
