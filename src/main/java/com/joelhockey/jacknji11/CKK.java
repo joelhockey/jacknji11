@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -22,6 +22,7 @@ import java.util.Map;
 
 /**
  * CKK_? constants.
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKK {
 
@@ -49,7 +50,7 @@ public class CKK {
     public static final int JUNIPER = 29;
     public static final int CDMF = 30;
     public static final int AES = 31;
-    
+
     // Vendor defined values
     // Eracom PTK
     public static final int RSA_DISCRETE = 0x80000201;

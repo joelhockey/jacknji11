@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -22,8 +22,15 @@ import com.sun.jna.Pointer;
 
 /**
  * JNA wrapper for PKCS#11 CK_NOTIFY.
- * @author Joel Hockey
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public interface CK_NOTIFY extends Callback {
-    NativeLong invoke(NativeLong session, NativeLong event, Pointer application);
+    /**
+     * CK_NOTIFY is an application callback that processes events.
+     * @param hSession the session's handle
+     * @param event event
+     * @param pApplication passed to C_OpenSession
+     * @return {@link CKR} return code
+     */
+    NativeLong invoke(NativeLong hSession, NativeLong event, Pointer pApplication);
 }

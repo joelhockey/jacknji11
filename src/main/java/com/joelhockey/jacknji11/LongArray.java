@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -23,8 +23,8 @@ import com.sun.jna.PointerType;
 /**
  * Implements a ULONG[] type for JNA.  Allows simple conversion with java int[].
  * JNA direct memory mapping doesn't seem to support struct arrays,
- * so this class is required to map the ints into a contiguous block of memory. 
- * @author Joel Hockey
+ * so this class is required to map the ints into a contiguous block of memory.
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class LongArray extends PointerType {
     private int listLen;
@@ -33,7 +33,7 @@ public class LongArray extends PointerType {
     public LongArray() {
         this(null);
     }
-    
+
     /**
      * Allocates JNA Memory and writes int values.
      * @param list ints
@@ -56,7 +56,7 @@ public class LongArray extends PointerType {
     /**
      * Reads (updated) JNA Memory and modifies values in list.
      * This must be called after native PKCS#11 calls in {@link Native} that modify
-     * ULONG values such as {@link Native#C_FindObjects(NativeLong, LongArray, NativeLong, LongRef)}. 
+     * ULONG values such as {@link Native#C_FindObjects(NativeLong, LongArray, NativeLong, LongRef)}.
      * This is automatically done by the {@link C} and {@link CE} interfaces.
      * @param list template
      */

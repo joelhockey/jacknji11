@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -30,6 +30,7 @@ import com.sun.jna.ptr.NativeLongByReference;
 
 /**
  * CKA_? constants and wrapper for CK_ATTRIBUTE struct.
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKA {
     public static final int CLASS                       = 0x00000000;
@@ -149,7 +150,7 @@ public class CKA {
     public static final int VENDOR_PTK_CKA_COUNTER      = 0x80000261;
     public static final int VENDOR_PTK_CKA_H_VALUE      = 0x80000262;
     public static final int VENDOR_PTK_ENUM_ATTRIBUTE   = 0x0000ffff;
-    
+
     /** Maps from int value to String description (variable name). */
     public static final Map<Integer, String> I2S = new HashMap<Integer, String>();
     static {
@@ -169,7 +170,7 @@ public class CKA {
     public int type;
     public Pointer pValue;
     public int ulValueLen;
-    
+
     // disallow zero-arg constructor
     private CKA() {
     }
@@ -177,7 +178,7 @@ public class CKA {
     /**
      * PKCS#11 CK_ATTRIBUTE struct constructor.
      * @param type CKA_? type.  Use one of the public static final int fields in this class.
-     * @param value supports java types Boolean, byte[], Number (int, long), String 
+     * @param value supports java types Boolean, byte[], Number (int, long), String
      */
     public CKA(int type, Object value) {
         this.type = type;
@@ -226,8 +227,8 @@ public class CKA {
         }
         return NativeLong.SIZE == 4 ? pValue.getInt(0) : (int) pValue.getLong(0);
     }
-    /** return value as boolean */
-    public boolean getValueBool() { 
+    /** @return value as boolean */
+    public boolean getValueBool() {
         if (ulValueLen != 1) {
             throw new IllegalStateException(String.format(
                     "Method getValueBool called when value is not boolean type of length 1.  Got length: %d, CKA type: 0x%08x(%s), value: %s",

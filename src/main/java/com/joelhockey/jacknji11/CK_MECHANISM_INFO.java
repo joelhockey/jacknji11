@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -21,7 +21,7 @@ import com.sun.jna.Structure;
 
 /**
  * JNA wrapper for PKCS#11 CK_MECHANSIM_INFO struct.
- * @author Joel Hockey
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CK_MECHANISM_INFO extends Structure {
     public NativeLong ulMinKeySize;

@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -28,22 +28,22 @@ import com.joelhockey.codec.Hex;
  * JUnit tests for jacknji11.
  * Tests all the cryptoki functions that I have ever used and understand.
  * The functions not tested are in commented lines.
- * @author Joel Hockey
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CryptokiTest extends TestCase {
     private static final byte[] SO_PIN = "sopin".getBytes();
     private static final byte[] USER_PIN = "userpin".getBytes();
     private static final int TESTSLOT = 0;
     private static final int INITSLOT = 1;
-    
+
     public void setUp() {
         CE.Initialize();
     }
-    
+
     public void tearDown() {
         CE.Finalize();
     }
-    
+
     public void testGetInfo() {
         CK_INFO info = new CK_INFO();
         CE.GetInfo(info);
@@ -54,7 +54,7 @@ public class CryptokiTest extends TestCase {
         int[] slots = CE.GetSlotList(true);
 //        System.out.println("num slots: " + slots.length);
     }
-    
+
     public void testGetSlotInfo() {
         CK_SLOT_INFO info = new CK_SLOT_INFO();
         CE.GetSlotInfo(TESTSLOT, info);
@@ -72,13 +72,13 @@ public class CryptokiTest extends TestCase {
 //            System.out.println(String.format("0x%08x : %s", mech, CKM.I2S.get(mech)));
         }
     }
-    
+
     public void testGetMechanismInfo() {
         CK_MECHANISM_INFO info = new CK_MECHANISM_INFO();
         CE.GetMechanismInfo(TESTSLOT, CKM.AES_CBC, info);
 //        System.out.println(info);
     }
-    
+
     public void testInitTokenInitPinSetPin() {
         CE.InitToken(INITSLOT, SO_PIN, "TEST".getBytes());
         int session = CE.OpenSession(1, CKS.RW_PUBLIC_SESSION, null, null);
@@ -90,7 +90,7 @@ public class CryptokiTest extends TestCase {
         CE.SetPIN(session, USER_PIN, somenewpin);
         CE.SetPIN(session, somenewpin, USER_PIN);
     }
-    
+
     public void testGetSessionInfo() {
         int session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
         CK_SESSION_INFO sessionInfo = new CK_SESSION_INFO();
@@ -109,7 +109,7 @@ public class CryptokiTest extends TestCase {
         CE.CloseAllSessions(TESTSLOT);
         assertEquals(CKR.SESSION_HANDLE_INVALID, C.CloseSession(s3));
     }
-    
+
     public void testCreateCopyGetSizeDestroyObject() {
         int session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
         CE.Login(session, CKU.USER, USER_PIN);
@@ -150,7 +150,7 @@ public class CryptokiTest extends TestCase {
         assertEquals("newdatavalue", CE.GetAttributeValueStr(session, o, CKA.VALUE));
         assertEquals(Integer.valueOf(CKO.DATA), CE.GetAttributeValueInt(session, o, CKA.CLASS));
         assertFalse(CE.GetAttributeValueBool(session, o, CKA.PRIVATE));
-        
+
         templ = CE.GetAttributeValue(session, o, new int[] {CKA.LABEL, CKA.ID, CKA.VALUE, CKA.CLASS, CKA.PRIVATE});
         assertEquals("datalabel", templ[0].getValueStr());
         assertEquals("dataid", templ[1].getValueStr());
@@ -172,7 +172,7 @@ public class CryptokiTest extends TestCase {
         assertTrue(o1 != o2);
         templ[1] = new CKA(CKA.LABEL, "label2");
         int o4 = CE.CreateObject(session, templ);
-    
+
         templ = new CKA[] {new CKA(CKA.LABEL, "label1")};
         CE.FindObjectsInit(session, templ);
         assertEquals(2, CE.FindObjects(session, 2).length);
@@ -187,12 +187,12 @@ public class CryptokiTest extends TestCase {
         assertEquals(0, CE.FindObjects(session, 2).length);
         CE.FindObjectsFinal(session);
     }
-    
+
 
     public void testEncryptDecrypt() {
         int session = CE.OpenSession(TESTSLOT);
         CE.LoginUser(session, USER_PIN);
-        
+
         int des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
                 new CKA(CKA.VALUE_LEN, 24),
                 new CKA(CKA.LABEL, "label"),
@@ -228,7 +228,7 @@ public class CryptokiTest extends TestCase {
         CE.DigestUpdate(session, new byte[50]);
         byte[] digested2 = CE.DigestFinal(session);
         assertTrue(Arrays.equals(digested1, digested2));
-        
+
         int des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
                 new CKA(CKA.VALUE_LEN, 24),
                 new CKA(CKA.LABEL, "label"),
@@ -267,7 +267,7 @@ public class CryptokiTest extends TestCase {
 //        CE.SignUpdate(session, new byte[50]);
 //        byte[] sig2 = CE.SignFinal(session);
 //        assertTrue(Arrays.equals(sig1, sig2));
-        
+
         CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.val());
         CE.Verify(session, data, sig1);
         assertEquals(CKR.SIGNATURE_INVALID, C.Verify(session, data, new byte[32]));
@@ -290,19 +290,19 @@ public class CryptokiTest extends TestCase {
 //    public static native int C_DecryptDigestUpdate(NativeLong session, byte[] encrypted_part, NativeLong encrypted_part_len, byte[] part, LongRef part_len);
 //    public static native int C_SignEncryptUpdate(NativeLong session, byte[] part, NativeLong part_len, byte[] encrypted_part, LongRef encrypted_part_len);
 //    public static native int C_DecryptVerifyUpdate(NativeLong session, byte[] encrypted_part, NativeLong encrypted_part_len, byte[] part, LongRef part_len);
-  
-    
+
+
     public void testGenerateKeyWrapUnwrap() {
         int session = CE.OpenSession(TESTSLOT);
         CE.LoginUser(session, USER_PIN);
-        
+
         int des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
                 new CKA(CKA.VALUE_LEN, 24),
                 new CKA(CKA.LABEL, "label"),
                 new CKA(CKA.SENSITIVE, false),
                 new CKA(CKA.DERIVE, true));
         byte[] des3keybuf = CE.GetAttributeValueBuf(session, des3key, CKA.VALUE);
-        
+
         CKA[] pubTempl = new CKA[] {
             new CKA(CKA.MODULUS_BITS, 512),
             new CKA(CKA.UNWRAP, true),
@@ -317,7 +317,7 @@ public class CryptokiTest extends TestCase {
         final CKA[] pubExpMod = CE.GetAttributeValue(session, pubKey.val(), new int[] {CKA.PUBLIC_EXPONENT, CKA.MODULUS});
         System.out.println("pubExp: " + Hex.b2s(pubExpMod[0].getValue()));
         System.out.println("mod   : " + Hex.b2s(pubExpMod[1].getValue()));
-        
+
         byte[] wrappedDes3 = CE.WrapKey(session, new CKM(CKM.RSA_PKCS), privKey.val(), des3key);
 
         BigInteger pubExp = new BigInteger(1, pubExpMod[0].getValue());
@@ -329,10 +329,10 @@ public class CryptokiTest extends TestCase {
         int des3key2 = CE.UnwrapKey(session, new CKM(CKM.RSA_PKCS), pubKey.val(), wrappedDes3);
         byte[] des3key2buf = CE.GetAttributeValueBuf(session, des3key2, CKA.VALUE);
         assertTrue(Arrays.equals(des3key2buf, des3keybuf));
-        
+
         CE.DeriveKey(session, new CKM(CKM.VENDOR_PTK_DES3_DERIVE_CBC, new byte[32]), des3key);
     }
-    
+
     public void testRandom() {
         int session = CE.OpenSession(TESTSLOT);
         byte[] buf = new byte[16];

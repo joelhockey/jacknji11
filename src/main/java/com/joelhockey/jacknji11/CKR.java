@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -22,6 +22,7 @@ import java.util.Map;
 
 /**
  * CKR_? constants.
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKR {
     public static final int OK                          = 0x00000000;
@@ -57,7 +58,7 @@ public class CKR {
     public static final int KEY_NOT_NEEDED              = 0x00000064;
     public static final int KEY_CHANGED                 = 0x00000065;
     public static final int KEY_NEEDED                  = 0x00000066;
-    public static final int KEY_INDIGESTABLE            = 0x00000067;
+    public static final int KEY_INDIGESTIBLE            = 0x00000067;
     public static final int KEY_FUNCTION_NOT_PERMITTED  = 0x00000068;
     public static final int KEY_NOT_WRAPPABLE           = 0x00000069;
     public static final int KEY_UNEXTRACTABLE           = 0x0000006a;
@@ -115,6 +116,7 @@ public class CKR {
     public static final int CRYPTOKI_ALREADY_INITIALIZED = 0x00000191;
     public static final int MUTEX_BAD                   = 0x000001a0;
     public static final int MUTEX_NOT_LOCKED            = 0x000001a1;
+    public static final int FUNCTION_REJECTED           = 0x00000200;
     public static final int INVALID_VALUE               = 0xffffffff;
 
 
@@ -165,7 +167,7 @@ public class CKR {
     public static final int VENDOR_PTK_BAD_PARAM_PACKING= 0x80001004;
     public static final int VENDOR_PTK_EXTERN_DCP_ERROR = 0x80001386;
     public static final int VENDOR_PTK_HIMK_NOT_FOUND   = 0x80001400;
-    
+
     public static final int VENDOR_PTK_WLD_ERROR        = 0x80002000;
     public static final int VENDOR_PTK_WLD_CONFIG_NOT_FOUND = 0x80002001;
     public static final int VENDOR_PTK_WLD_CONFIG_ITEM_READ_FAILED = 0x80002002;

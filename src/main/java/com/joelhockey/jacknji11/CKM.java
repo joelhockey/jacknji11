@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -30,6 +30,7 @@ import com.sun.jna.Structure;
 
 /**
  * CKM_? constants and CK_MECHANISM struct wrapper.
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKM extends Structure {
 
@@ -328,7 +329,7 @@ public class CKM extends Structure {
         // OAEP is a special case
         DEFAULT_PARAMS.put(RSA_PKCS_OAEP, Buf.cat(Buf.i2b(new int[] {SHA_1, 1, 1, 0, 0})));
     }
-    
+
     public NativeLong mechanism;
     public Pointer pParameter;
     public NativeLong ulParameterLen;
@@ -336,7 +337,7 @@ public class CKM extends Structure {
     /**
      * PKCS#11 CK_MECHANISM struct constructor.
      * @param mechanism CKM_? mechanism.  Use one of the public static final int fields in this class.
-     * @param param param for mechanism 
+     * @param param param for mechanism
      */
     public CKM(int mechanism, byte[] param) {
         this.mechanism = new NativeLong(mechanism);
@@ -348,12 +349,12 @@ public class CKM extends Structure {
             ulParameterLen = new NativeLong(0);
         }
     }
-    
+
     /**
      * PKCS#11 CK_MECHANISM struct constructor using default (possibly no) params.
      * @param mechanism CKM_? mechanism.  Use one of the public static final int fields in this class.
      */
-    public CKM(int mech) {
-        this(mech, CKM.DEFAULT_PARAMS.get(mech));
+    public CKM(int mechanism) {
+        this(mechanism, CKM.DEFAULT_PARAMS.get(mechanism));
     }
 }

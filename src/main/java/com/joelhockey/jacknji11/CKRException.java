@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2010 Joel Hockey (joel.hockey@gmail.com).  All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
- * 
+ *
  * THIS SOURCE CODE IS PROVIDED BY JOEL HOCKEY WITH A 30-DAY MONEY BACK
  * GUARANTEE.  IF THIS CODE DOES NOT MEAN WHAT IT SAYS IT MEANS WITHIN THE
  * FIRST 30 DAYS, SIMPLY RETURN THIS CODE IN ORIGINAL CONDITION FOR A PARTIAL
@@ -20,11 +20,12 @@ package com.joelhockey.jacknji11;
  * Exception for CKR values that are non-zero (CKR.OK).
  * Used in {@link CE} interface as alernative to returning
  * CKR for every function.
+ * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKRException extends RuntimeException {
     private static final long serialVersionUID = 0x2841de9d258bab8bL;
     private int ckr;
-    
+
     /**
      * Constructor with CKR value.
      * @param ckr CKR value.
@@ -33,7 +34,7 @@ public class CKRException extends RuntimeException {
         super(String.format("0x%08x: %s", ckr, CKR.I2S.get(ckr)));
         this.ckr = ckr;
     }
-    
+
     /**
      * Constructor with message and CKR value.
      * @param msg message
