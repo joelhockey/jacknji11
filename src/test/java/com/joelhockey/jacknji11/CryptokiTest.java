@@ -69,7 +69,7 @@ public class CryptokiTest extends TestCase {
 
     public void testGetMechanismList() {
         for (int mech : CE.GetMechanismList(TESTSLOT)) {
-//            System.out.println(String.format("0x%08x : %s", mech, CKM.I2S.get(mech)));
+//            System.out.println(String.format("0x%08x : %s", mech, CKM.I2S(mech)));
         }
     }
 
@@ -95,7 +95,7 @@ public class CryptokiTest extends TestCase {
         int session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
         CK_SESSION_INFO sessionInfo = new CK_SESSION_INFO();
         CE.GetSessionInfo(session, sessionInfo);
-        System.out.println(sessionInfo);
+//        System.out.println(sessionInfo);
     }
 
     public void testGetSessionInfoCloseAllSessions() {
@@ -132,11 +132,11 @@ public class CryptokiTest extends TestCase {
         };
         int o = CE.CreateObject(session, templ);
         int size = CE.GetObjectSize(session, o);
-        assertEquals("", CE.GetAttributeValueStr(session, o, CKA.LABEL));
-        assertNull(CE.GetAttributeValueStr(session, o, CKA.ID));
-        assertEquals("datavalue", CE.GetAttributeValueStr(session, o, CKA.VALUE));
-        assertEquals(Integer.valueOf(CKO.DATA), CE.GetAttributeValueInt(session, o, CKA.CLASS));
-        assertFalse(CE.GetAttributeValueBool(session, o, CKA.PRIVATE));
+        assertNull(CE.GetAttributeValue(session, o, CKA.LABEL).getValueStr());
+        assertNull(CE.GetAttributeValue(session, o, CKA.ID).getValueStr());
+        assertEquals("datavalue", CE.GetAttributeValue(session, o, CKA.VALUE).getValueStr());
+        assertEquals(Integer.valueOf(CKO.DATA), CE.GetAttributeValue(session, o, CKA.CLASS).getValueInt());
+        assertFalse(CE.GetAttributeValue(session, o, CKA.PRIVATE).getValueBool());
         templ = new CKA[] {
                 new CKA(CKA.LABEL, "datalabel"),
                 new CKA(CKA.VALUE, "newdatavalue"),
@@ -145,18 +145,24 @@ public class CryptokiTest extends TestCase {
         CE.SetAttributeValue(session, o, templ);
         int newsize = CE.GetObjectSize(session, o);
         assertTrue(newsize > size);
-        assertEquals("datalabel", CE.GetAttributeValueStr(session, o, CKA.LABEL));
-        assertEquals("dataid", CE.GetAttributeValueStr(session, o, CKA.ID));
-        assertEquals("newdatavalue", CE.GetAttributeValueStr(session, o, CKA.VALUE));
-        assertEquals(Integer.valueOf(CKO.DATA), CE.GetAttributeValueInt(session, o, CKA.CLASS));
-        assertFalse(CE.GetAttributeValueBool(session, o, CKA.PRIVATE));
+        assertEquals("datalabel", CE.GetAttributeValue(session, o, CKA.LABEL).getValueStr());
+        assertEquals("dataid", CE.GetAttributeValue(session, o, CKA.ID).getValueStr());
+        assertEquals("newdatavalue", CE.GetAttributeValue(session, o, CKA.VALUE).getValueStr());
+        assertEquals(Integer.valueOf(CKO.DATA), CE.GetAttributeValue(session, o, CKA.CLASS).getValueInt());
+        assertFalse(CE.GetAttributeValue(session, o, CKA.PRIVATE).getValueBool());
 
-        templ = CE.GetAttributeValue(session, o, new int[] {CKA.LABEL, CKA.ID, CKA.VALUE, CKA.CLASS, CKA.PRIVATE});
+        templ = CE.GetAttributeValue(session, o, CKA.LABEL, CKA.ID, CKA.VALUE, CKA.CLASS, CKA.PRIVATE);
         assertEquals("datalabel", templ[0].getValueStr());
         assertEquals("dataid", templ[1].getValueStr());
         assertEquals("newdatavalue", templ[2].getValueStr());
-        assertEquals(CKO.DATA, templ[3].getValueInt());
+        assertEquals(CKO.DATA, templ[3].getValueInt().intValue());
         assertFalse(templ[4].getValueBool());
+
+        templ = CE.GetAttributeValue(session, o, CKA.LABEL, CKA.ID, CKA.OBJECT_ID, CKA.TRUSTED);
+        assertEquals("datalabel", templ[0].getValueStr());
+        assertEquals("dataid", templ[1].getValueStr());
+        assertNull(templ[2].getValue());
+        assertNull(templ[3].getValueBool());
     }
 
     public void testFindObjects() {
@@ -301,7 +307,7 @@ public class CryptokiTest extends TestCase {
                 new CKA(CKA.LABEL, "label"),
                 new CKA(CKA.SENSITIVE, false),
                 new CKA(CKA.DERIVE, true));
-        byte[] des3keybuf = CE.GetAttributeValueBuf(session, des3key, CKA.VALUE);
+        byte[] des3keybuf = CE.GetAttributeValue(session, des3key, CKA.VALUE).getValue();
 
         CKA[] pubTempl = new CKA[] {
             new CKA(CKA.MODULUS_BITS, 512),
@@ -315,19 +321,19 @@ public class CryptokiTest extends TestCase {
         LongRef privKey = new LongRef();
         CE.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
         final CKA[] pubExpMod = CE.GetAttributeValue(session, pubKey.val(), new int[] {CKA.PUBLIC_EXPONENT, CKA.MODULUS});
-        System.out.println("pubExp: " + Hex.b2s(pubExpMod[0].getValue()));
-        System.out.println("mod   : " + Hex.b2s(pubExpMod[1].getValue()));
+//        System.out.println("pubExp: " + Hex.b2s(pubExpMod[0].getValue()));
+//        System.out.println("mod   : " + Hex.b2s(pubExpMod[1].getValue()));
 
         byte[] wrappedDes3 = CE.WrapKey(session, new CKM(CKM.RSA_PKCS), privKey.val(), des3key);
 
         BigInteger pubExp = new BigInteger(1, pubExpMod[0].getValue());
         BigInteger mod = new BigInteger(1, pubExpMod[1].getValue());
         byte[] unwrappedDes3 = Buf.substring(new BigInteger(1, wrappedDes3).modPow(pubExp, mod).toByteArray(), -24, 24);
-        System.out.println("unwrapped: " + Hex.dump(unwrappedDes3));
+//        System.out.println("unwrapped: " + Hex.dump(unwrappedDes3));
         assertTrue(Arrays.equals(des3keybuf, unwrappedDes3));
 
         int des3key2 = CE.UnwrapKey(session, new CKM(CKM.RSA_PKCS), pubKey.val(), wrappedDes3);
-        byte[] des3key2buf = CE.GetAttributeValueBuf(session, des3key2, CKA.VALUE);
+        byte[] des3key2buf = CE.GetAttributeValue(session, des3key2, CKA.VALUE).getValue();
         assertTrue(Arrays.equals(des3key2buf, des3keybuf));
 
         CE.DeriveKey(session, new CKM(CKM.VENDOR_PTK_DES3_DERIVE_CBC, new byte[32]), des3key);

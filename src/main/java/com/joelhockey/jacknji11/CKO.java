@@ -16,8 +16,6 @@
 
 package com.joelhockey.jacknji11;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,35 +24,30 @@ import java.util.Map;
  */
 public class CKO {
 
-    public static final int DATA = 0;
-    public static final int CERTIFICATE = 1;
-    public static final int PUBLIC_KEY = 2;
-    public static final int PRIVATE_KEY = 3;
-    public static final int SECRET_KEY = 4;
-    public static final int HW_FEATURE = 5;
-    public static final int DOMAIN_PARAMETERS = 6;
-    public static final int INVALID_VALUE = -1;
+    public static final int DATA                = 0x00000000;
+    public static final int CERTIFICATE         = 0x00000001;
+    public static final int PUBLIC_KEY          = 0x00000002;
+    public static final int PRIVATE_KEY         = 0x00000003;
+    public static final int SECRET_KEY          = 0x00000004;
+    public static final int HW_FEATURE          = 0x00000005;
+    public static final int DOMAIN_PARAMETERS   = 0x00000006;
+    public static final int MECHANISM           = 0x00000007;
+    public static final int OTP_KEY             = 0x00000008;
 
     // Vendor defined values
     // Eracom PTK
-    public static final int VENDOR_PTK_CERTIFICATE_REQUEST = 0x80000201;
-    public static final int VENDOR_PTK_CRL = 0x80000202;
-    public static final int VENDOR_PTK_ADAPTER = 0x8000020a;
-    public static final int VENDOR_PTK_SLOT = 0x8000020b;
-    public static final int VENDOR_PTK_FM = 0x8000020c;
+    public static final int VENDOR_PTK_CERTIFICATE_REQUEST  = 0x80000201;
+    public static final int VENDOR_PTK_CRL                  = 0x80000202;
+    public static final int VENDOR_PTK_ADAPTER              = 0x8000020a;
+    public static final int VENDOR_PTK_SLOT                 = 0x8000020b;
+    public static final int VENDOR_PTK_FM                   = 0x8000020c;
 
     /** Maps from int value to String description (variable name). */
-    public static final Map<Integer, String> I2S = new HashMap<Integer, String>();
-    static {
-        try {
-            Field[] fields = CKO.class.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                if (fields[i].getType() == int.class) {
-                    I2S.put(fields[i].getInt(null), fields[i].getName());
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final Map<Integer, String> I2S = C.i2s(CKO.class);
+    /**
+     * Convert int constant value to name.
+     * @param cko value
+     * @return name
+     */
+    public static final String I2S(int cko) { return C.i2s(I2S, CKO.class.getSimpleName(), cko); }
 }

@@ -31,7 +31,7 @@ public class CKRException extends RuntimeException {
      * @param ckr CKR value.
      */
     public CKRException(int ckr) {
-        super(String.format("0x%08x: %s", ckr, CKR.I2S.get(ckr)));
+        super(String.format("0x%08x: %s", ckr, CKR.I2S(ckr)));
         this.ckr = ckr;
     }
 
@@ -41,7 +41,7 @@ public class CKRException extends RuntimeException {
      * @param ckr CKR value
      */
     public CKRException(String msg, int ckr) {
-        super(String.format("0x%08x: %s : %s", ckr, CKR.I2S.get(ckr), msg));
+        super(String.format("0x%08x: %s : %s", ckr, CKR.I2S(ckr), msg));
         this.ckr = ckr;
     }
 

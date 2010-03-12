@@ -18,35 +18,23 @@ package com.joelhockey.jacknji11;
 
 import java.util.Map;
 
-import com.sun.jna.NativeLong;
-import com.sun.jna.Structure;
-
 /**
- * JNA wrapper for PKCS#11 CK_SESSION_INFO struct.
+ * CKC_? constants.
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
-public class CK_SESSION_INFO extends Structure {
+public class CKC {
 
-    public static final int CKF_RW_SESSION     = 0x00000002;
-    public static final int CKF_SERIAL_SESSION = 0x00000004;
+    public static final int CKC_X_509           = 0x00000000;
+    public static final int CKC_X_509_ATTR_CERT = 0x00000001;
+    public static final int CKC_WTLS            = 0x00000002;
+    public static final int CKC_VENDOR_DEFINED  = 0x80000000;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CK_SESSION_INFO.class);
+    private static final Map<Integer, String> I2S = C.i2s(CKS.class);
     /**
      * Convert int constant value to name.
-     * @param ckf value
+     * @param cks value
      * @return name
      */
-    public static final String I2S(int ckf) { return C.i2s(I2S, "CKF", ckf); }
-    /**
-     * Convert flags to string.
-     * @param flags flags
-     * @return string format
-     */
-    public static String f2s(int flags) { return C.f2s(I2S, flags); }
-
-    public NativeLong slotID;
-    public NativeLong state;
-    public NativeLong flags;
-    public NativeLong ulDeviceError;
+    public static final String I2S(int cks) { return C.i2s(I2S, CKS.class.getSimpleName(), cks); }
 }

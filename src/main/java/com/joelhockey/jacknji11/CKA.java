@@ -16,9 +16,6 @@
 
 package com.joelhockey.jacknji11;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.joelhockey.codec.Hex;
@@ -33,6 +30,8 @@ import com.sun.jna.ptr.NativeLongByReference;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKA {
+    public static final int CKF_ARRAY_ATTRIBUTE         = 0x40000000;
+
     public static final int CLASS                       = 0x00000000;
     public static final int TOKEN                       = 0x00000001;
     public static final int PRIVATE                     = 0x00000002;
@@ -47,6 +46,13 @@ public class CKA {
     public static final int OWNER                       = 0x00000084;
     public static final int ATTR_TYPES                  = 0x00000085;
     public static final int TRUSTED                     = 0x00000086;
+    public static final int CERTIFICATE_CATEGORY        = 0x00000087;
+    public static final int JAVA_MIDP_SECURITY_DOMAIN   = 0x00000088;
+    public static final int URL                         = 0x00000089;
+    public static final int HASH_OF_SUBJECT_PUBLIC_KEY  = 0x0000008a;
+    public static final int HASH_OF_ISSUER_PUBLIC_KEY   = 0x0000008b;
+    public static final int CHECK_VALUE                 = 0x00000090;
+
     public static final int KEY_TYPE                    = 0x00000100;
     public static final int SUBJECT                     = 0x00000101;
     public static final int ID                          = 0x00000102;
@@ -87,10 +93,44 @@ public class CKA {
     public static final int EC_POINT                    = 0x00000181;
     public static final int SECONDARY_AUTH              = 0x00000200;
     public static final int AUTH_PIN_FLAGS              = 0x00000201;
+    public static final int ALWAYS_AUTHENTICATE         = 0x00000202;
+    public static final int WRAP_WITH_TRUSTED           = 0x00000210;
+    public static final int WRAP_TEMPLATE               = (CKF_ARRAY_ATTRIBUTE|0x00000211);
+    public static final int UNWRAP_TEMPLATE             = (CKF_ARRAY_ATTRIBUTE|0x00000212);
+    public static final int OTP_FORMAT                 =  0x00000220;
+    public static final int OTP_LENGTH                  = 0x00000221;
+    public static final int OTP_TIME_INTERVAL           = 0x00000222;
+    public static final int OTP_USER_FRIENDLY_MODE      = 0x00000223;
+    public static final int OTP_CHALLENGE_REQUIREMENT   = 0x00000224;
+    public static final int OTP_TIME_REQUIREMENT        = 0x00000225;
+    public static final int OTP_COUNTER_REQUIREMENT     = 0x00000226;
+    public static final int OTP_PIN_REQUIREMENT         = 0x00000227;
+    public static final int OTP_COUNTER                 = 0x0000022e;
+    public static final int OTP_TIME                    = 0x0000022f;
+    public static final int OTP_USER_IDENTIFIER         = 0x0000022a;
+    public static final int OTP_SERVICE_IDENTIFIER      = 0x0000022b;
+    public static final int OTP_SERVICE_LOGO            = 0x0000022c;
+    public static final int OTP_SERVICE_LOGO_TYPE       = 0x0000022d;
+
+
     public static final int HW_FEATURE_TYPE             = 0x00000300;
     public static final int RESET_ON_INIT               = 0x00000301;
     public static final int HAS_RESET                   = 0x00000302;
-    public static final int INVALID_VALUE               = 0xffffffff;
+    public static final int PIXEL_X                     = 0x00000400;
+    public static final int PIXEL_Y                     = 0x00000401;
+    public static final int RESOLUTION                  = 0x00000402;
+    public static final int CHAR_ROWS                   = 0x00000403;
+    public static final int CHAR_COLUMNS                = 0x00000404;
+    public static final int COLOR                       = 0x00000405;
+    public static final int BITS_PER_PIXEL              = 0x00000406;
+    public static final int CHAR_SETS                   = 0x00000480;
+    public static final int ENCODING_METHODS            = 0x00000481;
+    public static final int MIME_TYPES                  = 0x00000482;
+    public static final int MECHANISM_TYPE              = 0x00000500;
+    public static final int REQUIRED_CMS_ATTRIBUTES     = 0x00000501;
+    public static final int DEFAULT_CMS_ATTRIBUTES      = 0x00000502;
+    public static final int SUPPORTED_CMS_ATTRIBUTES    = 0x00000503;
+    public static final int ALLOWED_MECHANISMS          = (CKF_ARRAY_ATTRIBUTE|0x00000600);
 
     // Vendor defined values
     // Eracom PTK
@@ -152,20 +192,13 @@ public class CKA {
     public static final int VENDOR_PTK_ENUM_ATTRIBUTE   = 0x0000ffff;
 
     /** Maps from int value to String description (variable name). */
-    public static final Map<Integer, String> I2S = new HashMap<Integer, String>();
-    static {
-        try {
-            for (Field f : CKA.class.getDeclaredFields()) {
-                // only put 'public static final int' in map
-                if (f.getType() == int.class && Modifier.isPublic(f.getModifiers())
-                        && Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers())) {
-                    I2S.put(f.getInt(null), f.getName());
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final Map<Integer, String> I2S = C.i2s(CKA.class);
+    /**
+     * Convert int constant value to name.
+     * @param cka value
+     * @return name
+     */
+    public static final String I2S(int cka) { return C.i2s(I2S, CKA.class.getSimpleName(), cka); }
 
     public int type;
     public Pointer pValue;
@@ -219,20 +252,26 @@ public class CKA {
     /** @return value as String */
     public String getValueStr() { return pValue == null ? null : new String(pValue.getByteArray(0, ulValueLen)); }
     /** @return value as int */
-    public int getValueInt() {
+    public Integer getValueInt() {
+        if (ulValueLen == 0) {
+            return null;
+        }
         if (ulValueLen != NativeLong.SIZE) {
             throw new IllegalStateException(String.format(
-                    "Method getValueInt called when value is not int type of length %d.  Got length: %d, CKA type: 0x%08x(%s), value: %s",
-                    NativeLong.SIZE, ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
+                "Method getValueInt called when value is not int type of length %d.  Got length: %d, CKA type: 0x%08x(%s), value: %s",
+                 NativeLong.SIZE, ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
         }
         return NativeLong.SIZE == 4 ? pValue.getInt(0) : (int) pValue.getLong(0);
     }
     /** @return value as boolean */
-    public boolean getValueBool() {
+    public Boolean getValueBool() {
+        if (ulValueLen == 0) {
+            return null;
+        }
         if (ulValueLen != 1) {
             throw new IllegalStateException(String.format(
-                    "Method getValueBool called when value is not boolean type of length 1.  Got length: %d, CKA type: 0x%08x(%s), value: %s",
-                    ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
+                "Method getValueBool called when value is not boolean type of length 1.  Got length: %d, CKA type: 0x%08x(%s), value: %s",
+                ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
         }
         return pValue.getByte(0) != 0;
     }

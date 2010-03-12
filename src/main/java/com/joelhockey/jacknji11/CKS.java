@@ -16,12 +16,10 @@
 
 package com.joelhockey.jacknji11;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
- * CKS_? constants.
+ * CKS_? (CK_STATE) constants.
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKS {
@@ -32,17 +30,11 @@ public class CKS {
     public static final int RW_SO_FUNCTIONS = 4;
 
     /** Maps from int value to String description (variable name). */
-    public static final Map<Integer, String> I2S = new HashMap<Integer, String>();
-    static {
-        try {
-            Field[] fields = CKS.class.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                if (fields[i].getType() == int.class) {
-                    I2S.put(fields[i].getInt(null), fields[i].getName());
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final Map<Integer, String> I2S = C.i2s(CKS.class);
+    /**
+     * Convert int constant value to name.
+     * @param cks value
+     * @return name
+     */
+    public static final String I2S(int cks) { return C.i2s(I2S, CKS.class.getSimpleName(), cks); }
 }

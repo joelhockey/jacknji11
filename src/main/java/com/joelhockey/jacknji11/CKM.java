@@ -16,8 +16,6 @@
 
 package com.joelhockey.jacknji11;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +45,8 @@ public class CKM extends Structure {
     public static final int RSA_X9_31_KEY_PAIR_GEN      = 0x0000000a;
     public static final int RSA_X9_31                   = 0x0000000b;
     public static final int SHA1_RSA_X9_31              = 0x0000000c;
+    public static final int RSA_PKCS_PSS                = 0x0000000d;
+    public static final int SHA1_RSA_PKCS_PSS           = 0x0000000e;
     public static final int DSA_KEY_PAIR_GEN            = 0x00000010;
     public static final int DSA                         = 0x00000011;
     public static final int DSA_SHA1                    = 0x00000012;
@@ -59,6 +59,11 @@ public class CKM extends Structure {
     public static final int SHA256_RSA_PKCS             = 0x00000040;
     public static final int SHA384_RSA_PKCS             = 0x00000041;
     public static final int SHA512_RSA_PKCS             = 0x00000042;
+    public static final int SHA256_RSA_PKCS_PSS         = 0x00000043;
+    public static final int SHA384_RSA_PKCS_PSS         = 0x00000044;
+    public static final int SHA512_RSA_PKCS_PSS         = 0x00000045;
+    public static final int SHA224_RSA_PKCS             = 0x00000046;
+    public static final int SHA224_RSA_PKCS_PSS         = 0x00000047;
     public static final int RC2_KEY_GEN                 = 0x00000100;
     public static final int RC2_ECB                     = 0x00000101;
     public static final int RC2_CBC                     = 0x00000102;
@@ -86,6 +91,10 @@ public class CKM extends Structure {
     public static final int CDMF_MAC                    = 0x00000143;
     public static final int CDMF_MAC_GENERAL            = 0x00000144;
     public static final int CDMF_CBC_PAD                = 0x00000145;
+    public static final int DES_OFB64                   = 0x00000150;
+    public static final int DES_OFB8                    = 0x00000151;
+    public static final int DES_CFB64                   = 0x00000152;
+    public static final int DES_CFB8                    = 0x00000153;
     public static final int MD2                         = 0x00000200;
     public static final int MD2_HMAC                    = 0x00000201;
     public static final int MD2_HMAC_GENERAL            = 0x00000202;
@@ -110,6 +119,12 @@ public class CKM extends Structure {
     public static final int SHA512                      = 0x00000270;
     public static final int SHA512_HMAC                 = 0x00000271;
     public static final int SHA512_HMAC_GENERAL         = 0x00000272;
+    public static final int SECURID_KEY_GEN             = 0x00000280;
+    public static final int SECURID                     = 0x00000282;
+    public static final int HOTP_KEY_GEN                = 0x00000290;
+    public static final int HOTP                        = 0x00000291;
+    public static final int ACTI                        = 0x000002a0;
+    public static final int ACTI_KEY_GEN                = 0x000002a1;
     public static final int CAST_KEY_GEN                = 0x00000300;
     public static final int CAST_ECB                    = 0x00000301;
     public static final int CAST_CBC                    = 0x00000302;
@@ -184,8 +199,36 @@ public class CKM extends Structure {
     public static final int PBE_SHA1_RC2_40_CBC         = 0x000003ab;
     public static final int PKCS5_PBKD2                 = 0x000003b0;
     public static final int PBA_SHA1_WITH_SHA1_HMAC     = 0x000003c0;
+    public static final int WTLS_PRE_MASTER_KEY_GEN     = 0x000003d0;
+    public static final int WTLS_MASTER_KEY_DERIVE      = 0x000003d1;
+    public static final int WTLS_MASTER_KEY_DERIVE_DH_ECC = 0x000003d2;
+    public static final int WTLS_PRF                    = 0x000003d3;
+    public static final int WTLS_SERVER_KEY_AND_MAC_DERIVE = 0x000003d4;
+    public static final int WTLS_CLIENT_KEY_AND_MAC_DERIVE = 0x000003d5;
     public static final int KEY_WRAP_LYNKS              = 0x00000400;
     public static final int KEY_WRAP_SET_OAEP           = 0x00000401;
+    public static final int CMS_SIG                     = 0x00000500;
+    public static final int KIP_DERIVE                  = 0x00000510;
+    public static final int KIP_WRAP                    = 0x00000511;
+    public static final int KIP_MAC                     = 0x00000512;
+    public static final int CAMELLIA_KEY_GEN            = 0x00000550;
+    public static final int CAMELLIA_ECB                = 0x00000551;
+    public static final int CAMELLIA_CBC                = 0x00000552;
+    public static final int CAMELLIA_MAC                = 0x00000553;
+    public static final int CAMELLIA_MAC_GENERAL        = 0x00000554;
+    public static final int CAMELLIA_CBC_PAD            = 0x00000555;
+    public static final int CAMELLIA_ECB_ENCRYPT_DATA   = 0x00000556;
+    public static final int CAMELLIA_CBC_ENCRYPT_DATA   = 0x00000557;
+    public static final int CAMELLIA_CTR                = 0x00000558;
+    public static final int ARIA_KEY_GEN                = 0x00000560;
+    public static final int ARIA_ECB                    = 0x00000561;
+    public static final int ARIA_CBC                    = 0x00000562;
+    public static final int ARIA_MAC                    = 0x00000563;
+    public static final int ARIA_MAC_GENERAL            = 0x00000564;
+    public static final int ARIA_CBC_PAD                = 0x00000565;
+    public static final int ARIA_ECB_ENCRYPT_DATA       = 0x00000566;
+    public static final int ARIA_CBC_ENCRYPT_DATA       = 0x00000567;
+
     public static final int SKIPJACK_KEY_GEN            = 0x00001000;
     public static final int SKIPJACK_ECB64              = 0x00001001;
     public static final int SKIPJACK_CBC64              = 0x00001002;
@@ -211,9 +254,10 @@ public class CKM extends Structure {
     public static final int EC_KEY_PAIR_GEN             = 0x00001040;
     public static final int ECDSA                       = 0x00001041;
     public static final int ECDSA_SHA1                  = 0x00001042;
-    public static final int ECDH1_DERIVE                = 0x00001043;
-    public static final int ECDH1_COFACTOR_DERIVE       = 0x00001044;
-    public static final int ECMQV_DERIVE                = 0x00001045;
+    public static final int ECDH1_DERIVE                = 0x00001050;
+    public static final int ECDH1_COFACTOR_DERIVE       = 0x00001051;
+    public static final int ECMQV_DERIVE                = 0x00001052;
+
     public static final int JUNIPER_KEY_GEN             = 0x00001060;
     public static final int JUNIPER_ECB128              = 0x00001061;
     public static final int JUNIPER_CBC128              = 0x00001062;
@@ -227,10 +271,16 @@ public class CKM extends Structure {
     public static final int AES_MAC                     = 0x00001083;
     public static final int AES_MAC_GENERAL             = 0x00001084;
     public static final int AES_CBC_PAD                 = 0x00001085;
+    public static final int DES_ECB_ENCRYPT_DATA        = 0x00001100;
+    public static final int DES_CBC_ENCRYPT_DATA        = 0x00001101;
+    public static final int DES3_ECB_ENCRYPT_DATA       = 0x00001102;
+    public static final int DES3_CBC_ENCRYPT_DATA       = 0x00001103;
+    public static final int AES_ECB_ENCRYPT_DATA        = 0x00001104;
+    public static final int AES_CBC_ENCRYPT_DATA        = 0x00001105;
+
     public static final int DSA_PARAMETER_GEN           = 0x00002000;
     public static final int DH_PKCS_PARAMETER_GEN       = 0x00002001;
     public static final int X9_42_DH_PARAMETER_GEN      = 0x00002002;
-    public static final int INVALID_VALUE               = 0xffffffff;
 
     // Vendor defined values
     // Eracom PTK
@@ -288,21 +338,17 @@ public class CKM extends Structure {
     public static final int VENDOR_PTK_ECIES            = 0x80000a00;
 
     /** Maps from int value to String description (variable name). */
-    public static final Map<Integer, String> I2S = new HashMap<Integer, String>();
+    private static final Map<Integer, String> I2S = C.i2s(CKM.class);
+    /**
+     * Convert int constant value to name.
+     * @param ckm value
+     * @return name
+     */
+    public static final String I2S(int ckm) { return C.i2s(I2S, CKM.class.getSimpleName(), ckm); }
+
     /** Default params for some mechanisms. */
     public static final Map<Integer, byte[]> DEFAULT_PARAMS = new HashMap<Integer, byte[]>();
     static {
-        try {
-            for (Field f : CKM.class.getDeclaredFields()) {
-                // only put 'static final int' in map
-                if (f.getType() == int.class && Modifier.isPublic(f.getModifiers())
-                        && Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers())) {
-                    I2S.put(f.getInt(null), f.getName());
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
         byte[] zero0 = new byte[0];
         byte[] zero8 = new byte[8];
         byte[] zero16 = new byte[16];
@@ -326,8 +372,8 @@ public class CKM extends Structure {
         for (int i : new int[] {AES_CBC, AES_CBC_PAD, VENDOR_PTK_SEED_CBC, VENDOR_PTK_SEED_CBC_PAD}) {
             DEFAULT_PARAMS.put(i, zero16);
         }
-        // OAEP is a special case
-        DEFAULT_PARAMS.put(RSA_PKCS_OAEP, Buf.cat(Buf.i2b(new int[] {SHA_1, 1, 1, 0, 0})));
+        // OAEP default is MGF SHA-1
+        DEFAULT_PARAMS.put(RSA_PKCS_OAEP, Buf.cat(Buf.i2b(new int[] {SHA_1, CKG.MGF1_SHA1, CKG.MGF1_SHA1, 0, 0})));
     }
 
     public NativeLong mechanism;
