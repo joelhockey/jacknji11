@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.joelhockey.codec.Buf;
+import com.joelhockey.codec.Hex;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
@@ -402,5 +403,13 @@ public class CKM extends Structure {
      */
     public CKM(int mechanism) {
         this(mechanism, CKM.DEFAULT_PARAMS.get(mechanism));
+    }
+
+    /** @return string */
+    public String toString() {
+        int m = mechanism.intValue();
+        int l = ulParameterLen.intValue();
+        return String.format("mechanism=0x%08x{%s} paramLen=%d param=%s",
+                m, I2S(m), l, Hex.b2s(pParameter != null ? pParameter.getByteArray(0, l) : null));
     }
 }

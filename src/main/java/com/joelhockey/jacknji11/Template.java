@@ -107,11 +107,10 @@ public class Template extends PointerType {
      * @param sb write to
      */
     public void dump(StringBuilder sb) {
-        sb.append("(\n  template size=").append(listLen);
+        sb.append("  template (size=").append(listLen).append(')');
         for (int i = 0; i < listLen; i++) {
             sb.append("\n  ");
             list[i].dump(sb);
         }
-        sb.append("\n)");
     }
 }

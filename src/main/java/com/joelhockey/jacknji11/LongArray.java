@@ -27,6 +27,7 @@ import com.sun.jna.PointerType;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class LongArray extends PointerType {
+    private int[] list;
     private int listLen;
 
     /** Default no-arg constructor required by JNA. */
@@ -39,6 +40,7 @@ public class LongArray extends PointerType {
      * @param list ints
      */
     public LongArray(int[] list) {
+        this.list = list;
         listLen = list == null ? 0 : list.length;
         if (listLen == 0) {
             return;
@@ -58,9 +60,8 @@ public class LongArray extends PointerType {
      * This must be called after native PKCS#11 calls in {@link Native} that modify
      * ULONG values such as {@link Native#C_FindObjects(NativeLong, LongArray, NativeLong, LongRef)}.
      * This is automatically done by the {@link C} and {@link CE} interfaces.
-     * @param list template
      */
-    public void update(int[] list) {
+    public void update() {
         if (listLen == 0) {
             return;
         }

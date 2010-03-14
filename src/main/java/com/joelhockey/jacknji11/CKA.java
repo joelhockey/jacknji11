@@ -259,7 +259,7 @@ public class CKA {
     public String getValueStr() { return pValue == null ? null : new String(pValue.getByteArray(0, ulValueLen)); }
     /** @return value as int */
     public Integer getValueInt() {
-        if (ulValueLen == 0) {
+        if (ulValueLen == 0 || pValue == null) {
             return null;
         }
         if (ulValueLen != NativeLong.SIZE) {
@@ -271,7 +271,7 @@ public class CKA {
     }
     /** @return value as boolean */
     public Boolean getValueBool() {
-        if (ulValueLen == 0) {
+        if (ulValueLen == 0 || pValue == null) {
             return null;
         }
         if (ulValueLen != 1) {
@@ -292,7 +292,8 @@ public class CKA {
         try {
             switch (type) {
             case CLASS: // lookup CKO
-                sb.append(String.format(" value=0x%08x{%s}", type, CKO.I2S(getValueInt())));
+                Integer cko = getValueInt();
+                sb.append(String.format(" value=0x%08x{%s}", type, cko != null ? CKO.I2S(cko) : "null"));
                 return;
             case TOKEN: // boolean
             case PRIVATE:
@@ -323,7 +324,8 @@ public class CKA {
             case VENDOR_PTK_IMPORT:
             case VENDOR_PTK_EVENT_LOG_FULL:
             case VENDOR_PTK_VERIFY_OS:
-                sb.append(" value=").append(getValueBool());
+                Boolean b = getValueBool();
+                sb.append(" value=").append(b != null ? b ? "TRUE" : "FALSE" : "null");
                 return;
             case LABEL: // escaped printable string
             case APPLICATION:
@@ -343,12 +345,15 @@ public class CKA {
                 sb.append(" value=").append(Buf.escstr(getValue()));
                 return;
             case CERTIFICATE_TYPE: // lookup CKC
-                sb.append(String.format(" value=0x%08x{%s}", type, CKC.I2S(getValueInt())));
+                Integer ckc = getValueInt();
+                sb.append(String.format(" value=0x%08x{%s}", type, ckc != null ? CKC.I2S(ckc) : "null"));
                 return;
             case KEY_TYPE: // lookup CKK
-                sb.append(String.format(" value=0x%08x{%s}", type, CKK.I2S(getValueInt())));
+                Integer ckk = getValueInt();
+                sb.append(String.format(" value=0x%08x{%s}", type, ckk != null ? CKK.I2S(ckk) : "null"));
                 return;
-            case PRIME_BITS: // int
+            case MODULUS_BITS: // int
+            case PRIME_BITS:
             case SUBPRIME_BITS:
             case VALUE_BITS:
             case VALUE_LEN:
@@ -389,6 +394,5 @@ public class CKA {
         // hex dump by default or if error parsing other data type
         byte[] value = getValue();
         Hex.dump(sb, value, 0, ulValueLen, "    ", 32);
-
     }
 }
