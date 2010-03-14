@@ -338,7 +338,7 @@ public class CKM extends Structure {
     public static final int VENDOR_PTK_ECIES            = 0x80000a00;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKM.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKM.class);
     /**
      * Convert int constant value to name.
      * @param ckm value

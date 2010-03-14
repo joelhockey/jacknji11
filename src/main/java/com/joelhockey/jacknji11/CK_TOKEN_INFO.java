@@ -18,6 +18,7 @@ package com.joelhockey.jacknji11;
 
 import java.util.Map;
 
+import com.joelhockey.codec.Buf;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
@@ -46,7 +47,7 @@ public class CK_TOKEN_INFO extends Structure {
     public static final int CKF_SO_PIN_TO_BE_CHANGED     =0x00800000;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CK_TOKEN_INFO.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CK_TOKEN_INFO.class);
     /**
      * Convert int constant value to name.
      * @param ckf value
@@ -78,4 +79,21 @@ public class CK_TOKEN_INFO extends Structure {
     public CK_VERSION hardwareVersion;
     public CK_VERSION firmwareVersion;
     public byte[] utcTime = new byte[16];
+
+    /** @return string */
+    public String toString() {
+        return String.format("(\n  label=%s\n  manufacturerID=%s\n  model=%s\n  serialNumber=%s\n  flags=0x%08x{%s}" +
+                "\n  maxSessionCount=%d\n  sessionCount=%d\n  maxRwSessionCount=%d\n  rwSessionCount=%d" +
+                "\n  maxPinLen=%d\n  minPinLen=%d\n  totalPublicMemory=%d\n  freePublicMemory=%d" +
+                "\n  totalPrivateMemory=%d\n  freePrivateMemory=%d" +
+                "\n  hardwareVersion=%d.%d\n  firmwareVersion=%d.%d\n)",
+                Buf.escstr(label), Buf.escstr(manufacturerID), Buf.escstr(model), Buf.escstr(serialNumber),
+                flags.intValue(), f2s(flags.intValue()), ulMaxSessionCount.intValue(), ulSessionCount.intValue(),
+                ulMaxRwSessionCount.intValue(), ulRwSessionCount.intValue(),
+                ulMaxPinLen.intValue(), ulMinPinLen.intValue(),
+                ulTotalPublicMemory.intValue(), ulFreePublicMemory.intValue(),
+                ulTotalPrivateMemory.intValue(), ulFreePrivateMemory.intValue(),
+                hardwareVersion.major & 0xff, hardwareVersion.minor & 0xff,
+                firmwareVersion.major & 0xff, firmwareVersion.minor & 0xff);
+    }
 }

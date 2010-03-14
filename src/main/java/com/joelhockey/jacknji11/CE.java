@@ -151,7 +151,7 @@ public class CE {
      * Waits for a slot event (token insertion, removal, etc.) to occur.
      * @param flags blocking/nonblocking flag
      * @param slot location that receives the slot ID
-     * @param reserved reserved.  Should be null
+     * @param pReserved reserved.  Should be null
      * @see C#WaitForSlotEvent(int, LongRef, Pointer)
      * @see Native#C_WaitForSlotEvent(com.sun.jna.NativeLong, LongRef, Pointer)
      */
@@ -168,8 +168,8 @@ public class CE {
      * @see C#GetMechanismList(int, int[], LongRef)
      * @see Native#C_GetMechanismList(com.sun.jna.NativeLong, LongArray, LongRef)
      */
-    public static void GetMechanismList(int slotID, int[] mechanism_list, LongRef count) {
-        int rv = C.GetMechanismList(slotID, mechanism_list, count);
+    public static void GetMechanismList(int slotID, int[] mechanismList, LongRef count) {
+        int rv = C.GetMechanismList(slotID, mechanismList, count);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
 
@@ -736,8 +736,8 @@ public class CE {
      * @see C#Encrypt(int, byte[], byte[], LongRef)
      * @see Native#C_Encrypt(com.sun.jna.NativeLong, byte[], com.sun.jna.NativeLong, byte[], LongRef)
      */
-    public static void Encrypt(int session, byte[] data, byte[] encrypted_data, LongRef encrypted_data_len) {
-        int rv = C.Encrypt(session, data, encrypted_data, encrypted_data_len);
+    public static void Encrypt(int session, byte[] data, byte[] encryptedData, LongRef encryptedDataLen) {
+        int rv = C.Encrypt(session, data, encryptedData, encryptedDataLen);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
 
@@ -795,8 +795,8 @@ public class CE {
      * @see C#EncryptFinal(int, byte[], LongRef)
      * @see Native#C_EncryptFinal(com.sun.jna.NativeLong, byte[], LongRef)
      */
-    public static void EncryptFinal(int session, byte[] last_encrypted_part, LongRef last_encrypted_part_len) {
-        int rv = C.EncryptFinal(session, last_encrypted_part, last_encrypted_part_len);
+    public static void EncryptFinal(int session, byte[] lastEncryptedPart, LongRef lastEncryptedPartLen) {
+        int rv = C.EncryptFinal(session, lastEncryptedPart, lastEncryptedPartLen);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
 
@@ -896,11 +896,11 @@ public class CE {
      * @see C#DecryptUpdate(int, byte[], byte[], LongRef)
      * @see Native#C_DecryptUpdate(com.sun.jna.NativeLong, byte[], com.sun.jna.NativeLong, byte[], LongRef)
      */
-    public static byte[] DecryptUpdate(int session, byte[] encrypted_part) {
+    public static byte[] DecryptUpdate(int session, byte[] encryptedPart) {
         LongRef l = new LongRef();
-        DecryptUpdate(session, encrypted_part, null, l);
+        DecryptUpdate(session, encryptedPart, null, l);
         byte[] result = new byte[l.val()];
-        DecryptUpdate(session, encrypted_part, result, l);
+        DecryptUpdate(session, encryptedPart, result, l);
         return resize(result, l.val());
     }
 
@@ -1439,7 +1439,7 @@ public class CE {
     /**
      * Continues a multiple-part decryption and verify operation.
      * @param session the session's handle
-     * @param encrypedPart ciphertext
+     * @param encryptedPart ciphertext
      * @param part gets plaintext
      * @param partLen gets p-text length
      * @see C#DecryptVerifyUpdate(int, byte[], byte[], LongRef)
@@ -1453,7 +1453,7 @@ public class CE {
     /**
      * Continues a multiple-part decryption and verify operation.
      * @param session the session's handle
-     * @param encrypedPart ciphertext
+     * @param encryptedPart ciphertext
      * @return plaintext
      * @see C#DecryptVerifyUpdate(int, byte[], byte[], LongRef)
      * @see Native#C_DecryptVerifyUpdate(com.sun.jna.NativeLong, byte[], com.sun.jna.NativeLong, byte[], LongRef)
@@ -1506,9 +1506,9 @@ public class CE {
      * @see C#GenerateKeyPair(int, CKM, CKA[], CKA[], LongRef, LongRef)
      * @see Native#C_GenerateKeyPair(com.sun.jna.NativeLong, CKM, Template, com.sun.jna.NativeLong, Template, com.sun.jna.NativeLong, LongRef, LongRef)
      */
-    public static void GenerateKeyPair(int session, CKM mechanism, CKA[] publicKeyTemplate, CKA[] privateKeyTempate,
-            LongRef publickey, LongRef private_key) {
-        int rv = C.GenerateKeyPair(session, mechanism, publicKeyTemplate, privateKeyTempate, publickey, private_key);
+    public static void GenerateKeyPair(int session, CKM mechanism, CKA[] publicKeyTemplate, CKA[] privateKeyTemplate,
+            LongRef publicKey, LongRef privateKey) {
+        int rv = C.GenerateKeyPair(session, mechanism, publicKeyTemplate, privateKeyTemplate, publicKey, privateKey);
         if (rv != CKR.OK) throw new CKRException(rv);
     }
 
@@ -1573,9 +1573,9 @@ public class CE {
      * @see C#UnwrapKey(int, CKM, int, byte[], CKA[], LongRef)
      * @see Native#C_UnwrapKey(com.sun.jna.NativeLong, CKM, com.sun.jna.NativeLong, byte[], com.sun.jna.NativeLong, Template, com.sun.jna.NativeLong, LongRef)
      */
-    public static int UnwrapKey(int session, CKM mechanism, int unwrapping_key, byte[] wrapped_key, CKA... templ) {
+    public static int UnwrapKey(int session, CKM mechanism, int unwrappingKey, byte[] wrappedKey, CKA... templ) {
         LongRef result = new LongRef();
-        UnwrapKey(session, mechanism, unwrapping_key, wrapped_key, templ, result);
+        UnwrapKey(session, mechanism, unwrappingKey, wrappedKey, templ, result);
         return result.val();
     }
 
@@ -1604,9 +1604,9 @@ public class CE {
      * @see C#DeriveKey(int, CKM, int, CKA[], LongRef)
      * @see Native#C_DeriveKey(com.sun.jna.NativeLong, CKM, com.sun.jna.NativeLong, Template, com.sun.jna.NativeLong, LongRef)
      */
-    public static int DeriveKey(int session, CKM mechanism, int base_key, CKA... templ) {
+    public static int DeriveKey(int session, CKM mechanism, int baseKey, CKA... templ) {
         LongRef key = new LongRef();
-        DeriveKey(session, mechanism, base_key, templ, key);
+        DeriveKey(session, mechanism, baseKey, templ, key);
         return key.val();
     }
 

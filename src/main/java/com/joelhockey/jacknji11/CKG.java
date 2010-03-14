@@ -30,7 +30,7 @@ public class CKG {
     public static final int MGF1_SHA224 = 0x00000005;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKG.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKG.class);
     /**
      * Convert int constant value to name.
      * @param ckg value

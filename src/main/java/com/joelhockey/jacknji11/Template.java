@@ -29,6 +29,7 @@ import com.sun.jna.PointerType;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class Template extends PointerType {
+    private CKA[] list;
     private int listLen;
 
     /** Default no-arg constructor required by JNA. */
@@ -41,6 +42,7 @@ public class Template extends PointerType {
      * @param list template
      */
     public Template(CKA[] list) {
+        this.list = list;
         listLen = list == null ? 0 : list.length;
         if (listLen == 0) {
             return;
@@ -70,14 +72,17 @@ public class Template extends PointerType {
 
     }
 
+    /** * @return length of template (0 if templ is null) */
+    public NativeLong length() { return new NativeLong(listLen); }
+
+
     /**
      * Reads (updated) JNA Memory and modifies values in list.
      * This must be called after native PKCS#11 calls in {@link Native} that modify CK_ATTRIBUTE struct such as
      * {@link Native#C_GetAttributeValue(NativeLong, NativeLong, Template, NativeLong)}.
      * This is automatically done by the {@link C} and {@link CE} interfaces.
-     * @param list template
      */
-    public void update(CKA[] list) {
+    public void update() {
         if (listLen == 0) {
             return;
         }
@@ -95,5 +100,18 @@ public class Template extends PointerType {
                 offset += 8;
             }
         }
+    }
+
+    /**
+     * Dump for debug.
+     * @param sb write to
+     */
+    public void dump(StringBuilder sb) {
+        sb.append("(\n  template size=").append(listLen);
+        for (int i = 0; i < listLen; i++) {
+            sb.append("\n  ");
+            list[i].dump(sb);
+        }
+        sb.append("\n)");
     }
 }

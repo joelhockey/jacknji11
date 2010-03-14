@@ -28,7 +28,7 @@ public class CKU {
     public static final int USER    = 0x00000001;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKU.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKU.class);
     /**
      * Convert int constant value to name.
      * @param cku value

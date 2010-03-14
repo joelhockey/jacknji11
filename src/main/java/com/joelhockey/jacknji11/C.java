@@ -22,6 +22,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.joelhockey.codec.Buf;
+import com.joelhockey.codec.Hex;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 
@@ -46,6 +51,8 @@ import com.sun.jna.Pointer;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class C {
+    private static final Log log = LogFactory.getLog(C.class);
+
     private static final byte TRUE = 1;
     private static final byte FALSE = 0;
 
@@ -57,7 +64,7 @@ public class C {
     public static int Initialize() {
         CK_C_INITIALIZE_ARGS args = new CK_C_INITIALIZE_ARGS(null, null, null, null,
                 CK_C_INITIALIZE_ARGS.CKF_OS_LOCKING_OK);
-        return Native.C_Initialize(args);
+        return Initialize(args);
     }
 
     /**
@@ -66,7 +73,10 @@ public class C {
      * @return {@link CKR} return code
      */
     public static int Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {
-        return Native.C_Initialize(pInitArgs);
+        if (log.isDebugEnabled()) log.debug("> C_Initialize " + pInitArgs);
+        int rv = Native.C_Initialize(pInitArgs);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_Initialize rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -75,7 +85,10 @@ public class C {
      * @return {@link CKR} return code
      */
     public static int Finalize() {
-        return Native.C_Finalize(null);
+        if (log.isDebugEnabled()) log.debug("> C_Finalize");
+        int rv = Native.C_Finalize(null);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_Finalize rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -85,8 +98,10 @@ public class C {
      * @see Native#C_GetInfo(CK_INFO)
      */
     public static int GetInfo(CK_INFO info) {
+        if (log.isDebugEnabled()) log.debug("> C_GetInfo");
         int rv = Native.C_GetInfo(info);
         info.read();
+        if (log.isDebugEnabled()) log.debug(String.format("< C_GetInfo rv=0x%08x{%s}\n%s", rv, CKR.I2S(rv), info));
         return rv;
     }
 
@@ -99,9 +114,11 @@ public class C {
      * @see Native#C_GetSlotList(byte, LongArray, LongRef)
      */
     public static int GetSlotList(boolean tokenPresent, int[] slotList, LongRef count) {
+        if (log.isDebugEnabled()) log.debug(String.format("> C_GetSlotList tokenPresent=%b count=%d", tokenPresent, count.val()));
         LongArray slotsRef = new LongArray(slotList);
         int rv = Native.C_GetSlotList(tokenPresent ? TRUE : FALSE, slotsRef, count);
         slotsRef.update(slotList);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_GetSlotList rv=0x%08x{%s} count=%d\n  %s", rv, CKR.I2S(rv), count.val(), Arrays.toString(slotList)));
         return rv;
     }
 
@@ -113,8 +130,10 @@ public class C {
      * @see Native#C_GetSlotInfo(NativeLong, CK_SLOT_INFO)
      */
     public static int GetSlotInfo(int slotID, CK_SLOT_INFO info) {
+        if (log.isDebugEnabled()) log.debug(String.format("> C_GetSlotInfo slotID=%d", slotID));
         int rv = Native.C_GetSlotInfo(new NativeLong(slotID), info);
         info.read();
+        if (log.isDebugEnabled()) log.debug(String.format("< C_GetSlotInfo rv=0x%08x{%s}\n%s", rv, CKR.I2S(rv), info));
         return rv;
     }
 
@@ -126,8 +145,10 @@ public class C {
      * @see Native#C_GetTokenInfo(NativeLong, CK_TOKEN_INFO)
      */
     public static int GetTokenInfo(int slotID, CK_TOKEN_INFO info) {
+        if (log.isDebugEnabled()) log.debug(String.format("> C_GetTokenInfo slotID=%d", slotID));
         int rv = Native.C_GetTokenInfo(new NativeLong(slotID), info);
         info.read();
+        if (log.isDebugEnabled()) log.debug(String.format("< C_GetTokenInfo rv=0x%08x{%s}\n%s", rv, CKR.I2S(rv), info));
         return rv;
     }
 
@@ -140,7 +161,10 @@ public class C {
      * @see Native#C_WaitForSlotEvent(NativeLong, LongRef, Pointer)
      */
     public static int WaitForSlotEvent(int flags, LongRef slot, Pointer reserved) {
-        return Native.C_WaitForSlotEvent(new NativeLong(flags), slot, reserved);
+        if (log.isDebugEnabled()) log.debug("> C_WaitForSlotEvent");
+        int rv = Native.C_WaitForSlotEvent(new NativeLong(flags), slot, reserved);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_WaitForSlotEvent rv=0x%08x{%s} slot=%d", rv, CKR.I2S(rv), slot.val()));
+        return rv;
     }
 
     /**
@@ -152,9 +176,21 @@ public class C {
      * @see Native#C_GetMechanismList(NativeLong, LongArray, LongRef)
      */
     public static int GetMechanismList(int slotID, int[] mechanismList, LongRef count) {
+        if (log.isDebugEnabled()) log.debug(String.format("> C_GetMechanismList slotID=%d count=%d", slotID, count.val()));
         LongArray longArray = new LongArray(mechanismList);
         int rv = Native.C_GetMechanismList(new NativeLong(slotID), longArray, count);
         longArray.update(mechanismList);
+        if (log.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder(String.format("< C_GetMechanismList rv=0x%08x{%s} count=%d", rv, CKR.I2S(rv), count.val()));
+            if (mechanismList != null) {
+                sb.append("\n(\n");
+                for (int m : mechanismList) {
+                    sb.append(String.format("  0x%08x{%s}\n", m, CKM.I2S(m)));
+                }
+                sb.append(')');
+            }
+            log.debug(sb);
+        }
         return rv;
     }
 
@@ -167,7 +203,10 @@ public class C {
      * @see Native#C_GetMechanismInfo(NativeLong, NativeLong, CK_MECHANISM_INFO)
      */
     public static int GetMechanismInfo(int slotID, int type, CK_MECHANISM_INFO info) {
-        return Native.C_GetMechanismInfo(new NativeLong(slotID), new NativeLong(type), info);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_GetMechanismInfo slotID=%d type=0x%08x{%s}", slotID, type, CKM.I2S(type)));
+        int rv = Native.C_GetMechanismInfo(new NativeLong(slotID), new NativeLong(type), info);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_GetMechanismInfo rv=0x%08x{%s}\n%s", rv, CKR.I2S(rv), info));
+        return rv;
     }
 
     /**
@@ -190,7 +229,10 @@ public class C {
                 System.arraycopy(label, 0, label32, 0, Math.min(label32.length, label.length));
             }
         }
-        return Native.C_InitToken(new NativeLong(slotID), pin, baLen(pin), label32);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_InitToken slotID=%d pin=*** label=%s", slotID, Buf.escstr(label32)));
+        int rv = Native.C_InitToken(new NativeLong(slotID), pin, baLen(pin), label32);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_InitToken rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -201,7 +243,10 @@ public class C {
      * @see Native#C_InitPIN(NativeLong, byte[], NativeLong)
      */
     public static int InitPIN(int session, byte[] pin) {
-        return Native.C_InitPIN(new NativeLong(session), pin, baLen(pin));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_InitPIN session=0x%08x pin=***", session));
+        int rv = Native.C_InitPIN(new NativeLong(session), pin, baLen(pin));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_InitPIN rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -213,7 +258,10 @@ public class C {
      * @see Native#C_SetPIN(NativeLong, byte[], NativeLong, byte[], NativeLong)
      */
     public static int SetPIN(int session, byte[] oldPin, byte[] newPin) {
-        return Native.C_SetPIN(new NativeLong(session), oldPin, baLen(oldPin), newPin, baLen(newPin));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_SetPIN session=0x%08x oldPin=*** newPin=***", session));
+        int rv = Native.C_SetPIN(new NativeLong(session), oldPin, baLen(oldPin), newPin, baLen(newPin));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_SetPIN rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -227,7 +275,10 @@ public class C {
      * @see Native#C_OpenSession(NativeLong, NativeLong, Pointer, CK_NOTIFY, LongRef)
      */
     public static int OpenSession(int slotID, int flags, Pointer application, CK_NOTIFY notify, LongRef session) {
-        return Native.C_OpenSession(new NativeLong(slotID), new NativeLong(flags), application, notify, session);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_OpenSession slotID=%d flags=0x%08x{%s} application=%s notify=%s", slotID, flags, CK_SESSION_INFO.f2s(flags), application, notify));
+        int rv = Native.C_OpenSession(new NativeLong(slotID), new NativeLong(flags), application, notify, session);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_OpenSession rv=0x%08x{%s} session=0x%08x", rv, CKR.I2S(rv), session.val()));
+        return rv;
     }
 
     /**
@@ -237,7 +288,10 @@ public class C {
      * @see Native#C_CloseSession(NativeLong)
      */
     public static int CloseSession(int session) {
-        return Native.C_CloseSession(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_CloseSession session=0x%08x", session));
+        int rv = Native.C_CloseSession(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_CloseSession rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -247,7 +301,10 @@ public class C {
      * @see Native#C_CloseAllSessions(NativeLong)
      */
     public static int CloseAllSessions(int slotID) {
-        return Native.C_CloseAllSessions(new NativeLong(slotID));
+        if (log.isDebugEnabled()) log.debug("> C_CloseAllSessions");
+        int rv = Native.C_CloseAllSessions(new NativeLong(slotID));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_CloseAllSessions rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -258,7 +315,10 @@ public class C {
      * @see Native#C_GetSessionInfo(NativeLong, CK_SESSION_INFO)
      */
     public static int GetSessionInfo(int session, CK_SESSION_INFO info) {
-        return Native.C_GetSessionInfo(new NativeLong(session), info);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_GetSessionInfo session=0x%08x", session));
+        int rv = Native.C_GetSessionInfo(new NativeLong(session), info);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_GetSessionInfo rv=0x%08x{%s}\n%s", rv, CKR.I2S(rv), info));
+        return rv;
     }
 
     /**
@@ -270,7 +330,16 @@ public class C {
      * @see Native#C_GetOperationState(NativeLong, byte[], LongRef)
      */
     public static int GetOperationState(int session, byte[] operationState, LongRef operationStateLen) {
-        return Native.C_GetOperationState(new NativeLong(session), operationState, operationStateLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_GetOperationState session=0x%08x operationStateLen=%d", session, operationStateLen.val()));
+        int rv = Native.C_GetOperationState(new NativeLong(session), operationState, operationStateLen);
+        if (log.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder(String.format("< C_GetOperationState rv=0x%08x{%s} operationStateLen=%d", rv, CKR.I2S(rv), operationStateLen.val()));
+            if (operationState != null) {
+                Hex.dump(sb, operationState, 0, operationStateLen.val(), "  ", 32);
+            }
+            log.debug(sb);
+        }
+        return rv;
     }
 
     /**
@@ -285,8 +354,17 @@ public class C {
     public static int SetOperationState(int session, byte[] operationState,
             int encryptionKey, int authenticationKey) {
 
-        return Native.C_SetOperationState(new NativeLong(session), operationState, baLen(operationState),
+        if (log.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder(String.format(
+                    "> C_SetOperationState session=0x%08x encryptionKey=0x%08x authenticationKey=0x%08x",
+                    session, encryptionKey, authenticationKey));
+            Hex.dump(sb, operationState, 0, operationState.length, "  ", 32);
+            log.debug(sb);
+        }
+        int rv = Native.C_SetOperationState(new NativeLong(session), operationState, baLen(operationState),
                 new NativeLong(encryptionKey), new NativeLong(authenticationKey));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_SetOperationState rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -298,7 +376,10 @@ public class C {
      * @see Native#C_Login(NativeLong, NativeLong, byte[], NativeLong)
      */
     public static int Login(int session, int userType, byte[] pin) {
-        return Native.C_Login(new NativeLong(session), new NativeLong(userType), pin, baLen(pin));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_Login session=0x%08x userType=0x%08x{%s} pin=***", session, userType, CKU.I2S(userType)));
+        int rv = Native.C_Login(new NativeLong(session), new NativeLong(userType), pin, baLen(pin));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_Login rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -308,7 +389,10 @@ public class C {
      * @see Native#C_Logout(NativeLong)
      */
     public static int Logout(int session) {
-        return Native.C_Logout(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_Logout session=0x%08x", session));
+        int rv = Native.C_Logout(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_Logout rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -320,7 +404,15 @@ public class C {
      * @see Native#C_CreateObject(NativeLong, Template, NativeLong, LongRef)
      */
     public static int CreateObject(int session, CKA[] templ, LongRef object) {
-        return Native.C_CreateObject(new NativeLong(session), new Template(templ), attLen(templ), object);
+        Template t = new Template(templ);
+        if (log.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder(String.format("> C_CreateObject session=0x%08x\n", session));
+            t.dump(sb);
+            log.debug(sb);
+        }
+        int rv = Native.C_CreateObject(new NativeLong(session), t, t.length(), object);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_CreateObject rv=0x%08x{%s} object=0x%08x", rv, CKR.I2S(rv), object.val()));
+        return rv;
     }
 
     /**
@@ -333,8 +425,11 @@ public class C {
      * @see Native#C_CopyObject(NativeLong, NativeLong, Template, NativeLong, LongRef)
      */
     public static int CopyObject(int session, int object, CKA[] templ, LongRef newObject) {
-        return Native.C_CopyObject(new NativeLong(session), new NativeLong(object),
-                new Template(templ), attLen(templ), newObject);
+        Template t = new Template(templ);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_CopyObject(new NativeLong(session), new NativeLong(object), t, t.length(), newObject);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -345,7 +440,10 @@ public class C {
      * @see Native#C_DestroyObject(NativeLong, NativeLong)
      */
     public static int DestroyObject(int session, int object) {
-        return Native.C_DestroyObject(new NativeLong(session), new NativeLong(object));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DestroyObject(new NativeLong(session), new NativeLong(object));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -357,7 +455,10 @@ public class C {
      * @see Native#C_GetObjectSize(NativeLong, NativeLong, LongRef)
      */
     public static int GetObjectSize(int session, int object, LongRef size) {
-        return Native.C_GetObjectSize(new NativeLong(session), new NativeLong(object), size);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_GetObjectSize(new NativeLong(session), new NativeLong(object), size);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -369,9 +470,11 @@ public class C {
      * @see Native#C_GetAttributeValue(NativeLong, NativeLong, Template, NativeLong)
      */
     public static int GetAttributeValue(int session, int object, CKA[] templ) {
-        Template template = new Template(templ);
-        int rv = Native.C_GetAttributeValue(new NativeLong(session), new NativeLong(object), template, attLen(templ));
-        template.update(templ);
+        Template t = new Template(templ);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_GetAttributeValue(new NativeLong(session), new NativeLong(object), t, t.length());
+        t.update();
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
         return rv;
     }
 
@@ -384,8 +487,11 @@ public class C {
      * @see Native#C_SetAttributeValue(NativeLong, NativeLong, Template, NativeLong)
      */
     public static int SetAttributeValue(int session, int object, CKA[] templ) {
-        return Native.C_SetAttributeValue(new NativeLong(session), new NativeLong(object),
-                new Template(templ), attLen(templ));
+        Template t = new Template(templ);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_SetAttributeValue(new NativeLong(session), new NativeLong(object), t, t.length());
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -396,7 +502,11 @@ public class C {
      * @see Native#C_FindObjectsInit(NativeLong, Template, NativeLong)
      */
     public static int FindObjectsInit(int session, CKA[] templ) {
-        return Native.C_FindObjectsInit(new NativeLong(session), new Template(templ), attLen(templ));
+        Template t = new Template(templ);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_FindObjectsInit(new NativeLong(session), t, t.length());
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -410,9 +520,11 @@ public class C {
      */
     public static int FindObjects(int session, int[] found, LongRef objectCount) {
         LongArray longArray = new LongArray(found);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
         int rv = Native.C_FindObjects(new NativeLong(session), longArray,
                 new NativeLong(found == null ? 0 : found.length), objectCount);
         longArray.update(found);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
         return rv;
     }
 
@@ -423,7 +535,10 @@ public class C {
      * @see Native#C_FindObjectsFinal(NativeLong)
      */
     public static int FindObjectsFinal(int session) {
-        return Native.C_FindObjectsFinal(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_FindObjectsFinal(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -435,7 +550,10 @@ public class C {
      * @see Native#C_EncryptInit(NativeLong, CKM, NativeLong)
      */
     public static int EncryptInit(int session, CKM mechanism, int key) {
-        return Native.C_EncryptInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_EncryptInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -448,7 +566,10 @@ public class C {
      * @see Native#C_Encrypt(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int Encrypt(int session, byte[] data, byte[] encryptedData, LongRef encryptedDataLen) {
-        return Native.C_Encrypt(new NativeLong(session), data, baLen(data), encryptedData, encryptedDataLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_Encrypt(new NativeLong(session), data, baLen(data), encryptedData, encryptedDataLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -461,7 +582,10 @@ public class C {
      * @see Native#C_EncryptUpdate(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int EncryptUpdate(int session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
-        return Native.C_EncryptUpdate(new NativeLong(session), part, baLen(part), encryptedPart, encryptedPartLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_EncryptUpdate(new NativeLong(session), part, baLen(part), encryptedPart, encryptedPartLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -473,7 +597,10 @@ public class C {
      * @see Native#C_EncryptFinal(NativeLong, byte[], LongRef)
      */
     public static int EncryptFinal(int session, byte[] lastEncryptedPart, LongRef lastEncryptedPartLen) {
-        return Native.C_EncryptFinal(new NativeLong(session), lastEncryptedPart, lastEncryptedPartLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_EncryptFinal(new NativeLong(session), lastEncryptedPart, lastEncryptedPartLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -485,7 +612,10 @@ public class C {
      * @see Native#C_DecryptInit(NativeLong, CKM, NativeLong)
      */
     public static int DecryptInit(int session, CKM mechanism, int key) {
-        return Native.C_DecryptInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DecryptInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -498,7 +628,10 @@ public class C {
      * @see Native#C_Decrypt(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int Decrypt(int session, byte[] encryptedData, byte[] data, LongRef dataLen) {
-        return Native.C_Decrypt(new NativeLong(session), encryptedData, baLen(encryptedData), data, dataLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_Decrypt(new NativeLong(session), encryptedData, baLen(encryptedData), data, dataLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -511,7 +644,10 @@ public class C {
      * @see Native#C_DecryptUpdate(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int DecryptUpdate(int session, byte[] encryptedPart, byte[] data, LongRef dataLen) {
-        return Native.C_DecryptUpdate(new NativeLong(session), encryptedPart, baLen(encryptedPart), data, dataLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DecryptUpdate(new NativeLong(session), encryptedPart, baLen(encryptedPart), data, dataLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -523,7 +659,10 @@ public class C {
      * @see Native#C_DecryptFinal(NativeLong, byte[], LongRef)
      */
     public static int DecryptFinal(int session, byte[] lastPart, LongRef lastPartLen) {
-        return Native.C_DecryptFinal(new NativeLong(session), lastPart, lastPartLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DecryptFinal(new NativeLong(session), lastPart, lastPartLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -534,7 +673,10 @@ public class C {
      * @see Native#C_DigestInit(NativeLong, CKM)
      */
     public static int DigestInit(int session, CKM mechanism) {
-        return Native.C_DigestInit(new NativeLong(session), mechanism);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DigestInit(new NativeLong(session), mechanism);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -547,7 +689,10 @@ public class C {
      * @see Native#C_Digest(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int Digest(int session, byte[] data, byte[] digest, LongRef digestLen) {
-        return Native.C_Digest(new NativeLong(session), data, baLen(data), digest, digestLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_Digest(new NativeLong(session), data, baLen(data), digest, digestLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -558,7 +703,10 @@ public class C {
      * @see Native#C_DigestUpdate(NativeLong, byte[], NativeLong)
      */
     public static int DigestUpdate(int session, byte[] part) {
-        return Native.C_DigestUpdate(new NativeLong(session), part, baLen(part));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DigestUpdate(new NativeLong(session), part, baLen(part));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -570,7 +718,10 @@ public class C {
      * @see Native#C_DigestKey(NativeLong, NativeLong)
      */
     public static int DigestKey(int session, int key) {
-        return Native.C_DigestKey(new NativeLong(session), new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DigestKey(new NativeLong(session), new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -582,7 +733,10 @@ public class C {
      * @see Native#C_DigestFinal(NativeLong, byte[], LongRef)
      */
     public static int DigestFinal(int session, byte[] digest, LongRef digestLen) {
-        return Native.C_DigestFinal(new NativeLong(session), digest, digestLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DigestFinal(new NativeLong(session), digest, digestLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -596,7 +750,10 @@ public class C {
      * @see Native#C_SignInit(NativeLong, CKM, NativeLong)
      */
     public static int SignInit(int session, CKM mechanism, int key) {
-        return Native.C_SignInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_SignInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -610,7 +767,10 @@ public class C {
      * @see Native#C_Sign(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int Sign(int session, byte[] data, byte[] signature, LongRef signatureLen) {
-        return Native.C_Sign(new NativeLong(session), data, baLen(data), signature, signatureLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_Sign(new NativeLong(session), data, baLen(data), signature, signatureLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -623,7 +783,10 @@ public class C {
      * @see Native#C_SignUpdate(NativeLong, byte[], NativeLong)
      */
     public static int SignUpdate(int session, byte[] part) {
-        return Native.C_SignUpdate(new NativeLong(session), part, baLen(part));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_SignUpdate(new NativeLong(session), part, baLen(part));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -635,7 +798,10 @@ public class C {
      * @see Native#C_SignFinal(NativeLong, byte[], LongRef)
      */
     public static int SignFinal(int session, byte[] signature, LongRef signatureLen) {
-        return Native.C_SignFinal(new NativeLong(session), signature, signatureLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_SignFinal(new NativeLong(session), signature, signatureLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -647,7 +813,10 @@ public class C {
      * @see Native#C_SignRecoverInit(NativeLong, CKM, NativeLong)
      */
     public static int SignRecoverInit(int session, CKM mechanism, int key) {
-        return Native.C_SignRecoverInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_SignRecoverInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -660,7 +829,10 @@ public class C {
      * @see Native#C_SignRecover(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int SignRecover(int session, byte[] data, byte[] signature, LongRef signatureLen) {
-        return Native.C_SignRecover(new NativeLong(session), data, baLen(data), signature, signatureLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_SignRecover(new NativeLong(session), data, baLen(data), signature, signatureLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -673,7 +845,10 @@ public class C {
      * @see Native#C_VerifyInit(NativeLong, CKM, NativeLong)
      */
     public static int VerifyInit(int session, CKM mechanism, int key) {
-        return Native.C_VerifyInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_VerifyInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -686,7 +861,10 @@ public class C {
      * @see Native#C_Verify(NativeLong, byte[], NativeLong, byte[], NativeLong)
      */
     public static int Verify(int session, byte[] data, byte[] signature) {
-        return Native.C_Verify(new NativeLong(session), data, baLen(data), signature, baLen(signature));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_Verify(new NativeLong(session), data, baLen(data), signature, baLen(signature));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -698,7 +876,10 @@ public class C {
      * @see Native#C_VerifyUpdate(NativeLong, byte[], NativeLong)
      */
     public static int VerifyUpdate(int session, byte[] part) {
-        return Native.C_VerifyUpdate(new NativeLong(session), part, baLen(part));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_VerifyUpdate(new NativeLong(session), part, baLen(part));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -709,7 +890,10 @@ public class C {
      * @see Native#C_VerifyFinal(NativeLong, byte[], NativeLong)
      */
     public static int VerifyFinal(int session, byte[] signature) {
-        return Native.C_VerifyFinal(new NativeLong(session), signature, baLen(signature));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_VerifyFinal(new NativeLong(session), signature, baLen(signature));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -721,7 +905,10 @@ public class C {
      * @see Native#C_VerifyRecoverInit(NativeLong, CKM, NativeLong)
      */
     public static int VerifyRecoverInit(int session, CKM mechanism, int key) {
-        return Native.C_VerifyRecoverInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_VerifyRecoverInit(new NativeLong(session), mechanism, new NativeLong(key));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -734,7 +921,10 @@ public class C {
      * @see Native#C_VerifyRecover(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int VerifyRecover(int session, byte[] signature, byte[] data, LongRef dataLen) {
-        return Native.C_VerifyRecover(new NativeLong(session), signature, baLen(signature), data, dataLen);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_VerifyRecover(new NativeLong(session), signature, baLen(signature), data, dataLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -746,11 +936,12 @@ public class C {
      * @return {@link CKR} return code
      * @see Native#C_DigestEncryptUpdate(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
-    public static int DigestEncryptUpdate(int session, byte[] part, byte[] encryptedPart,
-            LongRef encryptedPartLen) {
-
-        return Native.C_DigestEncryptUpdate(new NativeLong(session), part, baLen(part),
+    public static int DigestEncryptUpdate(int session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DigestEncryptUpdate(new NativeLong(session), part, baLen(part),
                 encryptedPart, encryptedPartLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -763,8 +954,11 @@ public class C {
      * @see Native#C_DecryptDigestUpdate(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int DecryptDigestUpdate(int session, byte[] encryptedPart, byte[] part, LongRef partLen) {
-        return Native.C_DecryptDigestUpdate(new NativeLong(session),
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DecryptDigestUpdate(new NativeLong(session),
                 encryptedPart, baLen(encryptedPart), part, partLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -777,8 +971,11 @@ public class C {
      * @see Native#C_SignEncryptUpdate(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int SignEncryptUpdate(int session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
-        return Native.C_SignEncryptUpdate(new NativeLong(session), part, baLen(part),
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_SignEncryptUpdate(new NativeLong(session), part, baLen(part),
                 encryptedPart, encryptedPartLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -791,8 +988,11 @@ public class C {
      * @see Native#C_DecryptVerifyUpdate(NativeLong, byte[], NativeLong, byte[], LongRef)
      */
     public static int DecryptVerifyUpdate(int session, byte[] encrypedPart, byte[] part, LongRef partLen) {
-        return Native.C_DecryptVerifyUpdate(new NativeLong(session),
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DecryptVerifyUpdate(new NativeLong(session),
                 encrypedPart, baLen(encrypedPart), part, partLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -805,7 +1005,11 @@ public class C {
      * @see Native#C_GenerateKey(NativeLong, CKM, Template, NativeLong, LongRef)
      */
     public static int GenerateKey(int session, CKM mechanism, CKA[] templ, LongRef key) {
-        return Native.C_GenerateKey(new NativeLong(session), mechanism, new Template(templ), attLen(templ), key);
+        Template t = new Template(templ);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_GenerateKey(new NativeLong(session), mechanism, t, t.length(), key);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -821,10 +1025,14 @@ public class C {
      */
     public static int GenerateKeyPair(int session, CKM mechanism, CKA[] publicKeyTemplate,
             CKA[] privateKeyTemplate, LongRef publicKey, LongRef privateKey) {
+        Template pubT = new Template(publicKeyTemplate);
+        Template privT = new Template(privateKeyTemplate);
 
-        return Native.C_GenerateKeyPair(new NativeLong(session), mechanism,
-                new Template(publicKeyTemplate), attLen(publicKeyTemplate),
-                new Template(privateKeyTemplate), attLen(privateKeyTemplate), publicKey, privateKey);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_GenerateKeyPair(new NativeLong(session), mechanism,
+                pubT, pubT.length(), privT, privT.length(), publicKey, privateKey);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -841,8 +1049,11 @@ public class C {
     public static int WrapKey(int session, CKM mechanism, int wrappingKey, int key,
             byte[] wrappedKey, LongRef wrappedKeyLen) {
 
-        return Native.C_WrapKey(new NativeLong(session), mechanism, new NativeLong(wrappingKey),
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_WrapKey(new NativeLong(session), mechanism, new NativeLong(wrappingKey),
                 new NativeLong(key), wrappedKey, wrappedKeyLen);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -859,8 +1070,12 @@ public class C {
     public static int UnwrapKey(int session, CKM mechanism, int unwrappingKey, byte[] wrappedKey,
             CKA[] templ, LongRef key) {
 
-        return Native.C_UnwrapKey(new NativeLong(session), mechanism, new NativeLong(unwrappingKey),
-                wrappedKey, baLen(wrappedKey), new Template(templ), attLen(templ), key);
+        Template t = new Template(templ);
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_UnwrapKey(new NativeLong(session), mechanism, new NativeLong(unwrappingKey),
+                wrappedKey, baLen(wrappedKey), t, t.length(), key);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -874,8 +1089,11 @@ public class C {
      * @see Native#C_DeriveKey(NativeLong, CKM, NativeLong, Template, NativeLong, LongRef)
      */
     public static int DeriveKey(int session, CKM mechanism, int baseKey, CKA[] templ, LongRef key) {
-        return Native.C_DeriveKey(new NativeLong(session), mechanism, new NativeLong(baseKey),
-                new Template(templ), attLen(templ), key);
+        Template t = new Template();
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_DeriveKey(new NativeLong(session), mechanism, new NativeLong(baseKey), t, t.length(), key);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -886,7 +1104,10 @@ public class C {
      * @see Native#C_SeedRandom(NativeLong, byte[], NativeLong)
      */
     public static int SeedRandom(int session, byte[] seed) {
-        return Native.C_SeedRandom(new NativeLong(session), seed, baLen(seed));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_SeedRandom(new NativeLong(session), seed, baLen(seed));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -897,7 +1118,10 @@ public class C {
      * @see Native#C_GenerateRandom(NativeLong, byte[], NativeLong)
      */
     public static int GenerateRandom(int session, byte[] randomData) {
-        return Native.C_GenerateRandom(new NativeLong(session), randomData, baLen(randomData));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_GenerateRandom(new NativeLong(session), randomData, baLen(randomData));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -909,7 +1133,10 @@ public class C {
      * @see Native#C_GetFunctionStatus(NativeLong)
      */
     public static int GetFunctionStatus(int session) {
-        return Native.C_GetFunctionStatus(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_GetFunctionStatus(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -921,7 +1148,10 @@ public class C {
      * @see Native#C_CancelFunction(NativeLong)
      */
     public static int CancelFunction(int session) {
-        return Native.C_CancelFunction(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("> C_ session=0x%08x", session));
+        int rv = Native.C_CancelFunction(new NativeLong(session));
+        if (log.isDebugEnabled()) log.debug(String.format("< C_ rv=0x%08x{%s}", rv, CKR.I2S(rv)));
+        return rv;
     }
 
     /**
@@ -934,20 +1164,11 @@ public class C {
     }
 
     /**
-     * Return length of template (0 if templ is null).
-     * @param templ template
-     * @return length of template (0 if templ is null)
-     */
-    private static NativeLong attLen(CKA[] templ) {
-        return new NativeLong(templ == null ? 0 : templ.length);
-    }
-
-    /**
      * Helper method.  Adds all public static final int fields in c to map, mapping field value to name.
      * @param c class
-     * @param map map to hold value:name
+     * @return map of field value:name
      */
-    public static Map<Integer, String> i2s(Class c) {
+    public static Map<Integer, String> createI2SMap(Class c) {
         Map<Integer, String> map = new HashMap<Integer, String>();
         try {
             for (Field f : c.getDeclaredFields()) {
@@ -986,7 +1207,7 @@ public class C {
      * @return string format of flags
      */
     public static String f2s(Map<Integer, String> i2s, int flags) {
-        StringBuilder sb = new StringBuilder("(");
+        StringBuilder sb = new StringBuilder();
         String sep = "";
         for (int i = 31; i >= 0; i--) {
             if ((flags & (1 << i)) != 0) {
@@ -995,7 +1216,6 @@ public class C {
                 sep = "|";
             }
         }
-        sb.append(")");
         return sb.toString();
     }
 }

@@ -18,6 +18,10 @@ package com.joelhockey.jacknji11;
 
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.joelhockey.codec.Buf;
 import com.joelhockey.codec.Hex;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
@@ -30,6 +34,7 @@ import com.sun.jna.ptr.NativeLongByReference;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKA {
+    private static final Log log = LogFactory.getLog(CKA.class);
     public static final int CKF_ARRAY_ATTRIBUTE         = 0x40000000;
 
     public static final int CLASS                       = 0x00000000;
@@ -81,7 +86,7 @@ public class CKA {
     public static final int SUBPRIME                    = 0x00000131;
     public static final int BASE                        = 0x00000132;
     public static final int PRIME_BITS                  = 0x00000133;
-    public static final int SUB_PRIME_BITS              = 0x00000134;
+    public static final int SUBPRIME_BITS               = 0x00000134;
     public static final int VALUE_BITS                  = 0x00000160;
     public static final int VALUE_LEN                   = 0x00000161;
     public static final int EXTRACTABLE                 = 0x00000162;
@@ -192,7 +197,8 @@ public class CKA {
     public static final int VENDOR_PTK_ENUM_ATTRIBUTE   = 0x0000ffff;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKA.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKA.class);
+
     /**
      * Convert int constant value to name.
      * @param cka value
@@ -274,5 +280,115 @@ public class CKA {
                 ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
         }
         return pValue.getByte(0) != 0;
+    }
+
+    /**
+     * Dump for debug.
+     * @param sb write to
+     */
+    public void dump(StringBuilder sb) {
+        sb.append(String.format("type=0x%08x{%s} valueLen=%d", type, I2S(type), ulValueLen));
+
+        try {
+            switch (type) {
+            case CLASS: // lookup CKO
+                sb.append(String.format(" value=0x%08x{%s}", type, CKO.I2S(getValueInt())));
+                return;
+            case TOKEN: // boolean
+            case PRIVATE:
+            case TRUSTED:
+            case SENSITIVE:
+            case ENCRYPT:
+            case DECRYPT:
+            case WRAP:
+            case UNWRAP:
+            case SIGN:
+            case SIGN_RECOVER:
+            case VERIFY:
+            case VERIFY_RECOVER:
+            case DERIVE:
+            case EXTRACTABLE:
+            case LOCAL:
+            case NEVER_EXTRACTABLE:
+            case ALWAYS_SENSITIVE:
+            case MODIFIABLE:
+            case ALWAYS_AUTHENTICATE:
+            case WRAP_WITH_TRUSTED:
+            case RESET_ON_INIT:
+            case HAS_RESET:
+            case VENDOR_PTK_SIGN_LOCAL_CERT:
+            case VENDOR_PTK_EXPORT:
+            case VENDOR_PTK_EXPORTABLE:
+            case VENDOR_PTK_DELETABLE:
+            case VENDOR_PTK_IMPORT:
+            case VENDOR_PTK_EVENT_LOG_FULL:
+            case VENDOR_PTK_VERIFY_OS:
+                sb.append(" value=").append(getValueBool());
+                return;
+            case LABEL: // escaped printable string
+            case APPLICATION:
+            case URL:
+            case START_DATE:
+            case END_DATE:
+            case VENDOR_PTK_TIME_STAMP:
+            case VENDOR_PTK_ISSUER_STR:
+            case VENDOR_PTK_SUBJECT_STR:
+            case VENDOR_PTK_DATE_OF_MANUFACTURE:
+            case VENDOR_PTK_RTC_AAC_ENABLED:
+            case VENDOR_PTK_HW_EXT_INFO_STR:
+            case VENDOR_PTK_MANUFACTURER:
+            case VENDOR_PTK_BUILD_DATE:
+            case VENDOR_PTK_CERTIFICATE_START_TIME:
+            case VENDOR_PTK_CERTIFICATE_END_TIME:
+                sb.append(" value=").append(Buf.escstr(getValue()));
+                return;
+            case CERTIFICATE_TYPE: // lookup CKC
+                sb.append(String.format(" value=0x%08x{%s}", type, CKC.I2S(getValueInt())));
+                return;
+            case KEY_TYPE: // lookup CKK
+                sb.append(String.format(" value=0x%08x{%s}", type, CKK.I2S(getValueInt())));
+                return;
+            case PRIME_BITS: // int
+            case SUBPRIME_BITS:
+            case VALUE_BITS:
+            case VALUE_LEN:
+            case OTP_LENGTH:
+            case OTP_TIME_INTERVAL:
+            case PIXEL_X:
+            case PIXEL_Y:
+            case RESOLUTION:
+            case CHAR_ROWS:
+            case CHAR_COLUMNS:
+            case BITS_PER_PIXEL:
+            case VENDOR_PTK_USAGE_COUNT:
+            case VENDOR_PTK_KEY_SIZE:
+            case VENDOR_PTK_RECORD_COUNT:
+            case VENDOR_PTK_RECORD_NUMBER:
+            case VENDOR_PTK_FREE_MEM:
+            case VENDOR_PTK_APPLICATION_COUNT:
+            case VENDOR_PTK_RTC_AAC_GUARD_SECONDS:
+            case VENDOR_PTK_RTC_AAC_GUARD_COUNT:
+            case VENDOR_PTK_RTC_AAC_GUARD_DURATION:
+            case VENDOR_PTK_SLOT_ID:
+            case VENDOR_PTK_MAX_SESSIONS:
+            case VENDOR_PTK_MIN_PIN_LEN:
+            case VENDOR_PTK_MAX_PIN_FAIL:
+            case VENDOR_PTK_ROM_SPACE:
+            case VENDOR_PTK_RAM_SPACE:
+            case VENDOR_PTK_CKA_COUNTER:
+                sb.append(" value=").append(getValueInt());
+                return;
+            default: // no default, fall through to hex dump below
+            }
+        } catch (Exception e) { // unexpected CKA values
+            // log warning
+            log.warn("Unexpected CKA values", e);
+            // hex dump below
+        }
+
+        // hex dump by default or if error parsing other data type
+        byte[] value = getValue();
+        Hex.dump(sb, value, 0, ulValueLen, "    ", 32);
+
     }
 }

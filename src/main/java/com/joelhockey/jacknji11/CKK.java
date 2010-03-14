@@ -60,7 +60,7 @@ public class CKK {
     public static final int VENDOR_PTK_SEED            = 0x80000203;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKK.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKK.class);
     /**
      * Convert int constant value to name.
      * @param ckk value

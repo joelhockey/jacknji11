@@ -29,7 +29,7 @@ public class CKH {
     public static final int VENDOR_DEFINED      = 0x80000000;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKH.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKH.class);
     /**
      * Convert int constant value to name.
      * @param ckh value

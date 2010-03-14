@@ -18,6 +18,7 @@ package com.joelhockey.jacknji11;
 
 import java.util.Map;
 
+import com.joelhockey.codec.Buf;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
@@ -32,7 +33,7 @@ public class CK_SLOT_INFO extends Structure {
     public static final int CKF_HW_SLOT          = 0x00000004;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CK_SLOT_INFO.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CK_SLOT_INFO.class);
     /**
      * Convert int constant value to name.
      * @param ckf value
@@ -51,4 +52,12 @@ public class CK_SLOT_INFO extends Structure {
     public NativeLong flags;
     public CK_VERSION hardwareVersion;
     public CK_VERSION firmwareVersion;
+
+    /** @return string */
+    public String toString() {
+        return String.format("(\n  slotDescription=%s\n  manufacturerID=%s\n  flags=0x%08x{%s}\n  hardwareVersion=%d.%d\n  firmwareVersion=%d.%d\n)",
+                Buf.escstr(slotDescription), Buf.escstr(manufacturerID), flags.intValue(), f2s(flags.intValue()),
+                hardwareVersion.major & 0xff, hardwareVersion.minor & 0xff,
+                firmwareVersion.major & 0xff, firmwareVersion.minor & 0xff);
+    }
 }

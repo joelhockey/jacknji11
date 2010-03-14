@@ -16,6 +16,8 @@
 
 package com.joelhockey.jacknji11;
 
+import java.util.Map;
+
 import com.sun.jna.Callback;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
@@ -36,10 +38,26 @@ public class CK_C_INITIALIZE_ARGS extends Structure {
     /** True if the library can use the native operation system threading model for locking; false otherwise. */
     public static final int CKF_OS_LOCKING_OK = 0x00000002;
 
-    public CK_CREATEMUTEX CreateMutex;
-    public CK_DESTROYMUTEX DestroyMutex;
-    public CK_LOCKMUTEX LockMutex;
-    public CK_UNLOCKMUTEX UnlockMutex;
+    /** Maps from int value to String description (variable name). */
+    private static final Map<Integer, String> I2S = C.createI2SMap(CK_C_INITIALIZE_ARGS.class);
+    /**
+     * Convert int constant value to name.
+     * @param ckf value
+     * @return name
+     */
+    public static final String I2S(int ckf) { return C.i2s(I2S, "CKF", ckf); }
+    /**
+     * Convert flags to string.
+     * @param flags flags
+     * @return string format
+     */
+    public static String f2s(int flags) { return C.f2s(I2S, flags); }
+
+
+    public CK_CREATEMUTEX createMutex;
+    public CK_DESTROYMUTEX destroyMutex;
+    public CK_LOCKMUTEX lockMutex;
+    public CK_UNLOCKMUTEX unlockMutex;
     public NativeLong flags;
     public Pointer pReserved;
 
@@ -54,11 +72,17 @@ public class CK_C_INITIALIZE_ARGS extends Structure {
     public CK_C_INITIALIZE_ARGS(CK_CREATEMUTEX createMutex, CK_DESTROYMUTEX destroyMutex, CK_LOCKMUTEX lockMutex,
             CK_UNLOCKMUTEX unlockMutex, int flags) {
 
-        CreateMutex = createMutex;
-        DestroyMutex = destroyMutex;
-        LockMutex = lockMutex;
-        UnlockMutex = unlockMutex;
+        this.createMutex = createMutex;
+        this.destroyMutex = destroyMutex;
+        this.lockMutex = lockMutex;
+        this.unlockMutex = unlockMutex;
         this.flags = new NativeLong(flags);
+    }
+
+    /** @return string */
+    public String toString() {
+        return String.format("create=%s destroy=%s lock=%s unlock=%s flags=0x%08x{%s}",
+                createMutex, destroyMutex, lockMutex, unlockMutex, flags.intValue(), f2s(flags.intValue()));
     }
 
     /**

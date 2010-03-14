@@ -29,7 +29,7 @@ public class CKD {
     public static final int SHA1_KDF_CONCATENATE    = 0x00000004;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKD.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKD.class);
     /**
      * Convert int constant value to name.
      * @param ckd value

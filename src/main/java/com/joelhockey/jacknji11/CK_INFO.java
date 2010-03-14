@@ -18,6 +18,7 @@ package com.joelhockey.jacknji11;
 
 import java.util.Map;
 
+import com.joelhockey.codec.Buf;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
@@ -30,7 +31,7 @@ import com.sun.jna.Structure;
 public class CK_INFO extends Structure {
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CK_INFO.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CK_INFO.class);
     /**
      * Convert int constant value to name.
      * @param ckf value
@@ -57,5 +58,14 @@ public class CK_INFO extends Structure {
      */
     public CK_INFO() {
         setAlignType(ALIGN_NONE);
+    }
+
+    /** @return string */
+    public String toString() {
+        return String.format("(\n  version=%d.%d\n  manufacturerID=%s\n  flags=0x%08x{%s}\n  libraryDescription=%s\n  libraryVersion=%d.%d\n)",
+                cryptokiVersion.major & 0xff, cryptokiVersion.minor & 0xff, Buf.escstr(manufacturerID),
+                flags.intValue(), f2s(flags.intValue()), Buf.escstr(libraryDescription),
+                libraryVersion.major & 0xff, libraryVersion.minor & 0xff);
+
     }
 }

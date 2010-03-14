@@ -176,7 +176,7 @@ public class CKR {
     public static final int VENDOR_PTK_WLD_LOGIN_CACHE_INCONSISTENT = 0x80002010;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKR.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKR.class);
     /**
      * Convert int constant value to name.
      * @param ckr value

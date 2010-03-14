@@ -26,6 +26,7 @@ import com.sun.jna.Structure;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CK_MECHANISM_INFO extends Structure {
+    public static final int CKF_HW                  = 0x00000001;
     public static final int CKF_ENCRYPT             = 0x00000100;
     public static final int CKF_DECRYPT             = 0x00000200;
     public static final int CKF_DIGEST              = 0x00000400;
@@ -48,7 +49,7 @@ public class CK_MECHANISM_INFO extends Structure {
 
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CK_MECHANISM_INFO.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CK_MECHANISM_INFO.class);
     /**
      * Convert int constant value to name.
      * @param ckf value
@@ -66,4 +67,11 @@ public class CK_MECHANISM_INFO extends Structure {
     public NativeLong ulMinKeySize;
     public NativeLong ulMaxKeySize;
     public NativeLong flags;
+
+    /** @return string */
+    public String toString() {
+        return String.format("(\n  minKeySize=%d\n  maxKeySize=%d\n  flags=0x%08x{%s}\n)",
+                ulMinKeySize.intValue(), ulMaxKeySize.intValue(), flags.intValue(), f2s(flags.intValue()));
+
+    }
 }

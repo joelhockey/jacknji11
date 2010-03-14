@@ -26,7 +26,7 @@ public class CKP {
     public static final int CKP_PKCS5_PBKD2_HMAC_SHA1 = 0x00000001;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKP.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKP.class);
     /**
      * Convert int constant value to name.
      * @param ckp value

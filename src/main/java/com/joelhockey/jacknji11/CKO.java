@@ -43,7 +43,7 @@ public class CKO {
     public static final int VENDOR_PTK_FM                   = 0x8000020c;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKO.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKO.class);
     /**
      * Convert int constant value to name.
      * @param cko value

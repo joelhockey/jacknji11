@@ -30,7 +30,7 @@ public class CKS {
     public static final int RW_SO_FUNCTIONS = 4;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKS.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKS.class);
     /**
      * Convert int constant value to name.
      * @param cks value

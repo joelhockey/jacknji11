@@ -30,7 +30,7 @@ public class CKC {
     public static final int CKC_VENDOR_DEFINED  = 0x80000000;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKS.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKS.class);
     /**
      * Convert int constant value to name.
      * @param cks value

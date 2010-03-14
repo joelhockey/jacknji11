@@ -47,7 +47,7 @@ public class CryptokiTest extends TestCase {
     public void testGetInfo() {
         CK_INFO info = new CK_INFO();
         CE.GetInfo(info);
-//        System.out.println(info);
+        System.out.println(info);
     }
 
     public void testGetSlotList() {
@@ -108,6 +108,12 @@ public class CryptokiTest extends TestCase {
         CE.CloseSession(s1);
         CE.CloseAllSessions(TESTSLOT);
         assertEquals(CKR.SESSION_HANDLE_INVALID, C.CloseSession(s3));
+    }
+
+    public void testGetSetOperationState() {
+        int session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
+        byte[] state = CE.GetOperationState(session);
+        CE.SetOperationState(session, state, 0, 0);
     }
 
     public void testCreateCopyGetSizeDestroyObject() {
@@ -352,6 +358,5 @@ public class CryptokiTest extends TestCase {
 
 
 //    public static native int C_WaitForSlotEvent(NativeLong flags, LongRef slot, Pointer pReserved);
-//    public static native int C_GetOperationState(NativeLong session, byte[] operation_state, LongRef operation_state_len);
 //    public static native int C_SetOperationState(NativeLong session, byte[] operation_state, NativeLong operation_state_len, NativeLong encryption_key, NativeLong authentication_key);
 }

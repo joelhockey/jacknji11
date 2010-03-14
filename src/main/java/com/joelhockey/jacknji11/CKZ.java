@@ -26,7 +26,7 @@ public class CKZ {
     public static final int DATA_SPECIFIED = 0x00000001;
 
     /** Maps from int value to String description (variable name). */
-    private static final Map<Integer, String> I2S = C.i2s(CKZ.class);
+    private static final Map<Integer, String> I2S = C.createI2SMap(CKZ.class);
     /**
      * Convert int constant value to name.
      * @param ckz value
