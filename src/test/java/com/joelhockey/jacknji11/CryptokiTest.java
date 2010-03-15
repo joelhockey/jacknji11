@@ -47,7 +47,7 @@ public class CryptokiTest extends TestCase {
     public void testGetInfo() {
         CK_INFO info = new CK_INFO();
         CE.GetInfo(info);
-        System.out.println(info);
+//        System.out.println(info);
     }
 
     public void testGetSlotList() {
