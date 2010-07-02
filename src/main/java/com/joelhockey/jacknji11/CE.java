@@ -83,6 +83,18 @@ public class CE {
     }
 
     /**
+     * Returns general information about Cryptoki.
+     * @return info
+     * @see C#GetInfo(CK_INFO)
+     * @see Native#C_GetInfo(CK_INFO)
+     */
+    public static CK_INFO GetInfo() {
+        CK_INFO info = new CK_INFO();
+        GetInfo(info);
+        return info;
+    }
+
+    /**
      * Obtains a list of slots in the system.
      * @param tokenPresent only slots with tokens?
      * @param slotList receives array of slot IDs

@@ -1276,7 +1276,7 @@ public class C {
      * @see Native#C_DeriveKey(NativeLong, CKM, NativeLong, Template, NativeLong, LongRef)
      */
     public static int DeriveKey(int session, CKM mechanism, int baseKey, CKA[] templ, LongRef key) {
-        Template t = new Template();
+        Template t = new Template(templ);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DeriveKey session=0x%08x baseKey=0x%08x %s\n", session, baseKey, mechanism));
             t.dump(sb);

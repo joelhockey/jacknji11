@@ -14,7 +14,7 @@
   </target>
 
   <target name="jar" depends="compile" description="jar">
-    <jar jarfile="target/jacknji11-1.1.jar" basedir="target/classes" />
+    <jar jarfile="target/${ant.project.name}-${version}.jar" basedir="target/classes" />
   </target>
 
   <target name="clean" description="clean">

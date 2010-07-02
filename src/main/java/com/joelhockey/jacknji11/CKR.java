@@ -143,6 +143,7 @@ public class CKR {
     public static final int VENDOR_PTK_PKCS12_UNSUPPORTED_SAFEBAG_TYPE = 0x80000133;
     public static final int VENDOR_PTK_PKCS12_UNSUPPORTED_PRIVACY_MODE = 0x80000134;
     public static final int VENDOR_PTK_PKCS12_UNSUPPORTED_INTEGRITY_MODE = 0x80000135;
+    public static final int VENDOR_PTK_VALUE_NOT_ODD_PARITY = 0x80000140;
 
     public static final int VENDOR_PTK_MSG_ERROR = 0x80000300;
     public static final int VENDOR_PTK_NEED_IV_UPDATE = 0x80000310;

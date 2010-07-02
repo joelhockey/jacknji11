@@ -395,4 +395,10 @@ public class CKA {
         byte[] value = getValue();
         Hex.dump(sb, value, 0, ulValueLen, "    ", 32);
     }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        dump(sb);
+        return sb.toString();
+    }
 }
