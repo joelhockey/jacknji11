@@ -555,8 +555,13 @@ public class C {
         longArray.update();
         if (log.isDebugEnabled()) {
             int l = objectCount.val();
-            int[] f = l == found.length ? found : Arrays.copyOf(found, l); // only debug found[0:l]
-            log.debug(String.format("< C_FindObjects rv=0x%08x{%s} objectCount=%d\n  %s", rv, CKR.I2S(rv), objectCount.val(), Arrays.toString(f)));
+            // only debug found[0:l]
+            int[] toDisplay = found;
+            if (l < found.length) {
+                toDisplay = new int[l];
+                System.arraycopy(found, 0, toDisplay, 0, l);
+            }
+            log.debug(String.format("< C_FindObjects rv=0x%08x{%s} objectCount=%d\n  %s", rv, CKR.I2S(rv), objectCount.val(), Arrays.toString(toDisplay)));
         }
         return rv;
     }
