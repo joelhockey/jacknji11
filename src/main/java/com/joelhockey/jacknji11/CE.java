@@ -16,6 +16,8 @@
 
 package com.joelhockey.jacknji11;
 
+import java.io.ObjectInputStream.GetField;
+
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 
@@ -120,6 +122,26 @@ public class CE {
         int[] result = new int[count.val()];
         GetSlotList(tokenPresent, result, count);
         return result;
+    }
+
+    /**
+     * Return first slot with given label else throw CKRException.
+     * @param label label of slot to find
+     * @return slot id or CKRException if no slot found
+     * @see C#GetSlotList(boolean, int[], LongRef)
+     * @see C#GetTokenInfo(int, CK_TOKEN_INFO)
+     * @see Native#C_GetSlotList(byte, LongArray, LongRef)
+     * @see Native#C_GetTokenInfo(com.sun.jna.NativeLong, CK_TOKEN_INFO)
+     */
+    public static int GetSlot(String label) {
+        int[] allslots = GetSlotList(true);
+        for (int slot : allslots) {
+            CK_TOKEN_INFO tok = GetTokenInfo(slot);
+            if (tok != null && tok.label != null && new String(tok.label).trim().equals(label)) {
+                return slot;
+            }
+        }
+        throw new CKRException("No slot found with label [" + label + "]", CKR.SLOT_ID_INVALID);
     }
 
     /**
@@ -435,6 +457,17 @@ public class CE {
     }
 
     /**
+     * Los a normal user into a token.
+     * @param session the session's handle
+     * @param pin the normal user's PIN
+     * @see C#Login(int, int, byte[])
+     * @see Native#C_Login(com.sun.jna.NativeLong, com.sun.jna.NativeLong, byte[], com.sun.jna.NativeLong)
+     */
+    public static void LoginUser(int session, String pin) {
+        LoginUser(session, pin.getBytes());
+    }
+
+    /**
      * Logs SO into a token.
      * @param session the session's handle
      * @param pin SO PIN
@@ -443,6 +476,17 @@ public class CE {
      */
     public static void LoginSO(int session, byte[] pin) {
         Login(session, CKU.SO, pin);
+    }
+
+    /**
+     * Logs SO into a token.
+     * @param session the session's handle
+     * @param pin SO PIN
+     * @see C#Login(int, int, byte[])
+     * @see Native#C_Login(com.sun.jna.NativeLong, com.sun.jna.NativeLong, byte[], com.sun.jna.NativeLong)
+     */
+    public static void LoginSO(int session, String pin) {
+        LoginSO(session, pin.getBytes());
     }
 
     /**
@@ -1700,12 +1744,28 @@ public class CE {
     }
 
     /**
+     * Set odd parity on buf and return updated buf.  Buf is modified in-place.
+     * @param buf buf to modify in place and return
+     * @return buf that was passed in
+     */
+    public static byte[] setOddParity(byte[] buf) {
+        for (int i = 0; i < buf.length; i++) {
+            int b = buf[i] & 0xff;
+            b ^= b >> 4;
+            b ^= b >> 2;
+            b ^= b >> 1;
+            buf[i] ^= (b & 1) ^ 1;
+        }
+        return buf;
+    }
+
+    /**
      * Resize buf to specified length. If buf already size 'newSize', then return buf, else return resized buf.
      * @param buf buf
      * @param newSize length to resize to
      * @return if buf already size 'newSize', then return buf, else return resized buf
      */
-    private static byte[] resize(byte[] buf, int newSize) {
+    public static byte[] resize(byte[] buf, int newSize) {
         if (buf == null || newSize >= buf.length) {
             return buf;
         }
