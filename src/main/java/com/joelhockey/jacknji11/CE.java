@@ -17,6 +17,7 @@
 package com.joelhockey.jacknji11;
 
 import java.io.ObjectInputStream.GetField;
+import java.io.UnsupportedEncodingException;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
@@ -459,12 +460,16 @@ public class CE {
     /**
      * Los a normal user into a token.
      * @param session the session's handle
-     * @param pin the normal user's PIN
+     * @param pin the normal user's PIN encoded as ISO8859-1
      * @see C#Login(int, int, byte[])
      * @see Native#C_Login(com.sun.jna.NativeLong, com.sun.jna.NativeLong, byte[], com.sun.jna.NativeLong)
      */
     public static void LoginUser(int session, String pin) {
-        LoginUser(session, pin.getBytes());
+        try {
+            LoginUser(session, pin.getBytes("ISO8859_1"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -481,12 +486,16 @@ public class CE {
     /**
      * Logs SO into a token.
      * @param session the session's handle
-     * @param pin SO PIN
+     * @param pin SO PIN encoded as ISO8859-1
      * @see C#Login(int, int, byte[])
      * @see Native#C_Login(com.sun.jna.NativeLong, com.sun.jna.NativeLong, byte[], com.sun.jna.NativeLong)
      */
     public static void LoginSO(int session, String pin) {
-        LoginSO(session, pin.getBytes());
+        try {
+            LoginSO(session, pin.getBytes("ISO8859_1"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
