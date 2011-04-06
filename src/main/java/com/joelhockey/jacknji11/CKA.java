@@ -241,7 +241,7 @@ public class CKA {
             pValue.write(0, v, 0, v.length);
             ulValueLen = v.length;
         } else {
-            throw new RuntimeException("Unknown type: " + pValue.getClass());
+            throw new RuntimeException("Unknown att type: " + value.getClass());
         }
     }
 
@@ -393,7 +393,7 @@ public class CKA {
 
         // hex dump by default or if error parsing other data type
         byte[] value = getValue();
-        Hex.dump(sb, value, 0, ulValueLen, "    ", 32);
+        Hex.dump(sb, value, 0, ulValueLen, "    ", 32, false);
     }
 
     public String toString() {
