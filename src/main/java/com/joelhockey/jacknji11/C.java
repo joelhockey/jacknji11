@@ -344,7 +344,7 @@ public class C {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_GetOperationState rv=0x%08x{%s}\n  operationState (len=%d):", rv, CKR.I2S(rv), operationStateLen.val()));
             if (operationState != null) {
-                Hex.dump(sb, operationState, 0, operationStateLen.val(), "  ", 32);
+                Hex.dump(sb, operationState, 0, operationStateLen.val(), "  ", 32, false);
             }
             log.debug(sb);
         }
@@ -367,7 +367,7 @@ public class C {
             StringBuilder sb = new StringBuilder(String.format(
                     "> C_SetOperationState session=0x%08x encryptionKey=0x%08x authenticationKey=0x%08x\n  operationState (len=%d):",
                     session, encryptionKey, authenticationKey, operationState.length));
-            Hex.dump(sb, operationState, 0, operationState.length, "  ", 32);
+            Hex.dump(sb, operationState, 0, operationState.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_SetOperationState(new NativeLong(session), operationState, baLen(operationState),
@@ -606,13 +606,13 @@ public class C {
     public static int Encrypt(int session, byte[] data, byte[] encryptedData, LongRef encryptedDataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Encrypt session=0x%08x encryptedDataLen=%d data\n  (len=%d):", session, encryptedDataLen.val(), data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32);
+            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_Encrypt(new NativeLong(session), data, baLen(data), encryptedData, encryptedDataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Encrypt rv=0x%08x{%s}\n  encryptedData (len=%d):", rv, CKR.I2S(rv), encryptedDataLen.val()));
-            Hex.dump(sb, encryptedData, 0, encryptedDataLen.val(), "  ", 32);
+            Hex.dump(sb, encryptedData, 0, encryptedDataLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -630,13 +630,13 @@ public class C {
     public static int EncryptUpdate(int session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_EncryptUpdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):", session, encryptedPartLen.val(), part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32);
+            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_EncryptUpdate(new NativeLong(session), part, baLen(part), encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_EncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):", rv, CKR.I2S(rv), encryptedPartLen.val()));
-            Hex.dump(sb, encryptedPart, 0, encryptedPartLen.val(), "  ", 32);
+            Hex.dump(sb, encryptedPart, 0, encryptedPartLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -655,7 +655,7 @@ public class C {
         int rv = Native.C_EncryptFinal(new NativeLong(session), lastEncryptedPart, lastEncryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_EncryptFinal rv=0x%08x{%s}\n  lastEncryptedPart (len=%d):", rv, CKR.I2S(rv), lastEncryptedPartLen.val()));
-            Hex.dump(sb, lastEncryptedPart, 0, lastEncryptedPartLen.val(), "  ", 32);
+            Hex.dump(sb, lastEncryptedPart, 0, lastEncryptedPartLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -688,13 +688,13 @@ public class C {
     public static int Decrypt(int session, byte[] encryptedData, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Decrypt session=0x%08x dataLen=%d\n encryptedData (len=%d):", session, dataLen.val(), encryptedData.length));
-            Hex.dump(sb, encryptedData, 0, encryptedData.length, "  ", 32);
+            Hex.dump(sb, encryptedData, 0, encryptedData.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_Decrypt(new NativeLong(session), encryptedData, baLen(encryptedData), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Decrypt rv=0x%08x{%s}\n  data (len=%d):", rv, CKR.I2S(rv), dataLen.val()));
-            Hex.dump(sb, data, 0, dataLen.val(), "  ", 32);
+            Hex.dump(sb, data, 0, dataLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -712,13 +712,13 @@ public class C {
     public static int DecryptUpdate(int session, byte[] encryptedPart, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptUpdate session=0x%08x dataLen=%d\n  encryptedPart (len=%d):", session, dataLen.val(), encryptedPart.length));
-            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32);
+            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_DecryptUpdate(new NativeLong(session), encryptedPart, baLen(encryptedPart), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptUpdate rv=0x%08x{%s}\n  data (len=%d):", rv, CKR.I2S(rv), dataLen.val()));
-            Hex.dump(sb, data, 0, dataLen.val(), "  ", 32);
+            Hex.dump(sb, data, 0, dataLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -737,7 +737,7 @@ public class C {
         int rv = Native.C_DecryptFinal(new NativeLong(session), lastPart, lastPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptFinal rv=0x%08x{%s}\n  lastPart (len=%d):", rv, CKR.I2S(rv), lastPartLen.val()));
-            Hex.dump(sb, lastPart, 0, lastPartLen.val(), "  ", 32);
+            Hex.dump(sb, lastPart, 0, lastPartLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -769,13 +769,13 @@ public class C {
     public static int Digest(int session, byte[] data, byte[] digest, LongRef digestLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Digest session=0x%08x digestLen=%d\n  data (len=%d):", session, digestLen.val(), data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32);
+            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_Digest(new NativeLong(session), data, baLen(data), digest, digestLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Digest rv=0x%08x{%s}\n  digest (len=%d):", rv, CKR.I2S(rv), digestLen.val()));
-            Hex.dump(sb, digest, 0, digestLen.val(), "  ", 32);
+            Hex.dump(sb, digest, 0, digestLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -791,7 +791,7 @@ public class C {
     public static int DigestUpdate(int session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DigestUpdate session=0x%08x\n  part (len=%d):", session, part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32);
+            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_DigestUpdate(new NativeLong(session), part, baLen(part));
@@ -827,7 +827,7 @@ public class C {
         int rv = Native.C_DigestFinal(new NativeLong(session), digest, digestLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DigestFinal rv=0x%08x{%s}\n  digest (len=%d):", rv, CKR.I2S(rv), digestLen.val()));
-            Hex.dump(sb, digest, 0, digestLen.val(), "  ", 32);
+            Hex.dump(sb, digest, 0, digestLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -863,13 +863,13 @@ public class C {
     public static int Sign(int session, byte[] data, byte[] signature, LongRef signatureLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Sign session=0x%08x signatureLen=%d\n  data (len=%d):", session, signatureLen.val(), data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32);
+            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_Sign(new NativeLong(session), data, baLen(data), signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Sign rv=0x%08x{%s}\n  signature (len=%d):", rv, CKR.I2S(rv), signatureLen.val()));
-            Hex.dump(sb, signature, 0, signatureLen.val(), "  ", 32);
+            Hex.dump(sb, signature, 0, signatureLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -887,7 +887,7 @@ public class C {
     public static int SignUpdate(int session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignUpdate session=0x%08x\n  part (len=%d):", session, part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32);
+            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_SignUpdate(new NativeLong(session), part, baLen(part));
@@ -908,7 +908,7 @@ public class C {
         int rv = Native.C_SignFinal(new NativeLong(session), signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignFinal rv=0x%08x{%s}\n  signature (len=%d):", rv, CKR.I2S(rv), signatureLen.val()));
-            Hex.dump(sb, signature, 0, signatureLen.val(), "  ", 32);
+            Hex.dump(sb, signature, 0, signatureLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -941,13 +941,13 @@ public class C {
     public static int SignRecover(int session, byte[] data, byte[] signature, LongRef signatureLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignRecover session=0x%08x signatureLen=%d\n  data (len=%d):", session, signatureLen.val(), data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32);
+            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_SignRecover(new NativeLong(session), data, baLen(data), signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignRecover rv=0x%08x{%s}\n  signature (len=%d):", rv, CKR.I2S(rv), signatureLen.val()));
-            Hex.dump(sb, signature, 0, signatureLen.val(), "  ", 32);
+            Hex.dump(sb, signature, 0, signatureLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -981,9 +981,9 @@ public class C {
     public static int Verify(int session, byte[] data, byte[] signature) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Verify session=0x%08x\n  data (len=%d):", session, data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32);
+            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             sb.append("\n  signature (len=%d):");
-            Hex.dump(sb, signature, 0, signature.length, "  ", 32);
+            Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_Verify(new NativeLong(session), data, baLen(data), signature, baLen(signature));
@@ -1002,7 +1002,7 @@ public class C {
     public static int VerifyUpdate(int session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyUpdate session=0x%08x\n  part (len=%d):", session, part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32);
+            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_VerifyUpdate(new NativeLong(session), part, baLen(part));
@@ -1020,7 +1020,7 @@ public class C {
     public static int VerifyFinal(int session, byte[] signature) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyFinal session=0x%08x\n  signature (len=%d):", session, signature.length));
-            Hex.dump(sb, signature, 0, signature.length, "  ", 32);
+            Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_VerifyFinal(new NativeLong(session), signature, baLen(signature));
@@ -1055,13 +1055,13 @@ public class C {
     public static int VerifyRecover(int session, byte[] signature, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyRecover session=0x%08x dataLen=%d\n  signature (len=%d):", session, dataLen.val(), signature.length));
-            Hex.dump(sb, signature, 0, signature.length, "  ", 32);
+            Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_VerifyRecover(new NativeLong(session), signature, baLen(signature), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_VerifyRecover rv=0x%08x{%s}\n  data (len=%d):", rv, CKR.I2S(rv), dataLen.val()));
-            Hex.dump(sb, data, 0, dataLen.val(), "  ", 32);
+            Hex.dump(sb, data, 0, dataLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -1079,14 +1079,14 @@ public class C {
     public static int DigestEncryptUpdate(int session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DigestEncryptUpdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):", session, encryptedPartLen.val(), part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32);
+            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_DigestEncryptUpdate(new NativeLong(session), part, baLen(part),
                 encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DigestEncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):", rv, CKR.I2S(rv), encryptedPartLen.val()));
-            Hex.dump(sb, encryptedPart, 0, encryptedPartLen.val(), "  ", 32);
+            Hex.dump(sb, encryptedPart, 0, encryptedPartLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -1104,14 +1104,14 @@ public class C {
     public static int DecryptDigestUpdate(int session, byte[] encryptedPart, byte[] part, LongRef partLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptDigestUpdate session=0x%08x partLen=%d\n  encryptedPart (len=%d):", session, partLen.val(), encryptedPart.length));
-            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32);
+            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_DecryptDigestUpdate(new NativeLong(session),
                 encryptedPart, baLen(encryptedPart), part, partLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptDigestUpdate rv=0x%08x{%s}\n  part (len=%d):", rv, CKR.I2S(rv), partLen.val()));
-            Hex.dump(sb, part, 0, partLen.val(), "  ", 32);
+            Hex.dump(sb, part, 0, partLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -1129,14 +1129,14 @@ public class C {
     public static int SignEncryptUpdate(int session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignEncryptUdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):", session, encryptedPartLen.val(), part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32);
+            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_SignEncryptUpdate(new NativeLong(session), part, baLen(part),
                 encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignEncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):", rv, CKR.I2S(rv), encryptedPartLen.val()));
-            Hex.dump(sb, encryptedPart, 0, encryptedPartLen.val(), "  ", 32);
+            Hex.dump(sb, encryptedPart, 0, encryptedPartLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -1154,14 +1154,14 @@ public class C {
     public static int DecryptVerifyUpdate(int session, byte[] encryptedPart, byte[] part, LongRef partLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptVerifyUpdate session=0x%08x partLen=%d\n  encryptedPart (len=%d):", session, partLen.val(), encryptedPart.length));
-            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32);
+            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_DecryptVerifyUpdate(new NativeLong(session),
                 encryptedPart, baLen(encryptedPart), part, partLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptVerifyUpdate rv=0x%08x{%s}\n  part (len=%d):", rv, CKR.I2S(rv), partLen.val()));
-            Hex.dump(sb, part, 0, partLen.val(), "  ", 32);
+            Hex.dump(sb, part, 0, partLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -1237,7 +1237,7 @@ public class C {
                 new NativeLong(key), wrappedKey, wrappedKeyLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_WrapKey rv=0x%08x{%s}\n  wrappedKey (len=%d):", rv, CKR.I2S(rv), wrappedKeyLen.val()));
-            Hex.dump(sb, wrappedKey, 0, wrappedKeyLen.val(), "  ", 32);
+            Hex.dump(sb, wrappedKey, 0, wrappedKeyLen.val(), "  ", 32, false);
             log.debug(sb);
         }
         return rv;
@@ -1260,7 +1260,7 @@ public class C {
         Template t = new Template(templ);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_UnwrapKey session=0x%08x unwrappingKey=0x%08x %s\n  wrappedKey (len=%d):", session, unwrappingKey, mechanism, wrappedKey.length));
-            Hex.dump(sb, wrappedKey, 0, wrappedKey.length, "  ", 32);
+            Hex.dump(sb, wrappedKey, 0, wrappedKey.length, "  ", 32, false);
             t.dump(sb);
             log.debug(sb);
         }
@@ -1302,7 +1302,7 @@ public class C {
     public static int SeedRandom(int session, byte[] seed) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SeedRandom session=0x%08x\n  seed (len=%d):", session, seed.length));
-            Hex.dump(sb, seed, 0, seed.length, "  ", 32);
+            Hex.dump(sb, seed, 0, seed.length, "  ", 32, false);
             log.debug(sb);
         }
         int rv = Native.C_SeedRandom(new NativeLong(session), seed, baLen(seed));
@@ -1322,7 +1322,7 @@ public class C {
         int rv = Native.C_GenerateRandom(new NativeLong(session), randomData, baLen(randomData));
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_GenerateRandom rv=0x%08x{%s}\n  randomData (len=%d):", rv, CKR.I2S(rv), randomData.length));
-            Hex.dump(sb, randomData, 0, randomData.length, "  ", 32);
+            Hex.dump(sb, randomData, 0, randomData.length, "  ", 32, false);
             log.debug(sb);
         }
         return rv;
