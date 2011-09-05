@@ -28,12 +28,7 @@
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>3.2.2</version>
-    </dependency>
-    <dependency>
-      <groupId>com.joelhockey</groupId>
-      <artifactId>codec</artifactId>
-      <version>1.0</version>
+      <version>3.3.0</version>
     </dependency>
 
     <!-- provided -->    
