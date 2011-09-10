@@ -436,7 +436,7 @@ public class CE {
     }
 
     /**
-     * Logs a user into a token.
+     * Logs a user into a token.  Ignores CKR=0x00000100: USER_ALREADY_LOGGED_IN
      * @param session the session's handle
      * @param userType the user type from {@link CKU}
      * @param pin the user's PIN
@@ -445,7 +445,7 @@ public class CE {
      */
     public static void Login(int session, int userType, byte[] pin) {
         int rv = C.Login(session, userType, pin);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        if (rv != CKR.OK && rv != CKR.USER_ALREADY_LOGGED_IN) throw new CKRException(rv);
     }
 
     /**
@@ -614,7 +614,7 @@ public class CE {
     }
 
     /**
-     * Obtains the value of one attributes, or returns CKA will null value if attribute doesn't exist.
+     * Obtains the value of one attributes, or returns CKA with null value if attribute doesn't exist.
      * @param session the session's handle
      * @param object the objects's handle
      * @param cka {@link CKA} type
