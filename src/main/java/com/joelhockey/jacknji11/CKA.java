@@ -21,6 +21,7 @@
 
 package com.joelhockey.jacknji11;
 
+import java.math.BigInteger;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -235,6 +236,11 @@ public class CKA {
             pValue = new Memory(v.length);
             pValue.write(0, v, 0, v.length);
             ulValueLen = v.length;
+        } else if (value instanceof BigInteger) {
+            byte[] v = ((BigInteger) value).toByteArray();
+            pValue = new Memory(v.length);
+            pValue.write(0, v, 0, v.length);
+            ulValueLen = v.length;
         } else if (value instanceof Number) {
             pValue = new NativeLongByReference(new NativeLong(((Number) value).longValue())).getPointer();
             ulValueLen = NativeLong.SIZE;
@@ -283,6 +289,10 @@ public class CKA {
                 ulValueLen, type, CKA.I2S.get(type), Hex.b2s(getValue())));
         }
         return pValue.getByte(0) != 0;
+    }
+    /** @return value as BigInteger */
+    public BigInteger getValueBigInt() {
+        return ulValueLen == 0 || pValue == null ? null : new BigInteger(getValue());
     }
 
     /**
