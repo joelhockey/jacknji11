@@ -1206,6 +1206,12 @@ public class C {
             CKA[] privateKeyTemplate, LongRef publicKey, LongRef privateKey) {
         Template pubT = new Template(publicKeyTemplate);
         Template privT = new Template(privateKeyTemplate);
+        if (publicKey == null) {
+            publicKey = new LongRef();
+        }
+        if (privateKey == null) {
+            privateKey = new LongRef();
+        }
 
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_GenerateKeyPair session=0x%08x\n  %s", session, mechanism));
