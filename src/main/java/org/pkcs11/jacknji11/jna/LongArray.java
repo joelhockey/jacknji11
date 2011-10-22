@@ -74,7 +74,7 @@ public class LongArray extends PointerType {
             getPointer().read(0, list, 0, listLen);
         } else {
             for (int i = 0; i < listLen; i++) {
-                list[i] = getPointer().getInt(i);
+                list[i] = getPointer().getInt(i * NativeLong.SIZE);
             }
         }
     }

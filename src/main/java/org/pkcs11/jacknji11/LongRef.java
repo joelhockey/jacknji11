@@ -37,4 +37,7 @@ public class LongRef {
 
     /** @return current value */
     public long value() { return value; }
+
+    /** @return value as string */
+    public String toString() { return Long.toString(value); }
 }
