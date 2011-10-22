@@ -235,7 +235,7 @@ public class CryptokiTest extends TestCase {
 
         CE.EncryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
         byte[] plaintext = new byte[10];
-        byte[] encrypted1 = CE.Encrypt(session, plaintext);
+        byte[] encrypted1 = CE.EncryptPad(session, plaintext);
         CE.EncryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
         byte[] encrypted2a = CE.EncryptUpdate(session, new byte[6]);
         byte[] encrypted2b = CE.EncryptUpdate(session, new byte[4]);
@@ -243,7 +243,7 @@ public class CryptokiTest extends TestCase {
         assertTrue(Arrays.equals(encrypted1, Buf.cat(encrypted2a, encrypted2b, encrypted2c)));
 
         CE.DecryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
-        byte[] decrypted1 = CE.Decrypt(session, encrypted1);
+        byte[] decrypted1 = CE.DecryptPad(session, encrypted1);
         assertTrue(Arrays.equals(plaintext, decrypted1));
         CE.DecryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
         byte[] decrypted2a = CE.DecryptUpdate(session, Buf.substring(encrypted1, 0, 8));

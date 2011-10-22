@@ -809,7 +809,25 @@ public class CE {
     }
 
     /**
-     * Encrypts single-part data.
+     * Encrypts single-part data with 2 calls.  First call determines
+     * size of result which may include padding, second call does encrypt.
+     * @param session the session's handle
+     * @param data the plaintext data
+     * @return encrypted data
+     * @see C#Encrypt(long, byte[], byte[], LongRef)
+     * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
+     */
+    public static byte[] EncryptPad(long session, byte[] data) {
+        LongRef l = new LongRef();
+        Encrypt(session, data, null, l);
+        byte[] result = new byte[(int) l.value()];
+        Encrypt(session, data, result, l);
+        return resize(result, (int) l.value());
+    }
+
+    /**
+     * Encrypts single-part data with single call assuming result
+     * has no padding and is same size as input.
      * @param session the session's handle
      * @param data the plaintext data
      * @return encrypted data
@@ -817,11 +835,10 @@ public class CE {
      * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
      */
     public static byte[] Encrypt(long session, byte[] data) {
-        LongRef l = new LongRef();
-        Encrypt(session, data, null, l);
-        byte[] result = new byte[(int) l.value()];
+        byte[] result = new byte[data.length];
+        LongRef l = new LongRef(result.length);
         Encrypt(session, data, result, l);
-        return resize(result, (int) l.value());
+        return resize(result, (int) l.value);
     }
 
     /**
@@ -883,7 +900,24 @@ public class CE {
     }
 
     /**
-     * Encrypts single-part data.
+     * Encrypts single-part data with 2 calls.  First call determines
+     * size of result which may include padding, second call does encrypt.
+     * @param session the session's handle
+     * @param mechanism the encryption mechanism
+     * @param key handle of encryption key
+     * @param data the plaintext data
+     * @return encrypted data
+     * @see C#Encrypt(long, byte[], byte[], LongRef)
+     * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
+     */
+    public static byte[] EncryptPad(long session, CKM mechanism, long key, byte[] data) {
+        EncryptInit(session, mechanism, key);
+        return EncryptPad(session, data);
+    }
+
+    /**
+     * Encrypts single-part data with single call assuming result
+     * has no padding and is same size as input.
      * @param session the session's handle
      * @param mechanism the encryption mechanism
      * @param key handle of encryption key
@@ -926,7 +960,25 @@ public class CE {
     }
 
     /**
-     * Decrypts encrypted data in a single part.
+     * Decrypts encrypted data in a single-part with 2 calls.  First call determines
+     * size of result which may have padding removed, second call does decrypt.
+     * @param session the session's handle
+     * @param encryptedData cipertext
+     * @return plaintext
+     * @see C#Decrypt(long, byte[], byte[], LongRef)
+     * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
+     */
+    public static byte[] DecryptPad(long session, byte[] encryptedData) {
+        LongRef l = new LongRef();
+        Decrypt(session, encryptedData, null, l);
+        byte[] result = new byte[(int) l.value()];
+        Decrypt(session, encryptedData, result, l);
+        return resize(result, (int) l.value());
+    }
+
+    /**
+     * Decrypts encrypted data in a single-part with 1 single call
+     * assuming result is not larger than input.
      * @param session the session's handle
      * @param encryptedData cipertext
      * @return plaintext
@@ -934,9 +986,8 @@ public class CE {
      * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
      */
     public static byte[] Decrypt(long session, byte[] encryptedData) {
-        LongRef l = new LongRef();
-        Decrypt(session, encryptedData, null, l);
-        byte[] result = new byte[(int) l.value()];
+        byte[] result = new byte[encryptedData.length];
+        LongRef l = new LongRef(result.length);
         Decrypt(session, encryptedData, result, l);
         return resize(result, (int) l.value());
     }
@@ -1000,7 +1051,24 @@ public class CE {
     }
 
     /**
-     * Decrypts encrypted data in a single part.
+     * Decrypts encrypted data in a single-part with 2 calls.  First call determines
+     * size of result which may have padding removed, second call does decrypt.
+     * @param session the session's handle
+     * @param mechanism the decryption mechanism
+     * @param key handle of decryption key
+     * @param encryptedData cipertext
+     * @return plaintext
+     * @see C#Decrypt(long, byte[], byte[], LongRef)
+     * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
+     */
+    public static byte[] DecryptPad(long session, CKM mechanism, long key, byte[] encryptedData) {
+        DecryptInit(session, mechanism, key);
+        return DecryptPad(session, encryptedData);
+    }
+
+    /**
+     * Decrypts encrypted data in a single-part with 1 single call
+     * assuming result is not larger than input.
      * @param session the session's handle
      * @param mechanism the decryption mechanism
      * @param key handle of decryption key
