@@ -755,7 +755,7 @@ public class CE {
      * @see C#FindObjectsInit(long, CKA[])
      * @see NativeProvider#C_FindObjectsInit(long, Template, long)
      */
-    public static long[] FindObjectsSinglePart(long session, CKA... templ) {
+    public static long[] FindObjects(long session, CKA... templ) {
         FindObjectsInit(session, templ);
         int maxObjects = 1024;
         // call once
