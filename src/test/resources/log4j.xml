@@ -18,10 +18,11 @@
     </layout>
   </appender>
 
-  <logger name="com.joelhockey.jacknji11" additivity="false">
+  <logger name="org.pkcs11.jacknji11" additivity="false">
     <level value="debug" />
     <appender-ref ref="jacknji11" />
   </logger>
+
   <root>
     <priority value="error" />
     <appender-ref ref="stderr" />
