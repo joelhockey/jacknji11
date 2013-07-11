@@ -1279,7 +1279,7 @@ public class C {
     }
 
     /**
-     * Mixes additional seed material into the token’s random number generator.
+     * Mixes additional seed material into the token's random number generator.
      * @param session the session's handle
      * @param seed the seed material
      * @return {@link CKR} return code
