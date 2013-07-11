@@ -1746,7 +1746,7 @@ public class CE {
     }
 
     /**
-     * Mixes additional seed material into the token’s random number generator.
+     * Mixes additional seed material into the token's random number generator.
      * @param session the session's handle
      * @param seed the seed material
      * @see C#SeedRandom(long, byte[])
