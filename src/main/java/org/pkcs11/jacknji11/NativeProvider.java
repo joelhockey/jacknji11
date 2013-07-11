@@ -65,12 +65,12 @@ below).
 CK_C_INITIALIZE_ARGS_PTR and then dereference the resulting pointer to obtain
 the  CK_C_INITIALIZE_ARGS fields  CreateMutex,  DestroyMutex,  LockMutex,
 UnlockMutex, flags, and pReserved.  For this version of Cryptoki, the value of pReserved
-thereby obtained must be NULL_PTR; if it’s not, then C_Initialize should return with
+thereby obtained must be NULL_PTR; if it's not, then C_Initialize should return with
 the value CKR_ARGUMENTS_BAD.
 <p>If the CKF_LIBRARY_CANT_CREATE_OS_THREADS flag in the flags field is set,
 that indicates that application threads which are executing calls to the Cryptoki library
 are not permitted to use the native operation system calls to spawn off new threads.  In
-other words, the library’s code may not create its own threads.  If the library is unable to
+other words, the library's code may not create its own threads.  If the library is unable to
 function properly under this restriction,  C_Initialize should return with the value
 CKR_NEED_TO_CREATE_THREADS.
 <p>A call to  C_Initialize specifies one of four different ways to support multi-threaded
@@ -78,15 +78,15 @@ access via the value of the CKF_OS_LOCKING_OK flag in the  flags field and the
 values of the CreateMutex, DestroyMutex, LockMutex, and UnlockMutex function pointer
 fields:
 <ol><li>
-If the flag isn’t set, and the function pointer fields aren’t supplied (i.e., they all have
-the value NULL_PTR), that means that the application  won’t be accessing the
+If the flag isn't set, and the function pointer fields aren't supplied (i.e., they all have
+the value NULL_PTR), that means that the application  won't be accessing the
 Cryptoki library from multiple threads simultaneously.
-<li>If the flag is set, and the function pointer fields aren’t supplied (i.e., they all have the
+<li>If the flag is set, and the function pointer fields aren't supplied (i.e., they all have the
 value NULL_PTR), that means that the application will be performing multi-threaded
 Cryptoki access, and the library needs to use the native operating system primitives to
 ensure safe multi-threaded access.  If the library is unable to do this, C_Initialize
 should return with the value CKR_CANT_LOCK.
-<li>If the flag  isn’t set, and the function pointer fields  are supplied (i.e., they all have
+<li>If the flag  isn't set, and the function pointer fields  are supplied (i.e., they all have
 non-NULL_PTR values), that means that the application will be performing multi-
 threaded Cryptoki access, and the library needs to use the supplied function pointers
 for mutex-handling to ensure safe multi-threaded access.  If the library is unable to do
@@ -125,15 +125,15 @@ reserved for future versions; for this version, it should be set to NULL_PTR (if
 C_Finalize is called with a non-NULL_PTR value for  pReserved, it should return the
 value CKR_ARGUMENTS_BAD.
 <p>If several applications are using Cryptoki, each one should call  C_Finalize.  Each
-application’s call to C_Finalize should be preceded by a single call to C_Initialize; in
+application's call to C_Finalize should be preceded by a single call to C_Initialize; in
 between the two calls, an application can make calls to other Cryptoki functions.  See
 Section 6.6 for more details.
 <p>Despite the fact that the parameters supplied to C_Initialize can in general allow for safe
 multi-threaded access to a Cryptoki library, the behavior of C_Finalize is nevertheless
 undefined if it is called by an application while other threads of the application are
 making Cryptoki calls.  The exception to this exceptional behavior of C_Finalize occurs
-when a thread calls C_Finalize while another of the application’s threads is blocking on
-Cryptoki’s  C_WaitForSlotEvent function.  When this happens, the blocked thread
+when a thread calls C_Finalize while another of the application's threads is blocking on
+Cryptoki's  C_WaitForSlotEvent function.  When this happens, the blocked thread
 becomes unblocked and returns the value CKR_CRYPTOKI_NOT_INITIALIZED.  See
 C_WaitForSlotEvent for more information.
      * @param pReserved reserved for future use, must be null
@@ -171,7 +171,7 @@ CKR_BUFFER_TOO_SMALL.  In either case, the value *pulCount is set to hold the
 number of slots.
 </ol>
 <p>Because C_GetSlotList does not allocate any space of its own, an application will often
-call C_GetSlotList twice (or sometimes even more times—if an application is trying to
+call C_GetSlotList twice (or sometimes even more times'if an application is trying to
 get a list of all slots with a token present, then the number of such slots can
 (unfortunately) change between when the application asks for how many such slots there
 are and when the application asks for the slots themselves).  However, multiple calls to
@@ -208,7 +208,7 @@ of the slot; pInfo points to the location that receives the slot information.
 
     /**
 C_GetTokenInfo obtains information about a particular token in the system.  slotID is
-the ID of the token’s slot; pInfo points to the location that receives the token information.
+the ID of the token's slot; pInfo points to the location that receives the token information.
      * @param slotID ID of the token's slot
      * @param pInfo receives the token information
      * @return {@link CKR#CRYPTOKI_NOT_INITIALIZED}, {@link CKR#DEVICE_ERROR},
@@ -228,20 +228,20 @@ Cryptoki, it should be NULL_PTR.
 <p>At present, the only flag defined for use in the flags argument is CKF_DONT_BLOCK:
 Internally, each Cryptoki application has a flag for each slot which is used to track
 whether or not any unrecognized events involving that slot have occurred.  When an
-application initially calls C_Initialize, every slot’s event flag is cleared.  Whenever a slot
+application initially calls C_Initialize, every slot's event flag is cleared.  Whenever a slot
 event occurs, the flag corresponding to the slot in which the event occurred is set.
 <p>If C_WaitForSlotEvent is called with the CKF_DONT_BLOCK flag set in the  flags
-argument, and some slot’s event flag is set, then that event flag is cleared, and the call
-returns with the ID of that slot in the location pointed to by pSlot.  If more than one slot’s
+argument, and some slot's event flag is set, then that event flag is cleared, and the call
+returns with the ID of that slot in the location pointed to by pSlot.  If more than one slot's
 event flag is set at the time of the call, one such slot is chosen by the library to have its
 event flag cleared and to have its slot ID returned.
 <p>If C_WaitForSlotEvent is called with the CKF_DONT_BLOCK flag set in the  flags
-argument, and no slot’s event flag is set, then the call returns with the value
+argument, and no slot's event flag is set, then the call returns with the value
 CKR_NO_EVENT.  In this case, the contents of the location pointed to by pSlot when
 C_WaitForSlotEvent are undefined.
 <p>If C_WaitForSlotEvent is called with the CKF_DONT_BLOCK flag clear in the flags
-argument, then the call behaves as above, except that it will block.  That is, if no slot’s
-event flag is set at the time of the call, C_WaitForSlotEvent will wait until some slot’s
+argument, then the call behaves as above, except that it will block.  That is, if no slot's
+event flag is set at the time of the call, C_WaitForSlotEvent will wait until some slot's
 event flag becomes set.  If a  thread of an application has a C_WaitForSlotEvent call
 blocking when another thread of that application calls  C_Finalize, the
 C_WaitForSlotEvent call returns with the value
@@ -261,7 +261,7 @@ simultaneous calls to C_WaitForSlotEvent.
 
     /**
 C_GetMechanismList is used to obtain a list of mechanism types supported by a token.
-SlotID is the ID of the token’s slot;  pulCount points to the location that receives the
+SlotID is the ID of the token's slot;  pulCount points to the location that receives the
 number of mechanisms.
 <p>There are two ways for an application to call C_GetMechanismList:
 <ol>
@@ -293,7 +293,7 @@ required.
 
     /**
 C_GetMechanismInfo obtains information about a particular mechanism possibly
-supported by a token. slotID is the ID of the token’s slot; type is the type of mechanism;
+supported by a token. slotID is the ID of the token's slot; type is the type of mechanism;
 pInfo points to the location that receives the mechanism information.
      * @param slotID ID of the token's slot
      * @param type type of mechanism
@@ -307,8 +307,8 @@ pInfo points to the location that receives the mechanism information.
     long C_GetMechanismInfo(long slotID, long type, CK_MECHANISM_INFO pInfo);
 
     /**
-C_InitToken initializes a token. slotID is the ID of the token’s slot; pPin points to the
-SO’s initial PIN (which need not be null-terminated); ulPinLen is the length in bytes of
+C_InitToken initializes a token. slotID is the ID of the token's slot; pPin points to the
+SO's initial PIN (which need not be null-terminated); ulPinLen is the length in bytes of
 the PIN;  pLabel points to the 32-byte label of the  token (which must be padded with
 blank characters, and which must  not be null-terminated). This standard allows PIN
 values to contain any valid UTF8 character, but the token may impose subset restrictions.
@@ -323,7 +323,7 @@ C_InitToken. If set, the token will be reinitialized, and the client must supply
 existing SO password in pPin.
 <p>When a token is initialized, all objects that can be destroyed are destroyed (i.e., all except
 for "indestructible" objects such as keys built into the token).  Also, access by the normal
-user is disabled until the SO sets the normal user’s PIN.  Depending on the token, some
+user is disabled until the SO sets the normal user's PIN.  Depending on the token, some
 "default" objects may be created, and attributes of some objects may be set to default
 values.
 <p>If the token has a "protected authentication path", as indicated by the
@@ -333,7 +333,7 @@ token without having the application send a PIN through the Cryptoki library.  O
 possibility is that the user enters a PIN on  a PINpad on the token itself, or on the slot
 device.  To initialize a token with such a protected authentication path, the  pPin
 parameter to  C_InitToken should be NULL_PTR.  During the execution of
-C_InitToken, the SO’s PIN will be entered through the protected authentication path.
+C_InitToken, the SO's PIN will be entered through the protected authentication path.
 <p>If the token has a protected authentication path other than a PINpad, then it is token-
 dependent whether or not C_InitToken can be used to initialize the token.
 A token cannot be initialized if Cryptoki detects that any application has an open session
@@ -361,8 +361,8 @@ employed. The definition of "complex token" is product specific.
     long C_InitToken(long slotID, byte[] pPin, long ulPinLen, byte[] pLabel32);
 
     /**
-C_InitPIN initializes the normal user’s PIN.   hSession is the session’s handle;  pPin
-points to the normal user’s PIN; ulPinLen is the length in bytes of the PIN. This standard
+C_InitPIN initializes the normal user's PIN.   hSession is the session's handle;  pPin
+points to the normal user's PIN; ulPinLen is the length in bytes of the PIN. This standard
 allows PIN values to contain any valid UTF8 character, but the token may impose subset
 restrictions.
 <p>C_InitPIN can only be called in the "R/W SO Functions" state.  An attempt to call it
@@ -372,12 +372,12 @@ CKF_PROTECTED_AUTHENTICATION_PATH flag in its CK_TOKEN_INFO being
 set, then that means that there is some way  for a user to be authenticated to the token
 without having the application send a PIN  through the Cryptoki library.  One such
 possibility is that the user enters a PIN on  a PINpad on the token itself, or on the slot
-device.  To initialize the normal user’s  PIN on a token with such a protected
+device.  To initialize the normal user's  PIN on a token with such a protected
 authentication path, the pPin parameter to C_InitPIN should be NULL_PTR.  During the
 execution of  C_InitPIN, the SO will enter the new PIN through the protected
 authentication path.
 <p>If the token has a protected authentication path other than a PINpad, then it is token-
-dependent whether or not C_InitPIN can be used to initialize the normal user’s token
+dependent whether or not C_InitPIN can be used to initialize the normal user's token
 access.
      * @param hSession the session's handle
      * @param pPin the normal user's PIN
@@ -394,7 +394,7 @@ access.
 
     /**
 C_SetPIN modifies the PIN of the user that is currently logged in, or the CKU_USER
-PIN if the session is not logged in.  hSession is the session’s handle; pOldPin points to
+PIN if the session is not logged in.  hSession is the session's handle; pOldPin points to
 the old PIN; ulOldLen is the length in bytes of the old PIN; pNewPin points to the new
 PIN; ulNewLen is the length in bytes of the new PIN. This standard allows PIN values to
 contain any valid UTF8 character, but the token may impose subset restrictions.
@@ -406,13 +406,13 @@ CKF_PROTECTED_AUTHENTICATION_PATH flag in its CK_TOKEN_INFO being
 set, then that means that there is some way  for a user to be authenticated to the token
 without having the application send a PIN  through the Cryptoki library.  One such
 possibility is that the user enters a PIN on  a PINpad on the token itself, or on the slot
-device.  To modify the current user’s PIN on a token with such a protected authentication
+device.  To modify the current user's PIN on a token with such a protected authentication
 path, the pOldPin and pNewPin parameters to C_SetPIN should be NULL_PTR.  During
 the execution of C_SetPIN, the current user will enter the old PIN and the new PIN
 through the protected authentication path.  It is not specified how the PINpad should be
 used to enter two PINs; this varies.
 <p>If the token has a protected authentication path other than a PINpad, then it is token-
-dependent whether or not C_SetPIN can be used to modify the current user’s PIN.
+dependent whether or not C_SetPIN can be used to modify the current user's PIN.
      * @param hSession the session's handle
      * @param pOldPin the old PIN
      * @param ulOldLen length of the old PIN
@@ -431,7 +431,7 @@ dependent whether or not C_SetPIN can be used to modify the current user’s PIN.
 
     /**
 C_OpenSession opens a session between an application and a token in a particular slot.
-slotID is the slot’s ID; flags indicates the type of session; pApplication is an application-
+slotID is the slot's ID; flags indicates the type of session; pApplication is an application-
 defined pointer to be passed to the notification callback;  Notify is the address of the
 notification callback function (see Section 11.17); phSession points to the location that
 receives the handle for the new session.
@@ -470,7 +470,7 @@ application callbacks.
 
     /**
 C_CloseSession closes a session between an application and a token.   hSession is the
-session’s handle.
+session's handle.
 When a session is closed, all session objects created by the session are destroyed
 automatically, even if the application has other sessions "using" the objects (see Sections
 6.7.5-6.7.7 for more details).
@@ -496,7 +496,7 @@ occur in general if an application indulges in this sort of behavior.
 
     /**
 C_CloseAllSessions closes all sessions an application has with a token. slotID specifies
-the token’s slot.
+the token's slot.
 <p>When a session is closed, all session objects created by the session are destroyed
 automatically.
 <p>After successful execution of this function, the login state of the token for the application
@@ -513,7 +513,7 @@ closed, the token may be "ejected" from its reader (if this capability exists).
     long C_CloseAllSessions(long slotID);
 
     /**
-C_GetSessionInfo obtains information about a session.  hSession is the session’s handle;
+C_GetSessionInfo obtains information about a session.  hSession is the session's handle;
 pInfo points to the location that receives the session information.
      * @param hSession the session's handle
      * @param pInfo received session info
@@ -527,7 +527,7 @@ pInfo points to the location that receives the session information.
 
     /**
 C_GetOperationState obtains a copy of the cryptographic operations state of a session,
-encoded as a string of bytes.  hSession is the session’s handle; pOperationState points to
+encoded as a string of bytes.  hSession is the session's handle; pOperationState points to
 the location that receives the state;  pulOperationStateLen points to the location that
 receives the length in bytes of the state.
 <p>Although the saved state output by C_GetOperationState is not really produced by a
@@ -542,7 +542,7 @@ operation was initialized properly, and that precisely 80 bytes of data have bee
 so far as input to SHA-1.  The application now wants to "save the state" of this digest
 operation, so that it can continue it later.  In this particular case, since SHA-1 processes
 512 bits (64 bytes) of input at a time, the cryptographic operations state of the session
-most likely consists of three distinct parts: the state of SHA-1’s 160-bit internal chaining
+most likely consists of three distinct parts: the state of SHA-1's 160-bit internal chaining
 variable; the 16 bytes of unprocessed input data; and some administrative data indicating
 that this saved state comes from a session which was performing SHA-1 hashing.  Taken
 together, these three pieces of information suffice to continue the current hashing
@@ -569,7 +569,7 @@ some legal combination of two of these) should fail with the error
 CKR_OPERATION_NOT_INITIALIZED.
 <p>An attempt to save the cryptographic operations state of a session which is performing an
 appropriate cryptographic operation (or two),  but which cannot be satisfied for any of
-various reasons (certain necessary state information and/or key information can’t leave
+various reasons (certain necessary state information and/or key information can't leave
 the token, for example) should fail with the error CKR_STATE_UNSAVEABLE.
      * @param hSession the session's handle
      * @param pOperationState gets state
@@ -585,7 +585,7 @@ the token, for example) should fail with the error CKR_STATE_UNSAVEABLE.
 
     /**
 C_SetOperationState restores the cryptographic operations state of a session from a
-string of bytes obtained with C_GetOperationState.  hSession is the session’s handle;
+string of bytes obtained with C_GetOperationState.  hSession is the session's handle;
 pOperationState points to the location  holding the saved state;  ulOperationStateLen
 holds the length of the saved state; hEncryptionKey holds a handle to the key which will
 be used for an ongoing encryption or decryption operation in the restored session (or 0 if
@@ -654,7 +654,7 @@ C_SetOperationState is called (the ongoing operations are abruptly cancelled).
 
     /**
 C_Login logs a user into a token.  hSession is a session handle; userType is the user type;
-pPin points to the user’s PIN; ulPinLen is the length of the PIN. This standard allows
+pPin points to the user's PIN; ulPinLen is the length of the PIN. This standard allows
 PIN values to contain any valid UTF8 character, but the token may impose subset
 restrictions.
 <p>When the user type is either CKU_SO or CKU_USER, if the call succeeds, each of the
@@ -668,14 +668,14 @@ CKF_PROTECTED_AUTHENTICATION_PATH flag in its  CK_TOKEN_INFO
 being set, then that means that there is some way for a user to be authenticated to the
 token without having the application send a PIN through the Cryptoki library.  One such
 possibility is that the user enters a PIN on  a PINpad on the token itself, or on the slot
-device.  Or the user might not even use a PIN—authentication could be achieved by some
+device.  Or the user might not even use a PIN'authentication could be achieved by some
 fingerprint-reading device, for example.   To log into a token with a protected
 authentication path, the  pPin parameter to  C_Login should be NULL_PTR.  When
 C_Login returns, whatever authentication method supported by the token will have been
 performed; a return value of CKR_OK  means that the user was successfully
 authenticated, and a return value of CKR_PIN_INCORRECT means that the user was
 denied access.
-<p>If there are any active cryptographic or object finding operations in an application’s
+<p>If there are any active cryptographic or object finding operations in an application's
 session, and then C_Login is successfully executed by that application, it may or may not
 be the case that those operations are still active.  Therefore, before logging in, any active
 operations should be finished.
@@ -704,15 +704,15 @@ the user needs to do cryptographic operation on this key. See further Section 10
     long C_Login(long hSession, long userType, byte[] pPin, long ulPinLen);
 
     /**
-C_Logout logs a user out from a token.  hSession is the session’s handle.
-Depending on the current user type, if the call succeeds, each of the application’s
+C_Logout logs a user out from a token.  hSession is the session's handle.
+Depending on the current user type, if the call succeeds, each of the application's
 sessions will enter either the "R/W Public  Session" state or the "R/O Public Session"
 state.
-<p>When C_Logout successfully executes, any of the application’s handles to private
+<p>When C_Logout successfully executes, any of the application's handles to private
 objects become invalid (even if a user is later logged back into the token, those handles
 remain invalid).  In addition, all private  session objects from sessions belonging to the
 application are destroyed.
-<p>If there are any active cryptographic or object-finding operations in an application’s
+<p>If there are any active cryptographic or object-finding operations in an application's
 session, and then C_Logout is successfully executed by that application, it may or may
 not be the case that those operations are still active.  Therefore, before logging out, any
 active operations should be finished.
@@ -726,9 +726,9 @@ active operations should be finished.
     long C_Logout(long hSession);
 
     /**
-C_CreateObject creates a new object. hSession is the session’s handle; pTemplate points
-to the object’s template;  ulCount is the number of attributes in the template;  phObject
-points to the location that receives the new object’s handle.
+C_CreateObject creates a new object. hSession is the session's handle; pTemplate points
+to the object's template;  ulCount is the number of attributes in the template;  phObject
+points to the location that receives the new object's handle.
 <p>If a call to C_CreateObject cannot support the precise template supplied to it, it will fail
 and return without creating any object.
 <p>If  C_CreateObject is used to create a key object, the key object will have its
@@ -756,14 +756,14 @@ be created unless the normal user is logged in.
 
     /**
 C_CopyObject copies an object, creating  a new object for the copy.   hSession is the
-session’s handle; hObject is the object’s handle; pTemplate points to the template for the
+session's handle; hObject is the object's handle; pTemplate points to the template for the
 new object; ulCount is the number of attributes in the template; phNewObject points to
 the location that receives the handle for the copy of the object.
 <p>The template may specify new values for any attributes of the object that can ordinarily
-be modified (e.g., in the course of copying a secret key, a key’s CKA_EXTRACTABLE
+be modified (e.g., in the course of copying a secret key, a key's CKA_EXTRACTABLE
 attribute may be changed from CK_TRUE to CK_FALSE, but not the other way around.
-If this change is made, the new key’s CKA_NEVER_EXTRACTABLE attribute will
-have the value CK_FALSE.  Similarly, the template may specify that the new key’s
+If this change is made, the new key's CKA_NEVER_EXTRACTABLE attribute will
+have the value CK_FALSE.  Similarly, the template may specify that the new key's
 CKA_SENSITIVE attribute be CK_TRUE; the new key will have the same value for its
 CKA_ALWAYS_SENSITIVE attribute as the original key).  It may also specify new
 values of the CKA_TOKEN and CKA_PRIVATE attributes (e.g., to copy a session
@@ -792,8 +792,8 @@ be created unless the normal user is logged in.
     long C_CopyObject(long hSession, long hObject, CKA[] pTemplate, long ulCount, LongRef phNewObject);
 
     /**
-C_DestroyObject destroys an object.  hSession is the session’s handle;  and hObject is
-the object’s handle.
+C_DestroyObject destroys an object.  hSession is the session's handle;  and hObject is
+the object's handle.
 Only session objects can be destroyed during a read-only session.  Only public objects
 can be destroyed unless the normal user is logged in.
      * @param hSession the session's handle
@@ -808,13 +808,13 @@ can be destroyed unless the normal user is logged in.
     long C_DestroyObject(long hSession, long hObject);
 
     /**
-C_GetObjectSize gets the size of an object in bytes.  hSession is the session’s handle;
-hObject is the object’s handle; pulSize points to the location that receives the size in bytes
+C_GetObjectSize gets the size of an object in bytes.  hSession is the session's handle;
+hObject is the object's handle; pulSize points to the location that receives the size in bytes
 of the object.
-<p>Cryptoki does not specify what the precise meaning of an object’s size is.  Intuitively, it
+<p>Cryptoki does not specify what the precise meaning of an object's size is.  Intuitively, it
 is some measure of how much token memory the object takes up.  If an application
 deletes (say) a private object of size S, it  might be reasonable to assume that the
-ulFreePrivateMemory field of the token’s CK_TOKEN_INFO structure increases by
+ulFreePrivateMemory field of the token's CK_TOKEN_INFO structure increases by
 approximately S.
      * @param hSession the session's handle
      * @param hObject the object's handle
@@ -829,7 +829,7 @@ approximately S.
 
     /**
 C_GetAttributeValue obtains the value of one or more attributes of an object.  hSession
-is the session’s handle;  hObject is the object’s handle;  pTemplate points to a template
+is the session's handle;  hObject is the object's handle;  pTemplate points to a template
 that specifies which attribute values are to be obtained, and receives the attribute values;
 ulCount is the number of attributes in the template.
 <p>For each (type,  pValue,  ulValueLen) triple in the template,  C_GetAttributeValue
@@ -865,7 +865,7 @@ array is not NULL_PTR, then the ulValueLen element of attributes within the arra
 reflect the space that the corresponding pValue points to, and pValue is filled in if there is
 sufficient room. Therefore it is important to initialize the contents of a buffer before
 calling C_GetAttributeValue to get such an array value. If any ulValueLen within the
-array isn't large enough, it will be set to –1 and the function will return
+array isn't large enough, it will be set to '1 and the function will return
 CKR_BUFFER_TOO_SMALL, as it does if an attribute in the pTemplate argument has
 ulValueLen too small. Note that any attribute whose value is an array of attributes is
 identifiable by virtue of the attribute  type having the CKF_ARRAY_ATTRIBUTE bit
@@ -893,7 +893,7 @@ C_GetAttributeValue.
 
     /**
 C_SetAttributeValue modifies the value of one or  more attributes of an object.
-hSession is the session’s handle;  hObject is the object’s handle;  pTemplate points to a
+hSession is the session's handle;  hObject is the object's handle;  pTemplate points to a
 template that specifies which attribute values are to be modified and their new values;
 ulCount is the number of attributes in the template.
 Only session objects can be modified during a read-only session.
@@ -920,7 +920,7 @@ CKR_TEMPLATE_INCONSISTENT.
 
     /**
 C_FindObjectsInit initializes a search for token and session objects that match a
-template.  hSession is the session’s handle;  pTemplate points to a search template that
+template.  hSession is the session's handle;  pTemplate points to a search template that
 specifies the attribute values to match; ulCount is the number of attributes in the search
 template. The matching criterion is an exact byte-for-byte match with all attributes in the
 template. To find all objects, set ulCount to 0.
@@ -955,7 +955,7 @@ operation which will match no objects and return CKR_OK.
 
     /**
 C_FindObjects continues a search for token and session objects that match a template,
-obtaining additional object handles. hSession is the session’s handle; phObject points to
+obtaining additional object handles. hSession is the session's handle; phObject points to
 the location that receives the list (array) of additional object handles; ulMaxObjectCount
 is the maximum number of object handles to be returned; pulObjectCount points to the
 location that receives the actual number of object handles returned.
@@ -976,7 +976,7 @@ points to receives the value 0.
 
     /**
 C_FindObjectsFinal terminates a search for token and session objects.  hSession is the
-session’s handle.
+session's handle.
      * @param hSession the session's handle
      * @return {@link CKR#CRYPTOKI_NOT_INITIALIZED}, {@link CKR#DEVICE_ERROR},
 {@link CKR#DEVICE_MEMORY}, {@link CKR#DEVICE_REMOVED}, {@link CKR#FUNCTION_FAILED},
@@ -987,7 +987,7 @@ session’s handle.
     long C_FindObjectsFinal(long hSession);
 
     /**
-C_EncryptInit initializes an encryption operation.  hSession is the session’s handle;
+C_EncryptInit initializes an encryption operation.  hSession is the session's handle;
 pMechanism points to the encryption mechanism; hKey is the handle of the encryption
 key.
 <p>The CKA_ENCRYPT attribute of the encryption key, which indicates whether the key
@@ -1014,7 +1014,7 @@ application must call C_EncryptInit again.
     long C_EncryptInit(long hSession, CKM pMechanism, long hKey);
 
     /**
-C_Encrypt encrypts single-part data. hSession is the session’s handle; pData points to
+C_Encrypt encrypts single-part data. hSession is the session's handle; pData points to
 the data;  ulDataLen is the length in bytes of the data;  pEncryptedData points to the
 location that receives the encrypted data; pulEncryptedDataLen points to the location that
 holds the length in bytes of the encrypted data.
@@ -1027,7 +1027,7 @@ to determine the length of the buffer needed to hold the ciphertext.
 C_EncryptInit without intervening C_EncryptUpdate calls.
 <p>For some encryption mechanisms, the input plaintext data has certain length constraints
 (either because the mechanism can only encrypt relatively short pieces of plaintext, or
-because the mechanism’s input data must consist of an integral number of blocks).  If
+because the mechanism's input data must consist of an integral number of blocks).  If
 these constraints are not satisfied, then  C_Encrypt will fail with return code
 CKR_DATA_LEN_RANGE.
 <p>The plaintext and ciphertext can be in the same place,  i.e., it is OK if  pData and
@@ -1051,7 +1051,7 @@ operations followed by C_EncryptFinal.
 
     /**
 C_EncryptUpdate continues a multiple-part encryption operation, processing another
-data part. hSession is the session’s handle; pPart points to the data part; ulPartLen is the
+data part. hSession is the session's handle; pPart points to the data part; ulPartLen is the
 length of the data part; pEncryptedPart points to the location that receives the encrypted
 data part; pulEncryptedPartLen points to the location that holds the length in bytes of the
 encrypted data part.
@@ -1078,7 +1078,7 @@ pEncryptedPart point to the same location.
     long C_EncryptUpdate(long hSession, byte[] pPart, long ulPartLen, byte[] pEncryptedPart, LongRef pulEncryptedPartLen);
 
     /**
-C_EncryptFinal finishes a multiple-part encryption operation. hSession is the session’s
+C_EncryptFinal finishes a multiple-part encryption operation. hSession is the session's
 handle;  pLastEncryptedPart points to the location that receives the last encrypted data
 part, if any; pulLastEncryptedPartLen points to the location that holds the length of the
 last encrypted data part.
@@ -1088,7 +1088,7 @@ C_EncryptFinal always terminates the active encryption operation unless it retur
 CKR_BUFFER_TOO_SMALL or is a successful call (i.e., one which returns CKR_OK)
 to determine the length of the buffer needed to hold the ciphertext.
 <p>For some multi-part encryption mechanisms, the input plaintext data has certain length
-constraints, because the mechanism’s input data must consist of an integral number of
+constraints, because the mechanism's input data must consist of an integral number of
 blocks.  If these constraints are not satisfied, then C_EncryptFinal will fail with return
 code CKR_DATA_LEN_RANGE.
      * @param hSession the session's handle
@@ -1105,7 +1105,7 @@ code CKR_DATA_LEN_RANGE.
     long C_EncryptFinal(long hSession, byte[] pLastEncryptedPart, LongRef pulLastEncryptedPartLen);
 
     /**
-C_DecryptInit initializes a decryption operation.  hSession is the session’s handle;
+C_DecryptInit initializes a decryption operation.  hSession is the session's handle;
 pMechanism points to the decryption mechanism; hKey is the handle of the decryption
 key.
 <p>The CKA_DECRYPT attribute of the decryption key, which indicates whether the key
@@ -1132,7 +1132,7 @@ application must call C_DecryptInit again
     long C_DecryptInit(long hSession, CKM pMechanism, long hKey);
 
     /**
-C_Decrypt decrypts encrypted data in a single part.  hSession is the session’s handle;
+C_Decrypt decrypts encrypted data in a single part.  hSession is the session's handle;
 pEncryptedData points to the encrypted data;  ulEncryptedDataLen is the length of the
 encrypted data; pData points to the location that receives the recovered data; pulDataLen
 points to the location that holds the length of the recovered data.
@@ -1168,7 +1168,7 @@ operations followed by C_DecryptFinal.
 
     /**
 C_DecryptUpdate continues a multiple-part decryption operation, processing another
-encrypted data part.  hSession is the session’s handle;  pEncryptedPart points to the
+encrypted data part.  hSession is the session's handle;  pEncryptedPart points to the
 encrypted data part; ulEncryptedPartLen is the length of the encrypted data part; pPart
 points to the location that receives the recovered data part;  pulPartLen points to the
 location that holds the length of the recovered data part.
@@ -1196,7 +1196,7 @@ pPart point to the same location.
     long C_DecryptUpdate(long hSession, byte[] pEncryptedPart, long ulEncryptedPartLen, byte[] pData, LongRef pulDataLen);
 
     /**
-C_DecryptFinal finishes a multiple-part decryption operation. hSession is the session’s
+C_DecryptFinal finishes a multiple-part decryption operation. hSession is the session's
 handle; pLastPart points to the location that receives the last recovered data part, if any;
 pulLastPartLen points to the location that holds the length of the last recovered data part.
 C_DecryptFinal uses the convention described in Section 11.2 on producing output.
@@ -1222,7 +1222,7 @@ CKR_ENCRYPTED_DATA_LEN_RANGE may be returned.
     long C_DecryptFinal(long hSession, byte[] pLastPart, LongRef pulLastPartLen);
 
     /**
-C_DigestInit initializes a message-digesting operation. hSession is the session’s handle;
+C_DigestInit initializes a message-digesting operation. hSession is the session's handle;
 pMechanism points to the digesting mechanism.
 After calling C_DigestInit, the application can either call C_Digest to digest data in a
 single part; or call C_DigestUpdate zero or more times, followed by C_DigestFinal, to
@@ -1244,7 +1244,7 @@ C_DigestInit again.
     long C_DigestInit(long hSession, CKM pMechanism);
 
     /**
-C_Digest digests data in a single part. hSession is the session’s handle, pData points to
+C_Digest digests data in a single part. hSession is the session's handle, pData points to
 the data; ulDataLen is the length of the data; pDigest points to the location that receives
 the message digest;  pulDigestLen points to the location that holds the length of the
 message digest.
@@ -1276,7 +1276,7 @@ C_DigestFinal.
 
     /**
 C_DigestUpdate continues a multiple-part message-digesting operation, processing
-another data part.  hSession is the session’s handle,  pPart points to the data part;
+another data part.  hSession is the session's handle,  pPart points to the data part;
 ulPartLen is the length of the data part.
 <p>The message-digesting operation must have been initialized with C_DigestInit. Calls to
 this function and C_DigestKey may be interspersed any number of times in any order.  A
@@ -1295,7 +1295,7 @@ call to C_DigestUpdate which results in an error terminates the current digest o
 
     /**
 C_DigestKey continues a multiple-part message-digesting operation by digesting the
-value of a secret key.  hSession is the session’s handle; hKey is the handle of the secret
+value of a secret key.  hSession is the session's handle; hKey is the handle of the secret
 key to be digested.
 <p>The message-digesting operation must have been initialized with C_DigestInit.  Calls to
 this function and  C_DigestUpdate may be interspersed any number of times in any
@@ -1316,7 +1316,7 @@ length, C_DigestKey should return the error code CKR_KEY_SIZE_RANGE.
 
     /**
 C_DigestFinal finishes a multiple-part message-digesting operation, returning the
-message digest.  hSession is the session’s handle;  pDigest points to the location that
+message digest.  hSession is the session's handle;  pDigest points to the location that
 receives the message digest; pulDigestLen points to the location that holds the length of
 the message digest.
 <p>C_DigestFinal uses the convention described in Section 11.2 on producing output.
@@ -1339,7 +1339,7 @@ to determine the length of the buffer needed to hold the message digest.
 
     /**
 C_SignInit initializes a signature operation, where  the signature is an appendix to the
-data. hSession is the session’s handle; pMechanism points to the signature mechanism;
+data. hSession is the session's handle; pMechanism points to the signature mechanism;
 hKey is the handle of the signature key.
 <p>The CKA_SIGN attribute of the signature key, which indicates whether the key supports
 signatures with appendix, must be CK_TRUE.
@@ -1365,7 +1365,7 @@ single or multiple parts), the application must call C_SignInit again.
 
     /**
 C_Sign signs data in a single part, where the  signature is an appendix to the data.
-hSession is the session’s handle; pData points to the data; ulDataLen is the length of the
+hSession is the session's handle; pData points to the data; ulDataLen is the length of the
 data; pSignature points to the location that receives the signature; pulSignatureLen points
 to the location that holds the length of the signature.
 <p>C_Sign uses the convention described in Section 11.2 on producing output.
@@ -1395,7 +1395,7 @@ followed by C_SignFinal.
 
     /**
 C_SignUpdate continues a multiple-part signature operation, processing another data
-part.  hSession is the session’s handle,  pPart points to the data part;  ulPartLen is the
+part.  hSession is the session's handle,  pPart points to the data part;  ulPartLen is the
 length of the data part.
 <p>The signature operation must have been initialized with C_SignInit. This function may
 be called any number of times in succession.  A call to C_SignUpdate which results in
@@ -1414,7 +1414,7 @@ an error terminates the current signature operation.
 
     /**
 C_SignFinal finishes a multiple-part signature operation, returning the signature.
-hSession is the session’s handle;  pSignature points to the location that receives the
+hSession is the session's handle;  pSignature points to the location that receives the
 signature; pulSignatureLen points to the location that holds the length of the signature.
 <p>C_SignFinal uses the convention described in Section 11.2 on producing output.
 The signing operation must have been initialized with  C_SignInit.  A call to
@@ -1437,7 +1437,7 @@ to determine the length of the buffer needed to hold the signature.
 
     /**
 C_SignRecoverInit initializes a signature operation, where the data can be recovered
-from the signature. hSession is the session’s handle; pMechanism points to the structure
+from the signature. hSession is the session's handle; pMechanism points to the structure
 that specifies the signature mechanism; hKey is the handle of the signature key.
 The CKA_SIGN_RECOVER attribute of the signature key, which indicates whether the
 key supports signatures where the data can be recovered from the signature, must be
@@ -1463,7 +1463,7 @@ part, the application must call C_SignRecoverInit again.
 
     /**
 C_SignRecover signs data in a single operation, where the data can be recovered from
-the signature. hSession is the session’s handle; pData points to the data; uLDataLen is the
+the signature. hSession is the session's handle; pData points to the data; uLDataLen is the
 length of the data;  pSignature points to the location that receives the signature;
 pulSignatureLen points to the location that holds the length of the signature.
 <p>C_SignRecover uses the convention described in Section 11.2 on producing output.
@@ -1488,7 +1488,7 @@ to determine the length of the buffer needed to hold the signature.
 
     /**
 C_VerifyInit initializes a verification operation, where the signature is an appendix to
-the data.  hSession is the session’s handle;  pMechanism points to the structure that
+the data.  hSession is the session's handle;  pMechanism points to the structure that
 specifies the verification mechanism; hKey is the handle of the verification key.
 <p>The CKA_VERIFY attribute of the verification key, which indicates whether the key
 supports verification where the signature is an appendix to the data, must be CK_TRUE.
@@ -1514,7 +1514,7 @@ data (in single or multiple parts), the application must call C_VerifyInit again
 
     /**
 C_Verify verifies a signature in a single-part operation, where the signature is an
-appendix to the data.  hSession is the session’s handle;  pData points to the data;
+appendix to the data.  hSession is the session's handle;  pData points to the data;
 ulDataLen is the length of the data; pSignature points to the signature; ulSignatureLen is
 the length of the signature.
 <p>The verification operation must have been initialized with  C_VerifyInit.  A call to
@@ -1546,7 +1546,7 @@ operations followed by C_VerifyFinal.
 
     /**
 C_VerifyUpdate continues a multiple-part verification operation, processing another
-data part. hSession is the session’s handle, pPart points to the data part; ulPartLen is the
+data part. hSession is the session's handle, pPart points to the data part; ulPartLen is the
 length of the data part.
 <p>The verification operation must have been initialized with C_VerifyInit. This function
 may be called any number of times in succession.  A call to C_VerifyUpdate which
@@ -1566,7 +1566,7 @@ results in an error terminates the current verification operation.
 
     /**
 C_VerifyFinal finishes a multiple-part verification operation, checking the signature.
-hSession is the session’s handle; pSignature points to the signature; ulSignatureLen is the
+hSession is the session's handle; pSignature points to the signature; ulSignatureLen is the
 length of the signature.
 <p>The verification operation must have been initialized with  C_VerifyInit.  A call to
 C_VerifyFinal always terminates the active verification operation.
@@ -1590,7 +1590,7 @@ of these cases, the active verifying operation is terminated.
 
     /**
 C_VerifyRecoverInit initializes a signature verification operation, where the data is
-recovered from the signature. hSession is the session’s handle; pMechanism points to the
+recovered from the signature. hSession is the session's handle; pMechanism points to the
 structure that specifies the verification mechanism; hKey is the handle of the verification
 key.
 <p>The CKA_VERIFY_RECOVER attribute of the verification key, which indicates
@@ -1616,7 +1616,7 @@ application uses a call to C_VerifyRecover to actually obtain the recovered mess
 
     /**
 C_VerifyRecover verifies a signature in a single-part operation, where the data is
-recovered from the signature. hSession is the session’s handle; pSignature points to the
+recovered from the signature. hSession is the session's handle; pSignature points to the
 signature; ulSignatureLen is the length of the signature; pData points to the location that
 receives the recovered data; and pulDataLen points to the location that holds the length
 of the recovered data.
@@ -1651,7 +1651,7 @@ signature, it will never return CKR_BUFFER_TOO_SMALL.
 
     /**
 C_DigestEncryptUpdate continues multiple-part digest and encryption operations,
-processing another data part. hSession is the session’s handle; pPart points to the data
+processing another data part. hSession is the session's handle; pPart points to the data
 part; ulPartLen is the length of the data part; pEncryptedPart points to the location that
 receives the digested and encrypted data part; pulEncryptedPartLen points to the location
 that holds the length of the encrypted data part.
@@ -1682,7 +1682,7 @@ intersperse calls to C_DigestEncryptUpdate with calls to C_DigestKey, however).
 
     /**
  C_DecryptDigestUpdate continues a multiple-part combined decryption and digest
-operation, processing another data part. hSession is the session’s handle; pEncryptedPart
+operation, processing another data part. hSession is the session's handle; pEncryptedPart
 points to the encrypted data part; ulEncryptedPartLen is the length of the encrypted data
 part; pPart points to the location that receives the recovered data part; pulPartLen points
 to the location that holds the length of the recovered data part.
@@ -1709,11 +1709,11 @@ will simultaneously decrypt this ciphertext and digest the original plaintext th
 obtained.
 <p>After initializing decryption and digesting operations, the application passes the 24-byte
 ciphertext (3 DES blocks) into  C_DecryptDigestUpdate.   C_DecryptDigestUpdate
-returns exactly 16 bytes of plaintext, since at this point, Cryptoki doesn’t know if there’s
+returns exactly 16 bytes of plaintext, since at this point, Cryptoki doesn't know if there's
 more ciphertext coming, or if the last block of ciphertext held any padding.  These 16
 bytes of plaintext are passed into the active digesting operation.
 <p>Since there is no more ciphertext, the application calls  C_DecryptFinal.  This tells
-Cryptoki that there’s no more ciphertext coming, and the call returns the last 2 bytes of
+Cryptoki that there's no more ciphertext coming, and the call returns the last 2 bytes of
 plaintext.  However, since the active decryption and digesting operations are linked only
 through the C_DecryptDigestUpdate call, these 2 bytes of plaintext are not passed on to
 be digested.
@@ -1743,7 +1743,7 @@ using a padded decryption mechanism with C_DecryptDigestUpdate.
 
     /**
 C_SignEncryptUpdate continues a multiple-part combined signature and encryption
-operation, processing another data part. hSession is the session’s handle; pPart points to
+operation, processing another data part. hSession is the session's handle; pPart points to
 the data part;  ulPartLen is the length of the data part;  pEncryptedPart points to the
 location that receives the digested and encrypted data part; and pulEncryptedPart points
 to the location that holds the length of the encrypted data part.
@@ -1773,7 +1773,7 @@ C_EncryptUpdate calls.
 
     /**
 C_DecryptVerifyUpdate continues a multiple-part combined decryption and
-verification operation, processing another data part.  hSession is the session’s handle;
+verification operation, processing another data part.  hSession is the session's handle;
 pEncryptedPart points to the encrypted data;  ulEncryptedPartLen is the length of the
 encrypted data;  pPart points to the location that receives the recovered data; and
 pulPartLen points to the location that holds the length of the recovered data.
@@ -1800,11 +1800,11 @@ thereby obtained.
 <p>After initializing decryption and verification operations, the application passes the 24-
 byte ciphertext (3 DES blocks) into  C_DecryptVerifyUpdate.
 <p>C_DecryptVerifyUpdate returns exactly 16 bytes of plaintext, since at this point,
-Cryptoki doesn’t know if there’s more ciphertext coming, or if the last block of
+Cryptoki doesn't know if there's more ciphertext coming, or if the last block of
 ciphertext held any padding.  These 16 bytes  of plaintext are passed into the active
 verification operation.
 <p>Since there is no more ciphertext, the application calls  C_DecryptFinal.  This tells
-Cryptoki that there’s no more ciphertext coming, and the call returns the last 2 bytes of
+Cryptoki that there's no more ciphertext coming, and the call returns the last 2 bytes of
 plaintext.  However, since the active decryption and verification operations are linked
 only through the C_DecryptVerifyUpdate call, these 2 bytes of plaintext are not passed
 on to the verification mechanism.
@@ -1834,7 +1834,7 @@ using a padded decryption mechanism with C_DecryptVerifyUpdate.
 
     /**
 C_GenerateKey generates a secret key or set of domain parameters, creating a new
-object.  hSession is the session’s handle;  pMechanism points to the generation
+object.  hSession is the session's handle;  pMechanism points to the generation
 mechanism;  pTemplate points to the template for  the new key or set of domain
 parameters;  ulCount is the number of attributes in the template;  phKey points to the
 location that receives the handle of the new key or set of domain parameters.
@@ -1871,7 +1871,7 @@ attribute set to CK_TRUE.
 
     /**
 C_GenerateKeyPair generates a public/private key  pair, creating new key objects.
-hSession is the session’s handle; pMechanism points to the key generation mechanism;
+hSession is the session's handle; pMechanism points to the key generation mechanism;
 pPublicKeyTemplate points to the template for the public key;
 ulPublicKeyAttributeCount is the number of attributes in the public-key template;
 pPrivateKeyTemplate points to the template for the private key;
@@ -1915,7 +1915,7 @@ document.  The order of these two arguments has caused some unfortunate confusio
     long C_GenerateKeyPair(long hSession, CKM pMechanism, CKA[] pPublicKeyTemplate, long ulPublicKeyAttributeCount, CKA[] pPrivateKeyTemplate, long ulPrivateKeyAttributeCount, LongRef phPublicKey, LongRef phPrivateKey);
 
     /**
-C_WrapKey wraps (i.e., encrypts) a private or secret key.  hSession is the session’s
+C_WrapKey wraps (i.e., encrypts) a private or secret key.  hSession is the session's
 handle; pMechanism points to the wrapping mechanism; hWrappingKey is the handle of
 the wrapping key; hKey is the handle of the key to be wrapped; pWrappedKey points to
 the location that receives the wrapped key; and pulWrappedKeyLen points to the location
@@ -1971,7 +1971,7 @@ CKR_KEY_HANDLE_INVALID.
 
     /**
 C_UnwrapKey unwraps (i.e. decrypts) a wrapped key, creating a new private key or
-secret key object. hSession is the session’s handle; pMechanism points to the unwrapping
+secret key object. hSession is the session's handle; pMechanism points to the unwrapping
 mechanism; hUnwrappingKey is the handle of the unwrapping key; pWrappedKey points
 to the wrapped key;  ulWrappedKeyLen is the length of the wrapped key;  pTemplate
 points to the template for the new key; ulAttributeCount is the number of attributes in the
@@ -1990,7 +1990,7 @@ CKA_LOCAL attribute set to CK_FALSE.
 <p>To partition the unwrapping keys so they can only unwrap a subset of keys the attribute
 CKA_UNWRAP_TEMPLATE can be used on the unwrapping key to specify an attribute
 set that will be added to attributes of the key to be unwrapped. If the attributes do not
-conflict with the user supplied attribute template, in ‘pTemplate’, then the unwrap will
+conflict with the user supplied attribute template, in 'pTemplate', then the unwrap will
 proceed. The value of this attribute is an attribute template and the size is the number of
 items in the template times the size of CK_ATTRIBUTE. If this attribute is not present
 on the unwrapping key then no additional attributes will be added. If any attribute
@@ -2025,7 +2025,7 @@ CKR_TEMPLATE_INCONSISTENT.
 
     /**
 C_DeriveKey derives a key from a base key, creating a new key object. hSession is the
-session’s handle;  pMechanism points to a structure that specifies the key derivation
+session's handle;  pMechanism points to a structure that specifies the key derivation
 mechanism;  hBaseKey is the handle of the base key; pTemplate points to the template for
 the new key;  ulAttributeCount is the number of  attributes in the template; and  phKey
 points to the location that receives the handle of the derived key.
@@ -2061,8 +2061,8 @@ attribute set to CK_FALSE.
     long C_DeriveKey(long hSession, CKM pMechanism, long hBaseKey, CKA[] pTemplate, long ulAttributeCount, LongRef phKey);
 
     /**
-C_SeedRandom mixes additional seed material into the token’s random number
-generator.  hSession is the session’s handle;  pSeed points to the seed material; and
+C_SeedRandom mixes additional seed material into the token's random number
+generator.  hSession is the session's handle;  pSeed points to the seed material; and
 ulSeedLen is the length in bytes of the seed material.
      * @param hSession the session's handle
      * @param pSeed the seed material
@@ -2078,7 +2078,7 @@ ulSeedLen is the length in bytes of the seed material.
     long C_SeedRandom(long hSession, byte[] pSeed, long ulSeedLen);
 
     /**
-C_GenerateRandom generates random or pseudo-random data. hSession is the session’s
+C_GenerateRandom generates random or pseudo-random data. hSession is the session's
 handle;  pRandomData points to the location that receives the random data; and
 ulRandomLen is the length in bytes of the random or pseudo-random data to be
 generated.
