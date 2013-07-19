@@ -195,6 +195,7 @@ public class CryptokiTest extends TestCase {
 
     public void testFindObjects() {
         long session = CE.OpenSession(TESTSLOT);
+        CE.Login(session, CKU.USER, USER_PIN); // Needed depending on HSM policy
         // create a few objects
         CKA[] templ = {
             new CKA(CKA.CLASS, CKO.DATA),
@@ -254,6 +255,7 @@ public class CryptokiTest extends TestCase {
 
     public void testDigest() {
         long session = CE.OpenSession(TESTSLOT);
+        CE.Login(session, CKU.USER, USER_PIN); // Needed depending on HSM policy
         CE.DigestInit(session, new CKM(CKM.SHA256));
         byte[] digested1 = CE.Digest(session, new byte[100]);
         assertEquals(32, digested1.length);
