@@ -49,39 +49,47 @@ public class JNA_CK_C_INITIALIZE_ARGS extends Structure {
     public Pointer pReserved;
 
     public JNA_CK_C_INITIALIZE_ARGS(final CK_C_INITIALIZE_ARGS args) {
-        this.createMutex = new JNA_CK_CREATEMUTEX() {
-            public long invoke(NativePointerByReference mutex) {
-                return args.createMutex.invoke(mutex);
-            }
-            public NativeLong invoke(PointerByReference mutex) {
-                return new NativeLong(invoke(new NativePointerByReference(
-                    new NativePointer(Pointer.nativeValue(mutex.getPointer())))));
-            }
-        };
-        this.destroyMutex = new JNA_CK_DESTROYMUTEX() {
-            public long invoke(NativePointer mutex) {
-                return args.destroyMutex.invoke(mutex);
-            }
-            public NativeLong invoke(Pointer mutex) {
-                return new NativeLong(invoke(new NativePointer(Pointer.nativeValue(mutex))));
-            }
-        };
-        this.lockMutex = new JNA_CK_LOCKMUTEX() {
-            public long invoke(NativePointer mutex) {
-                return args.lockMutex.invoke(mutex);
-            }
-            public NativeLong invoke(Pointer mutex) {
-                return new NativeLong(invoke(new NativePointer(Pointer.nativeValue(mutex))));
-            }
-        };
-        this.unlockMutex = new JNA_CK_UNLOCKMUTEX() {
-            public long invoke(NativePointer mutex) {
-                return args.unlockMutex.invoke(mutex);
-            }
-            public NativeLong invoke(Pointer mutex) {
-                return new NativeLong(invoke(new NativePointer(Pointer.nativeValue(mutex))));
-            }
-        };
+        if (args.createMutex != null) {
+            this.createMutex = new JNA_CK_CREATEMUTEX() {
+                public long invoke(NativePointerByReference mutex) {
+                    return args.createMutex.invoke(mutex);
+                }
+                public NativeLong invoke(PointerByReference mutex) {
+                    return new NativeLong(invoke(new NativePointerByReference(
+                        new NativePointer(Pointer.nativeValue(mutex.getPointer())))));
+                }
+            };
+        }
+        if (args.destroyMutex != null) {
+            this.destroyMutex = new JNA_CK_DESTROYMUTEX() {
+                public long invoke(NativePointer mutex) {
+                    return args.destroyMutex.invoke(mutex);
+                }
+                public NativeLong invoke(Pointer mutex) {
+                    return new NativeLong(invoke(new NativePointer(Pointer.nativeValue(mutex))));
+                }
+            };
+        }
+        if (args.lockMutex != null) {
+            this.lockMutex = new JNA_CK_LOCKMUTEX() {
+                public long invoke(NativePointer mutex) {
+                    return args.lockMutex.invoke(mutex);
+                }
+                public NativeLong invoke(Pointer mutex) {
+                    return new NativeLong(invoke(new NativePointer(Pointer.nativeValue(mutex))));
+                }
+            };
+        }
+        if (args.unlockMutex != null) {
+            this.unlockMutex = new JNA_CK_UNLOCKMUTEX() {
+                public long invoke(NativePointer mutex) {
+                    return args.unlockMutex.invoke(mutex);
+                }
+                public NativeLong invoke(Pointer mutex) {
+                    return new NativeLong(invoke(new NativePointer(Pointer.nativeValue(mutex))));
+                }
+            };
+        }
         this.flags = new NativeLong(args.flags);
     }
 
