@@ -41,7 +41,7 @@ import com.sun.jna.ptr.NativeLongByReference;
 
 /**
  * JNA PKCS#11 provider.  Does mapping between jacknji11 structs and
- * JNA structs and calls through to {@link jnaNative} native methods.
+ * JNA structs and calls through to {@link JNANativeI} native methods.
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class JNA implements NativeProvider {
