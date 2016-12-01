@@ -72,232 +72,102 @@ public class CK_MECHANISM_INFO {
 
     
 
-    /**
-     * Check, if this mechanism is performed in hardware.
-     *
-     * @return True, if this mechanism is performed in hardware.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism is performed in hardware. */
     public boolean isHw() {
         return (flags & CKF_HW) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for encryption.
-     *
-     * @return True, if this mechanism can be used for encrpytion.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for encrpytion. */
     public boolean isEncrypt() {
         return (flags & CKF_ENCRYPT) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for decryption.
-     *
-     * @return True, if this mechanism can be used for decrpytion.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for decrpytion. */
     public boolean isDecrypt() {
         return (flags & CKF_DECRYPT) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for digesting.
-     *
-     * @return True, if this mechanism can be used for digesting.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for digesting. */
     public boolean isDigest() {
         return (flags & CKF_DIGEST) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for signing.
-     *
-     * @return True, if this mechanism can be used for signing.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for signing. */
     public boolean isSign() {
         return (flags & CKF_SIGN) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for signing with data recovery.
-     *
-     * @return True, if this mechanism can be used for signing with data recovery.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for signing with data recovery. */
     public boolean isSignRecover() {
         return (flags & CKF_SIGN_RECOVER) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for verification.
-     *
-     * @return True, if this mechanism can be used for verification.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for verification. */
     public boolean isVerify() {
         return (flags & CKF_VERIFY) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for verification with data recovery.
-     *
-     * @return True, if this mechanism can be used for verification with data recovery.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for verification with data recovery. */
     public boolean isVerifyRecover() {
         return (flags & CKF_VERIFY_RECOVER) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for secret key generation.
-     *
-     * @return True, if this mechanism can be used for secret key generation.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for secret key generation. */
     public boolean isGenerate() {
         return (flags & CKF_GENERATE) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for key-pair generation.
-     *
-     * @return True, if this mechanism can be used for key-pair generation.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for key-pair generation. */
     public boolean isGenerateKeyPair() {
         return (flags & CKF_GENERATE_KEY_PAIR) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for key wrapping.
-     *
-     * @return True, if this mechanism can be used for key wrapping.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for key wrapping. */
     public boolean isWrap() {
         return (flags & CKF_WRAP) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for key unwrapping.
-     *
-     * @return True, if this mechanism can be used for key unwrapping.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for key unwrapping. */
     public boolean isUnwrap() {
         return (flags & CKF_UNWRAP) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used for key derivation.
-     *
-     * @return True, if this mechanism can be used for key derivation.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used for key derivation. */
     public boolean isDerive() {
         return (flags & CKF_DERIVE) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used with EC domain parameters over Fp.
-     *
-     * @return True, if this mechanism can be used with EC domain parameters over
-     *         Fp.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used with EC domain parameters over Fp. */
     public boolean isEcFp() {
         return (flags & CKF_EC_F_P) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used with EC domain parameters over F2m.
-     *
-     * @return True, if this mechanism can be used with EC domain parameters over
-     *         F2m.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used with EC domain parameters over F2m. */
     public boolean isEcF2m() {
         return (flags & CKF_EC_F_2M) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used with EC domain parameters of the
-     * choice ecParameters.
-     *
-     * @return True, if this mechanism can be used with EC domain parameters of
-     *         the choice ecParameters.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used with EC domain parameters of the choice ecParameters. */
     public boolean isEcEcParameters() {
         return (flags & CKF_EC_ECPARAMETERS) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used with EC domain parameters of the
-     * choice namedCurve.
-     *
-     * @return True, if this mechanism can be used with EC domain parameters of
-     *         the choice namedCurve.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used with EC domain parameters of the choice namedCurve. */
     public boolean isEcNamedCurve() {
         return (flags & CKF_EC_NAMEDCURVE) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used with elliptic curve point
-     * uncompressed.
-     *
-     * @return True, if this mechanism can be used with elliptic curve point
-     *         uncompressed.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used with elliptic curve point uncompressed. */
     public boolean isEcUncompress() {
         return (flags & CKF_EC_UNCOMPRESS) != 0L;
     }
 
-    /**
-     * Check, if this mechanism can be used with elliptic curve point compressed.
-     *
-     * @return True, if this mechanism can be used with elliptic curve point
-     *         compressed.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if this mechanism can be used with elliptic curve point compressed. */
     public boolean isEcCompress() {
         return (flags & CKF_EC_COMPRESS) != 0L;
     }
 
-    /**
-     * Check, if there is an extension to the flags; false, if no extensions.
-     * Must be false for this version of PKCS#11.
-     *
-     * @return False for this version.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if there is an extension to the flags; false, if no extensions. Must be false for this version of PKCS#11. */
     public boolean isExtension() {
         return (flags & CKF_EXTENSION) != 0L;
     }

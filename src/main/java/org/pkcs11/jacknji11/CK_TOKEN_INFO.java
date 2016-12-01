@@ -82,227 +82,92 @@ public class CK_TOKEN_INFO {
     public byte[] utcTime = new byte[16];
 
 
-    /**
-     * Check, if the token has a random number generator.
-     *
-     * @return True, if the token has a random number generator. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the token has a random number generator. False, otherwise. */
     public boolean isRNG() {
         return (flags & CKF_RNG) != 0L;
     }
 
-    /**
-     * Check, if the token is write protected.
-     *
-     * @return True, if the token is write protected. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the token is write protected. False, otherwise. */
     public boolean isWriteProtected() {
         return (flags & CKF_WRITE_PROTECTED) != 0L;
     }
 
-    /**
-     * Check, if the token requires the user to log in before certain operations
-     * can be performed.
-     *
-     * @return True, if the token requires the user to log in before certain
-     *         operations can be performed. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the token requires the user to log in before certain operations can be performed. False, otherwise. */
     public boolean isLoginRequired() {
         return (flags & CKF_LOGIN_REQUIRED) != 0L;
     }
 
-    /**
-     * Check, if the user-PIN is already initialized.
-     *
-     * @return True, if the user-PIN is already initialized. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the user-PIN is already initialized. False, otherwise. */
     public boolean isUserPinInitialized() {
         return (flags & CKF_USER_PIN_INITIALIZED) != 0L;
     }
 
-    /**
-     * Check, if a successful save of a sessions cryptographic operations
-     * state always contains all keys needed to restore the state of the
-     * session.
-     *
-     * @return True, if a successful save of a sessions cryptographic operations
-     *         state always contains all keys needed to restore the state of the
-     *         session. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if a successful save of a sessions cryptographic operations state always contains all keys needed to restore the state of the session. False, otherwise. */
     public boolean isRestoreKeyNotNeeded() {
         return (flags & CKF_RESTORE_KEY_NOT_NEEDED) != 0L;
     }
 
-    /**
-     * Check, if the token has an own clock.
-     *
-     * @return True, if the token has its own clock. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the token has its own clock. False, otherwise. */
     public boolean isClockOnToken() {
         return (flags & CKF_CLOCK_ON_TOKEN) != 0L;
     }
 
-    /**
-     * Check, if the token has an protected authentication path. This means that
-     * a user may log in without providing a PIN to the login method, because the
-     * token has other means to authenticate the user; e.g. a PIN-pad on the
-     * reader or some biometric authentication.
-     *
-     * @return True, if the token has an protected authentication path. False,
-     *         otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the token has an protected authentication path. This means that a user may log in without providing a PIN to the login method, because the token has other means to authenticate the user; e.g. a PIN-pad on the reader or some biometric authentication.. False, otherwise. */
     public boolean isProtectedAuthenticationPath() {
         return (flags & CKF_PROTECTED_AUTHENTICATION_PATH) != 0L;
     }
 
-    /**
-     * Check, if the token supports dual crypto operations.
-     *
-     * @return True, if the token supports dual crypto operations. False,
-     *         otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the token supports dual crypto operations. False, otherwise. */
     public boolean isDualCryptoOperations() {
         return (flags & CKF_DUAL_CRYPTO_OPERATIONS) != 0L;
     }
 
-    /**
-     * Check, if the token is already initialized.
-     *
-     * @return True, if the token is already initialized. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the token is already initialized. False, otherwise. */
     public boolean isTokenInitialized() {
         return (flags & CKF_TOKEN_INITIALIZED) != 0L;
     }
 
-    /**
-     * Check, if the token supports secondary authentication for private key
-     * objects.
-     *
-     * @return True, if the token supports secondary authentication. False,
-     *         otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the token supports secondary authentication. False, otherwise. */
     public boolean isSecondaryAuthentication() {
         return (flags & CKF_SECONDARY_AUTHENTICATION) != 0L;
     }
 
-    /**
-     * Check, if the user-PIN has been entered incorrectly at least once since the
-     * last successful authentication.
-     *
-     * @return True, if the the user-PIN has been entered incorrectly at least one
-     *         since the last successful authentication. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the the user-PIN has been entered incorrectly at least one since the last successful authentication. False, otherwise. */
     public boolean isUserPinCountLow() {
         return (flags & CKF_USER_PIN_COUNT_LOW) != 0L;
     }
 
-    /**
-     * Check, if the user has just one try left to supply the correct PIN before
-     * the user-PIN gets locked.
-     *
-     * @return True, if the user has just one try left to supply the correct PIN
-     *         before the user-PIN gets locked. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the user has just one try left to supply the correct PIN before the user-PIN gets locked. False, otherwise. */
     public boolean isUserPinFinalTry() {
         return (flags & CKF_USER_PIN_FINAL_TRY) != 0L;
     }
 
-    /**
-     * Check, if the user-PIN is locked.
-     *
-     * @return True, if the user-PIN is locked. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the user-PIN is locked. False, otherwise. */
     public boolean isUserPinLocked() {
         return (flags & CKF_USER_PIN_LOCKED) != 0L;
     }
 
-    /**
-     * Check, if the user PIN value is the default value set by token
-     * initialization or manufacturing.
-     *
-     * @return True, if the user PIN value is the default value set by token
-     *         initialization or manufacturing. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the user PIN value is the default value set by token initialization or manufacturing. False, otherwise. */
     public boolean isUserPinToBeChanged() {
         return (flags & CKF_USER_PIN_TO_BE_CHANGED) != 0L;
     }
 
-    /**
-     * Check, if the security officer-PIN has been entered incorrectly at least
-     * once since the last successful authentication.
-     *
-     * @return True, if the the security officer-PIN has been entered incorrectly
-     *         at least one since the last successful authentication. False,
-     *         otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the the security officer-PIN has been entered incorrectly at least one since the last successful authentication. False, otherwise. */
     public boolean isSoPinCountLow() {
         return (flags & CKF_SO_PIN_COUNT_LOW) != 0L;
     }
 
-    /**
-     * Check, if the security officer has just one try left to supply the correct
-     * PIN before the security officer-PIN gets locked.
-     *
-     * @return True, if the security officer has just one try left to supply the
-     *         correct PIN before the security officer-PIN gets locked. False,
-     *         otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the security officer has just one try left to supply the correct PIN before the security officer-PIN gets locked. False, otherwise. */
     public boolean isSoPinFinalTry() {
         return (flags & CKF_SO_PIN_FINAL_TRY) != 0L;
     }
 
-    /**
-     * Check, if the security officer-PIN is locked.
-     *
-     * @return True, if the security officer-PIN is locked. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the security officer-PIN is locked. False, otherwise. */
     public boolean isSoPinLocked() {
         return (flags & CKF_SO_PIN_LOCKED) != 0L;
     }
 
-    /**
-     * Check, if the security officer PIN value is the default value set by token
-     * initialization or manufacturing.
-     *
-     * @return True, if the security officer PIN value is the default value set by
-     *         token initialization or manufacturing. False, otherwise.
-     * @preconditions
-     * @postconditions
-     */
+    /** @return True, if the security officer PIN value is the default value set by token initialization or manufacturing. False, otherwise. */
     public boolean isSoPinToBeChanged() {
         return (flags & CKF_SO_PIN_TO_BE_CHANGED) != 0L;
     }
