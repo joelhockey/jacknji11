@@ -54,6 +54,11 @@ public class CK_SLOT_INFO {
     public CK_VERSION hardwareVersion = new CK_VERSION();
     public CK_VERSION firmwareVersion = new CK_VERSION();
 
+    /** @return True, if the provided flag is set */
+    public boolean isFlagSet(long CKF_FLAG) {
+        return (flags & CKF_FLAG) != 0L;
+    }
+    
     /** @return string */
     public String toString() {
         return String.format("(\n  slotDescription=%s\n  manufacturerID=%s\n  flags=0x%08x{%s}\n  hardwareVersion=%d.%d\n  firmwareVersion=%d.%d\n)",

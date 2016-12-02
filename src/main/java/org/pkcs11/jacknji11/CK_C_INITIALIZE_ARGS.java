@@ -77,6 +77,11 @@ public class CK_C_INITIALIZE_ARGS {
         this.unlockMutex = unlockMutex;
         this.flags = flags;
     }
+    
+    /** @return True, if the provided flag is set */
+    public boolean isFlagSet(long CKF_FLAG) {
+        return (flags & CKF_FLAG) != 0L;
+    }
 
     /** @return string */
     public String toString() {
