@@ -52,6 +52,11 @@ public class CK_SESSION_INFO {
     public long flags;
     public long ulDeviceError;
 
+    /** @return True, if the provided flag is set */
+    public boolean isFlagSet(long CKF_FLAG) {
+        return (flags & CKF_FLAG) != 0L;
+    }
+    
     /** @return string */
     public String toString() {
         return String.format("(\n  slotID=0x%08x\n  state=0x%08x{%s}\n  flags=0x%08x{%s}\n  deviceError=%d\n)",
