@@ -81,6 +81,11 @@ public class CK_TOKEN_INFO {
     public CK_VERSION firmwareVersion = new CK_VERSION();
     public byte[] utcTime = new byte[16];
 
+    /** @return True, if the provided flag is set */
+    public boolean isFlagSet(long CKF_FLAG) {
+        return (flags & CKF_FLAG) != 0L;
+    }
+    
     /** @return string */
     public String toString() {
         return String.format("(\n  label=%s\n  manufacturerID=%s\n  model=%s\n  serialNumber=%s\n  flags=0x%08x{%s}" +

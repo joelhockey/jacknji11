@@ -70,6 +70,11 @@ public class CK_MECHANISM_INFO {
     public long ulMaxKeySize;
     public long flags;
 
+    /** @return True, if the provided flag is set */
+    public boolean isFlagSet(long CKF_FLAG) {
+        return (flags & CKF_FLAG) != 0L;
+    }
+    
     /** @return string */
     public String toString() {
         return String.format("(\n  minKeySize=%d\n  maxKeySize=%d\n  flags=0x%08x{%s}\n)",
