@@ -384,7 +384,7 @@ public class CE {
      */
     public static CK_SESSION_INFO GetSessionInfo(long session) {
         CK_SESSION_INFO info = new CK_SESSION_INFO();
-        GetSessionInfo(session);
+        GetSessionInfo(session, info);
         return info;
     }
 
