@@ -6,10 +6,38 @@
 
   <groupId>org.pkcs11</groupId>
   <artifactId>jacknji11</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <name>jacknji11</name>
   <packaging>jar</packaging>
   
+  <inceptionYear>2010</inceptionYear>
+
+  <description>
+    Java Native Interface for PKCS#11
+  </description>
+  <url>https://github.com/joelhockey/jacknji11</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://github.com/joelhockey/jacknji11/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Joel Hockey</name>
+      <email>joel.hockey@gmail.com</email>
+      <organizationUrl>https://github.com/joelhockey/jacknji11</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/joelhockey/jacknji11.git</connection>
+    <developerConnection>scm:git:git@github.com:joelhockey/jacknji11.git</developerConnection>
+    <url>https://github.com/joelhockey/jacknji11</url>
+  </scm>
+
   <build>
     <plugins>
       <plugin>
