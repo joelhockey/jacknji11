@@ -40,12 +40,8 @@ public class JNA_CKM extends Structure {
 
     public JNA_CKM readFrom(CKM ckm) {
         mechanism = new NativeLong(ckm.mechanism);
-        int len = ckm.pParameter != null ? ckm.pParameter.length : 0;
-        if (len > 0) {
-            pParameter = new Memory(len);
-            pParameter.write(0, ckm.pParameter, 0, len);
-        }
-        ulParameterLen = new NativeLong(len);
+        pParameter = ckm.pParameter;
+        ulParameterLen = new NativeLong(ckm.ulParameterLen);
         return this;
     }
 }

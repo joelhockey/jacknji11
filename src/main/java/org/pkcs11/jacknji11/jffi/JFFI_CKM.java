@@ -39,13 +39,24 @@ public class JFFI_CKM extends Struct {
         super(jnr.ffi.Runtime.getSystemRuntime());
     }
 
-
     public JFFI_CKM readFrom(CKM ckm) {
         mechanism = ckm.mechanism;
-        int len = ckm.pParameter != null ? ckm.pParameter.length : 0;
+        int len = ckm.bParameter != null ? ckm.bParameter.length : 0;
         if (len > 0) {
             pParameter = Memory.allocate(jnr.ffi.Runtime.getSystemRuntime(), len);
-            pParameter.put(0, ckm.pParameter, 0, len);
+            pParameter.put(0, ckm.bParameter, 0, len);
+        }
+        ulParameterLen = len;
+        return this;
+    }
+
+    public JFFI_CKM readFromPointer(CKM pMechanism) {
+        mechanism = pMechanism.mechanism;
+        int len = pMechanism.pParameter != null ? pMechanism.pParameter.SIZE : 0;
+        if (len > 0) {
+            byte[] ckmParamBytes = pMechanism.pParameter.getByteArray(0, len);
+            pParameter = Memory.allocate(jnr.ffi.Runtime.getSystemRuntime(), len);
+            pParameter.put(0, ckmParamBytes, 0, len);
         }
         ulParameterLen = len;
         return this;
