@@ -24,23 +24,6 @@ package org.pkcs11.jacknji11;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import org.pkcs11.jacknji11.Buf;
-import org.pkcs11.jacknji11.C;
-import org.pkcs11.jacknji11.CE;
-import org.pkcs11.jacknji11.CKA;
-import org.pkcs11.jacknji11.CKM;
-import org.pkcs11.jacknji11.CKO;
-import org.pkcs11.jacknji11.CKR;
-import org.pkcs11.jacknji11.CKS;
-import org.pkcs11.jacknji11.CKU;
-import org.pkcs11.jacknji11.CK_INFO;
-import org.pkcs11.jacknji11.CK_MECHANISM_INFO;
-import org.pkcs11.jacknji11.CK_SESSION_INFO;
-import org.pkcs11.jacknji11.CK_SLOT_INFO;
-import org.pkcs11.jacknji11.CK_TOKEN_INFO;
-import org.pkcs11.jacknji11.Hex;
-import org.pkcs11.jacknji11.LongRef;
-
 import junit.framework.TestCase;
 
 /**
@@ -50,15 +33,28 @@ import junit.framework.TestCase;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CryptokiTest extends TestCase {
-    private static final byte[] SO_PIN = "sopin".getBytes();
-    private static final byte[] USER_PIN = "userpin".getBytes();
-    private static final long TESTSLOT = 0;
-    private static final long INITSLOT = 1;
-
-//    private static final long TESTSLOT = 17;
-//    private static final long INITSLOT = 18;
+    private byte[] SO_PIN = "sopin".getBytes();
+    private byte[] USER_PIN = "userpin".getBytes();
+    private long TESTSLOT = 0;
+    private long INITSLOT = 1;
 
     public void setUp() {
+        String testSlotEnv = System.getenv("JACKNJI11_TEST_TESTSLOT");
+        if (testSlotEnv != null && testSlotEnv.length() > 0) {
+            TESTSLOT = Long.parseLong(testSlotEnv);
+        }
+        String initSlotEnv = System.getenv("JACKNJI11_TEST_INITSLOT");
+        if (initSlotEnv != null && initSlotEnv.length() > 0) {
+            INITSLOT = Long.parseLong(initSlotEnv);
+        }
+        String soPinEnv = System.getenv("JACKNJI11_TEST_SO_PIN");
+        if (soPinEnv != null && soPinEnv.length() > 0) {
+            SO_PIN = soPinEnv.getBytes();
+        }
+        String userPinEnv = System.getenv("JACKNJI11_TEST_USER_PIN");
+        if (userPinEnv != null && userPinEnv.length() > 0) {
+            USER_PIN = userPinEnv.getBytes();
+        }
         CE.Initialize();
     }
 
@@ -103,7 +99,7 @@ public class CryptokiTest extends TestCase {
 
     public void testInitTokenInitPinSetPin() {
         CE.InitToken(INITSLOT, SO_PIN, "TEST".getBytes());
-        long session = CE.OpenSession(INITSLOT, CKS.RW_PUBLIC_SESSION, null, null);
+        long session = CE.OpenSession(INITSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.Login(session, CKU.SO, SO_PIN);
         CE.InitPIN(session, USER_PIN);
         CE.Logout(session);
@@ -114,32 +110,32 @@ public class CryptokiTest extends TestCase {
     }
 
     public void testGetSessionInfo() {
-        long session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CK_SESSION_INFO sessionInfo = new CK_SESSION_INFO();
         CE.GetSessionInfo(session, sessionInfo);
 //        System.out.println(sessionInfo);
     }
 
     public void testGetSessionInfoCloseAllSessions() {
-        long s1 = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
-        long s2 = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
+        long s1 = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        long s2 = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CK_SESSION_INFO info = new CK_SESSION_INFO();
         CE.GetSessionInfo(s2, info );
 //        System.out.println(info);
-        long s3 = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
+        long s3 = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.CloseSession(s1);
         CE.CloseAllSessions(TESTSLOT);
         assertEquals(CKR.SESSION_HANDLE_INVALID, C.CloseSession(s3));
     }
 
-    public void testGetSetOperationState() {
-        long session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
-        byte[] state = CE.GetOperationState(session);
-        CE.SetOperationState(session, state, 0, 0);
-    }
+//    public void testGetSetOperationState() {
+//        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+//        byte[] state = CE.GetOperationState(session);
+//        CE.SetOperationState(session, state, 0, 0);
+//    }
 
     public void testCreateCopyGetSizeDestroyObject() {
-        long session = CE.OpenSession(TESTSLOT, CKS.RW_PUBLIC_SESSION, null, null);
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.Login(session, CKU.USER, USER_PIN);
         CKA[] templ = {
             new CKA(CKA.CLASS, CKO.DATA),
@@ -152,7 +148,7 @@ public class CryptokiTest extends TestCase {
     }
 
     public void testGetObjectSizeGetSetAtt() {
-        long session = CE.OpenSession(TESTSLOT);
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.Login(session, CKU.USER, USER_PIN);
         CKA[] templ = {
             new CKA(CKA.CLASS, CKO.DATA),
@@ -194,7 +190,7 @@ public class CryptokiTest extends TestCase {
     }
 
     public void testFindObjects() {
-        long session = CE.OpenSession(TESTSLOT);
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.Login(session, CKU.USER, USER_PIN); // Needed depending on HSM policy
         // create a few objects
         CKA[] templ = {
@@ -225,28 +221,32 @@ public class CryptokiTest extends TestCase {
 
 
     public void testEncryptDecrypt() {
-        long session = CE.OpenSession(TESTSLOT);
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.LoginUser(session, USER_PIN);
 
-        long des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
-                new CKA(CKA.VALUE_LEN, 24),
+        long aeskey = CE.GenerateKey(session, new CKM(CKM.AES_KEY_GEN),
+                new CKA(CKA.VALUE_LEN, 32),
                 new CKA(CKA.LABEL, "label"),
+                new CKA(CKA.ID, "label"),
+                new CKA(CKA.TOKEN, false),
                 new CKA(CKA.SENSITIVE, false),
+                new CKA(CKA.ENCRYPT, true),
+                new CKA(CKA.DECRYPT, true),
                 new CKA(CKA.DERIVE, true));
 
-        CE.EncryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
+        CE.EncryptInit(session, new CKM(CKM.AES_CBC_PAD), aeskey);
         byte[] plaintext = new byte[10];
         byte[] encrypted1 = CE.EncryptPad(session, plaintext);
-        CE.EncryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
+        CE.EncryptInit(session, new CKM(CKM.AES_CBC_PAD), aeskey);
         byte[] encrypted2a = CE.EncryptUpdate(session, new byte[6]);
         byte[] encrypted2b = CE.EncryptUpdate(session, new byte[4]);
         byte[] encrypted2c = CE.EncryptFinal(session);
         assertTrue(Arrays.equals(encrypted1, Buf.cat(encrypted2a, encrypted2b, encrypted2c)));
 
-        CE.DecryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
+        CE.DecryptInit(session, new CKM(CKM.AES_CBC_PAD), aeskey);
         byte[] decrypted1 = CE.DecryptPad(session, encrypted1);
         assertTrue(Arrays.equals(plaintext, decrypted1));
-        CE.DecryptInit(session, new CKM(CKM.DES3_CBC_PAD), des3key);
+        CE.DecryptInit(session, new CKM(CKM.AES_CBC_PAD), aeskey);
         byte[] decrypted2a = CE.DecryptUpdate(session, Buf.substring(encrypted1, 0, 8));
         byte[] decrypted2b = CE.DecryptUpdate(session, Buf.substring(encrypted1, 8, 8));
         byte[] decrypted2c = CE.DecryptFinal(session);
@@ -254,7 +254,7 @@ public class CryptokiTest extends TestCase {
     }
 
     public void testDigest() {
-        long session = CE.OpenSession(TESTSLOT);
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.Login(session, CKU.USER, USER_PIN); // Needed depending on HSM policy
         CE.DigestInit(session, new CKM(CKM.SHA256));
         byte[] digested1 = CE.Digest(session, new byte[100]);
@@ -265,28 +265,155 @@ public class CryptokiTest extends TestCase {
         byte[] digested2 = CE.DigestFinal(session);
         assertTrue(Arrays.equals(digested1, digested2));
 
-        long des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
+        long aeskey = CE.GenerateKey(session, new CKM(CKM.AES_KEY_GEN),
                 new CKA(CKA.VALUE_LEN, 24),
                 new CKA(CKA.LABEL, "label"),
+                new CKA(CKA.ID, "label"),
+                new CKA(CKA.TOKEN, false),
                 new CKA(CKA.SENSITIVE, false),
                 new CKA(CKA.DERIVE, true));
 
         CE.DigestInit(session, new CKM(CKM.SHA256));
-        CE.DigestKey(session, des3key);
+        CE.DigestKey(session, aeskey);
         byte[] digestedKey = CE.DigestFinal(session);
     }
 
-    public void testSignVerify() {
-        long session = CE.OpenSession(TESTSLOT);
+    public void testSignVerifyRSA() {
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.LoginUser(session, USER_PIN);
         CKA[] pubTempl = new CKA[] {
-            new CKA(CKA.MODULUS_BITS, 512),
-            new CKA(CKA.UNWRAP, true),
+            new CKA(CKA.MODULUS_BITS, 1024),
             new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
+            new CKA(CKA.WRAP, false),
+            new CKA(CKA.ENCRYPT, false),
             new CKA(CKA.VERIFY, true),
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.LABEL, "label-public"),
+            new CKA(CKA.ID, "label"),
         };
         CKA[] privTempl = new CKA[] {
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.PRIVATE, true),
+            new CKA(CKA.SENSITIVE, true),
             new CKA(CKA.SIGN, true),
+            new CKA(CKA.DECRYPT, false),
+            new CKA(CKA.UNWRAP, false),
+            new CKA(CKA.EXTRACTABLE, false),
+            new CKA(CKA.LABEL, "label-private"),
+            new CKA(CKA.ID, "label"),
+        };
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        CE.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+
+        // Direct sign
+        byte[] data = new byte[100];
+        CE.SignInit(session, new CKM(CKM.SHA256_RSA_PKCS), privKey.value());
+        byte[] sig1 = CE.Sign(session, data);
+        assertEquals(128, sig1.length);
+
+        CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.value());
+        CE.Verify(session, data, sig1);
+        
+        // Using SignUpdate
+        CE.SignInit(session, new CKM(CKM.SHA256_RSA_PKCS), privKey.value());
+        CE.SignUpdate(session, new byte[50]);
+        CE.SignUpdate(session, new byte[50]);
+        byte[] sig2 = CE.SignFinal(session);
+        assertTrue(Arrays.equals(sig1, sig2));
+
+        CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.value());
+        CE.VerifyUpdate(session, new byte[50]);
+        CE.VerifyUpdate(session, new byte[50]);
+        CE.VerifyFinal(session, sig2);
+
+        CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.value());
+        try {
+            CE.Verify(session, data, new byte[128]);
+            fail("CE Verify with no real signature should throw exception");
+        } catch (CKRException e) {
+            assertEquals("Failure with invalid signature data should be CKR.SIGNATURE_INVALID", CKR.SIGNATURE_INVALID, e.getCKR());
+        }
+    }
+
+    public void testSignVerifyECDSA() {
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        CE.LoginUser(session, USER_PIN);
+        // Attributes from PKCS #11 Cryptographic Token Interface Current Mechanisms Specification Version 2.40 section 2.3.3 - ECDSA public key objects
+        /* DER-encoding of an ANSI X9.62 Parameters, also known as "EC domain parameters". */
+        // *Comment* See X9.62-1998 Public Key Cryptography For The Financial Services Industry: The Elliptic Curve Digital Signature Algorithm (ECDSA)
+        // page 27.
+        // We use a P-256 key (also known as secp256r1 or prime256v1), the oid 1.2.840.10045.3.1.7 has DER encoding in Hex 06082a8648ce3d030107
+        byte[] ecCurveParams = Hex.s2b("06082a8648ce3d030107");
+        CKA[] pubTempl = new CKA[] {
+            new CKA(CKA.EC_PARAMS, ecCurveParams),
+            new CKA(CKA.WRAP, false),
+            new CKA(CKA.ENCRYPT, false),
+            new CKA(CKA.VERIFY, true),
+            new CKA(CKA.VERIFY_RECOVER, false),
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.LABEL, "label-public"),
+            new CKA(CKA.ID, "label"),
+        };
+        CKA[] privTempl = new CKA[] {
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.PRIVATE, true),
+            new CKA(CKA.SENSITIVE, true),
+            new CKA(CKA.SIGN, true),
+            new CKA(CKA.SIGN_RECOVER, false),
+            new CKA(CKA.DECRYPT, false),
+            new CKA(CKA.UNWRAP, false),
+            new CKA(CKA.EXTRACTABLE, false),
+            new CKA(CKA.LABEL, "label-private"),
+            new CKA(CKA.ID, "label"),
+        };
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        CE.GenerateKeyPair(session, new CKM(CKM.ECDSA_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+
+        // Direct sign, PKCS#11 "2.3.6 ECDSA without hashing"
+        byte[] data = new byte[32]; // SHA256 hash is 32 bytes
+        CE.SignInit(session, new CKM(CKM.ECDSA), privKey.value());
+        byte[] sig1 = CE.Sign(session, data);
+        assertEquals(64, sig1.length);
+
+        CE.VerifyInit(session, new CKM(CKM.ECDSA), pubKey.value());
+        CE.Verify(session, data, sig1);
+
+        CE.VerifyInit(session, new CKM(CKM.ECDSA), pubKey.value());
+        try {
+            CE.Verify(session, data, new byte[64]);
+            fail("CE Verify with no real signature should throw exception");
+        } catch (CKRException e) {
+            assertEquals("Failure with invalid signature data should be CKR.SIGNATURE_INVALID", CKR.SIGNATURE_INVALID, e.getCKR());
+        }
+    }
+
+    /** SignRecoverInit and VerifyRecoverInit is not supported on all HSMs, so it has a separate test that may expect to fail with FUNCTION_NOT_SUPPORTED
+     */
+    public void testSignVerifyRecoveryRSA() {
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        CE.LoginUser(session, USER_PIN);
+        CKA[] pubTempl = new CKA[] {
+            new CKA(CKA.MODULUS_BITS, 1024),
+            new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
+            new CKA(CKA.WRAP, false),
+            new CKA(CKA.ENCRYPT, false),
+            new CKA(CKA.VERIFY, true),
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.LABEL, "label-public"),
+            new CKA(CKA.ID, "label"),
+        };
+        CKA[] privTempl = new CKA[] {
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.PRIVATE, true),
+            new CKA(CKA.SENSITIVE, true),
+            new CKA(CKA.SIGN, true),
+            new CKA(CKA.DECRYPT, false),
+            new CKA(CKA.UNWRAP, false),
+            new CKA(CKA.EXTRACTABLE, false),
+            new CKA(CKA.LABEL, "label-private"),
+            new CKA(CKA.ID, "label"),
         };
         LongRef pubKey = new LongRef();
         LongRef privKey = new LongRef();
@@ -295,23 +422,7 @@ public class CryptokiTest extends TestCase {
         byte[] data = new byte[100];
         CE.SignInit(session, new CKM(CKM.SHA256_RSA_PKCS), privKey.value());
         byte[] sig1 = CE.Sign(session, data);
-        assertEquals(64, sig1.length);
-
-        // TODO: SignUpdate causes JVM crash
-//        CE.SignInit(session, new CKM(CKM.RSA_PKCS), privKey.val());
-//        CE.SignUpdate(session, new byte[50]);
-//        CE.SignUpdate(session, new byte[50]);
-//        byte[] sig2 = CE.SignFinal(session);
-//        assertTrue(Arrays.equals(sig1, sig2));
-
-        CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.value());
-        CE.Verify(session, data, sig1);
-        assertEquals(CKR.SIGNATURE_INVALID, C.Verify(session, data, new byte[32]));
-
-        CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.value());
-        CE.VerifyUpdate(session, new byte[50]);
-        CE.VerifyUpdate(session, new byte[50]);
-        CE.VerifyFinal(session, sig1);
+        assertEquals(128, sig1.length);
 
         data = new byte[10];
         CE.SignRecoverInit(session, new CKM(CKM.RSA_PKCS), privKey.value());
@@ -370,7 +481,7 @@ public class CryptokiTest extends TestCase {
     }
 
     public void testRandom() {
-        long session = CE.OpenSession(TESTSLOT);
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         byte[] buf = new byte[16];
         CE.SeedRandom(session, buf);
         CE.GenerateRandom(session, buf);
