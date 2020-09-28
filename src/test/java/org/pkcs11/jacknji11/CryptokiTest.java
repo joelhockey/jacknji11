@@ -278,7 +278,7 @@ public class CryptokiTest extends TestCase {
         byte[] digestedKey = CE.DigestFinal(session);
     }
 
-    public void testSignVerifyRSA() {
+    public void testSignVerifyRSAPKCS1() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.LoginUser(session, USER_PIN);
         CKA[] pubTempl = new CKA[] {
@@ -328,6 +328,69 @@ public class CryptokiTest extends TestCase {
         CE.VerifyFinal(session, sig2);
 
         CE.VerifyInit(session, new CKM(CKM.SHA256_RSA_PKCS), pubKey.value());
+        try {
+            CE.Verify(session, data, new byte[128]);
+            fail("CE Verify with no real signature should throw exception");
+        } catch (CKRException e) {
+            assertEquals("Failure with invalid signature data should be CKR.SIGNATURE_INVALID", CKR.SIGNATURE_INVALID, e.getCKR());
+        }
+    }
+
+    public void testSignVerifyRSAPSS() {
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        CE.LoginUser(session, USER_PIN);
+        CKA[] pubTempl = new CKA[] {
+            new CKA(CKA.MODULUS_BITS, 1024),
+            new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
+            new CKA(CKA.WRAP, false),
+            new CKA(CKA.ENCRYPT, false),
+            new CKA(CKA.VERIFY, true),
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.LABEL, "label-public"),
+            new CKA(CKA.ID, "label"),
+        };
+        CKA[] privTempl = new CKA[] {
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.PRIVATE, true),
+            new CKA(CKA.SENSITIVE, true),
+            new CKA(CKA.SIGN, true),
+            new CKA(CKA.DECRYPT, false),
+            new CKA(CKA.UNWRAP, false),
+            new CKA(CKA.EXTRACTABLE, false),
+            new CKA(CKA.LABEL, "label-private"),
+            new CKA(CKA.ID, "label"),
+        };
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        CE.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+
+        // RSA-PSS needs parameters, which specifies the padding to be used, matching the hash algorithm 
+        byte[] params = ULong.ulong2b(new long[]{CKM.SHA256, CKG.MGF1_SHA256, 32});
+        CKM ckm = new CKM(CKM.SHA256_RSA_PKCS_PSS, params);
+
+        // Direct sign
+        byte[] data = new byte[100];
+        CE.SignInit(session, ckm, privKey.value());
+        byte[] sig1 = CE.Sign(session, data);
+        assertEquals(128, sig1.length);
+
+        CE.VerifyInit(session, ckm, pubKey.value());
+        CE.Verify(session, data, sig1);
+        
+        // Using SignUpdate
+        CE.SignInit(session, ckm, privKey.value());
+        CE.SignUpdate(session, new byte[50]);
+        CE.SignUpdate(session, new byte[50]);
+        byte[] sig2 = CE.SignFinal(session);
+        // RSA-PSS uses randomness, so two signatures can not be compared as with RSA PKCS#1
+        //assertTrue(Arrays.equals(sig1, sig2));
+
+        CE.VerifyInit(session, ckm, pubKey.value());
+        CE.VerifyUpdate(session, new byte[50]);
+        CE.VerifyUpdate(session, new byte[50]);
+        CE.VerifyFinal(session, sig2);
+
+        CE.VerifyInit(session, ckm, pubKey.value());
         try {
             CE.Verify(session, data, new byte[128]);
             fail("CE Verify with no real signature should throw exception");
