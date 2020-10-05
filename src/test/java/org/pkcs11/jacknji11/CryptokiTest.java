@@ -128,11 +128,11 @@ public class CryptokiTest extends TestCase {
         assertEquals(CKR.SESSION_HANDLE_INVALID, C.CloseSession(s3));
     }
 
-//    public void testGetSetOperationState() {
-//        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
-//        byte[] state = CE.GetOperationState(session);
-//        CE.SetOperationState(session, state, 0, 0);
-//    }
+    public void testGetSetOperationState() {
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        byte[] state = CE.GetOperationState(session);
+        CE.SetOperationState(session, state, 0, 0);
+    }
 
     public void testCreateCopyGetSizeDestroyObject() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
@@ -226,8 +226,8 @@ public class CryptokiTest extends TestCase {
 
         long aeskey = CE.GenerateKey(session, new CKM(CKM.AES_KEY_GEN),
                 new CKA(CKA.VALUE_LEN, 32),
-                new CKA(CKA.LABEL, "label"),
-                new CKA(CKA.ID, "label"),
+                new CKA(CKA.LABEL, "labelencaes"),
+                new CKA(CKA.ID, "labelencaes"),
                 new CKA(CKA.TOKEN, false),
                 new CKA(CKA.SENSITIVE, false),
                 new CKA(CKA.ENCRYPT, true),
@@ -267,8 +267,8 @@ public class CryptokiTest extends TestCase {
 
         long aeskey = CE.GenerateKey(session, new CKM(CKM.AES_KEY_GEN),
                 new CKA(CKA.VALUE_LEN, 24),
-                new CKA(CKA.LABEL, "label"),
-                new CKA(CKA.ID, "label"),
+                new CKA(CKA.LABEL, "labelaesdigest"),
+                new CKA(CKA.ID, "labelaesdigest"),
                 new CKA(CKA.TOKEN, false),
                 new CKA(CKA.SENSITIVE, false),
                 new CKA(CKA.DERIVE, true));
@@ -281,6 +281,9 @@ public class CryptokiTest extends TestCase {
     public void testSignVerifyRSA() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.LoginUser(session, USER_PIN);
+        // Different HSMs have a little different requirements on templates, regardless of which are mandatory or not
+        // in the P11 spec. To work with as many HSMs as possible, use a good default, as complete as possible, template.
+        // On most HSMs you can set CKA_ID after key generations, but some requires adding CKA_ID at generation time
         CKA[] pubTempl = new CKA[] {
             new CKA(CKA.MODULUS_BITS, 1024),
             new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
@@ -288,8 +291,8 @@ public class CryptokiTest extends TestCase {
             new CKA(CKA.ENCRYPT, false),
             new CKA(CKA.VERIFY, true),
             new CKA(CKA.TOKEN, true),
-            new CKA(CKA.LABEL, "label-public"),
-            new CKA(CKA.ID, "label"),
+            new CKA(CKA.LABEL, "labelrsa-public"),
+            new CKA(CKA.ID, "labelrsa"),
         };
         CKA[] privTempl = new CKA[] {
             new CKA(CKA.TOKEN, true),
@@ -299,8 +302,8 @@ public class CryptokiTest extends TestCase {
             new CKA(CKA.DECRYPT, false),
             new CKA(CKA.UNWRAP, false),
             new CKA(CKA.EXTRACTABLE, false),
-            new CKA(CKA.LABEL, "label-private"),
-            new CKA(CKA.ID, "label"),
+            new CKA(CKA.LABEL, "labelrsa-private"),
+            new CKA(CKA.ID, "labelrsa"),
         };
         LongRef pubKey = new LongRef();
         LongRef privKey = new LongRef();
@@ -339,11 +342,13 @@ public class CryptokiTest extends TestCase {
     public void testSignVerifyECDSA() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.LoginUser(session, USER_PIN);
-        // Attributes from PKCS #11 Cryptographic Token Interface Current Mechanisms Specification Version 2.40 section 2.3.3 - ECDSA public key objects
-        /* DER-encoding of an ANSI X9.62 Parameters, also known as "EC domain parameters". */
-        // *Comment* See X9.62-1998 Public Key Cryptography For The Financial Services Industry: The Elliptic Curve Digital Signature Algorithm (ECDSA)
-        // page 27.
-        // We use a P-256 key (also known as secp256r1 or prime256v1), the oid 1.2.840.10045.3.1.7 has DER encoding in Hex 06082a8648ce3d030107
+        // Attributes from PKCS #11 Cryptographic Token Interface Current Mechanisms Specification 
+        //   Version 2.40 section 2.3.3 - ECDSA public key objects
+        // We use a P-256 key (also known as secp256r1 or prime256v1), the oid 1.2.840.10045.3.1.7 
+        //   has DER encoding in Hex 06082a8648ce3d030107
+        // DER-encoding of an ANSI X9.62 Parameters, also known as "EC domain parameters".
+        //   See X9.62-1998 Public Key Cryptography For The Financial Services Industry: 
+        //   The Elliptic Curve Digital Signature Algorithm (ECDSA), page 27.
         byte[] ecCurveParams = Hex.s2b("06082a8648ce3d030107");
         CKA[] pubTempl = new CKA[] {
             new CKA(CKA.EC_PARAMS, ecCurveParams),
@@ -352,8 +357,8 @@ public class CryptokiTest extends TestCase {
             new CKA(CKA.VERIFY, true),
             new CKA(CKA.VERIFY_RECOVER, false),
             new CKA(CKA.TOKEN, true),
-            new CKA(CKA.LABEL, "label-public"),
-            new CKA(CKA.ID, "label"),
+            new CKA(CKA.LABEL, "labelec-public"),
+            new CKA(CKA.ID, "labelec"),
         };
         CKA[] privTempl = new CKA[] {
             new CKA(CKA.TOKEN, true),
@@ -364,8 +369,8 @@ public class CryptokiTest extends TestCase {
             new CKA(CKA.DECRYPT, false),
             new CKA(CKA.UNWRAP, false),
             new CKA(CKA.EXTRACTABLE, false),
-            new CKA(CKA.LABEL, "label-private"),
-            new CKA(CKA.ID, "label"),
+            new CKA(CKA.LABEL, "labelec-private"),
+            new CKA(CKA.ID, "labelec"),
         };
         LongRef pubKey = new LongRef();
         LongRef privKey = new LongRef();
@@ -389,31 +394,35 @@ public class CryptokiTest extends TestCase {
         }
     }
 
-    /** SignRecoverInit and VerifyRecoverInit is not supported on all HSMs, so it has a separate test that may expect to fail with FUNCTION_NOT_SUPPORTED
+    /** SignRecoverInit and VerifyRecoverInit is not supported on all HSMs, 
+     * so it has a separate test that may expect to fail with FUNCTION_NOT_SUPPORTED
      */
     public void testSignVerifyRecoveryRSA() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.LoginUser(session, USER_PIN);
+        // See comments on the method testSignVerifyRSA
         CKA[] pubTempl = new CKA[] {
             new CKA(CKA.MODULUS_BITS, 1024),
             new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
             new CKA(CKA.WRAP, false),
             new CKA(CKA.ENCRYPT, false),
             new CKA(CKA.VERIFY, true),
+            new CKA(CKA.VERIFY_RECOVER, true),
             new CKA(CKA.TOKEN, true),
-            new CKA(CKA.LABEL, "label-public"),
-            new CKA(CKA.ID, "label"),
+            new CKA(CKA.LABEL, "labelrsa2-public"),
+            new CKA(CKA.ID, "labelrsa2"),
         };
         CKA[] privTempl = new CKA[] {
             new CKA(CKA.TOKEN, true),
             new CKA(CKA.PRIVATE, true),
             new CKA(CKA.SENSITIVE, true),
             new CKA(CKA.SIGN, true),
+            new CKA(CKA.SIGN_RECOVER, true),
             new CKA(CKA.DECRYPT, false),
             new CKA(CKA.UNWRAP, false),
             new CKA(CKA.EXTRACTABLE, false),
-            new CKA(CKA.LABEL, "label-private"),
-            new CKA(CKA.ID, "label"),
+            new CKA(CKA.LABEL, "labelrsa2-private"),
+            new CKA(CKA.ID, "labelrsa2"),
         };
         LongRef pubKey = new LongRef();
         LongRef privKey = new LongRef();
