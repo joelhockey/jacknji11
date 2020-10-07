@@ -330,7 +330,7 @@ public class CE {
     }
 
     /**
-     * Opens a session between an application and a token using {@link CKS#RW_PUBLIC_SESSION}
+     * Opens a session between an application and a token using {@link CK_SESSION_INFO#CKF_RW_SESSION and CK_SESSION_INFO#CKF_SERIAL_SESSION}
      * and null application and notify.
      * @param slotID the slot's ID
      * @return session handle
@@ -338,7 +338,7 @@ public class CE {
      * @see NativeProvider#C_OpenSession(long, long, Pointer, CK_NOTIFY, LongRef)
      */
     public static long OpenSession(long slotID) {
-        return OpenSession(slotID, CKS.RW_PUBLIC_SESSION, null, null);
+        return OpenSession(slotID, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
     }
 
     /**
