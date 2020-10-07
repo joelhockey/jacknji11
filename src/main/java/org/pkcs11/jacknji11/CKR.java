@@ -111,6 +111,7 @@ public class CKR {
     public static final long RANDOM_SEED_NOT_SUPPORTED   = 0x00000120;
     public static final long RANDOM_NO_RNG               = 0x00000121;
     public static final long DOMAIN_PARAMS_INVALID       = 0x00000130;
+    public static final long CKR_CURVE_NOT_SUPPORTED     = 0x00000140;
     public static final long BUFFER_TOO_SMALL            = 0x00000150;
     public static final long SAVED_STATE_INVALID         = 0x00000160;
     public static final long INFORMATION_SENSITIVE       = 0x00000170;
