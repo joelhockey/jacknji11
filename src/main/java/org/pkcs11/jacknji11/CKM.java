@@ -24,6 +24,9 @@ package org.pkcs11.jacknji11;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.jna.Memory;
+import com.sun.jna.Pointer;
+
 /**
  * CKM_? constants and CK_MECHANISM struct wrapper.
  * @author Joel Hockey (joel.hockey@gmail.com)
@@ -370,16 +373,29 @@ public class CKM {
     }
 
     public long mechanism;
-    public byte[] pParameter;
+    public byte[] bParameter;
+    public Pointer pParameter;
+    public long ulParameterLen;
 
     /**
      * PKCS#11 CK_MECHANISM struct constructor.
      * @param mechanism CKM_? mechanism.  Use one of the public static final long fields in this class.
      * @param param param for mechanism
      */
-    public CKM(long mechanism, byte[] param) {
+    public CKM(long mechanism, Pointer param, int paramSize) {
         this.mechanism = mechanism;
         this.pParameter = param;
+        ulParameterLen = paramSize;
+    }
+
+    public CKM(long mechanism, byte[] param) {    
+        this.mechanism = mechanism;
+        int len = (param != null) ? param.length : 0;
+        if (len > 0) {
+            pParameter = new Memory(len);
+            pParameter.write(0, param, 0, len);
+        }
+        ulParameterLen = len;
     }
 
     /**
@@ -393,7 +409,7 @@ public class CKM {
     /** @return string */
     public String toString() {
         return String.format("mechanism=0x%08x{%s} paramLen=%d param=%s",
-            mechanism, L2S(mechanism), pParameter != null ? pParameter.length : 0,
-                    Hex.b2s(pParameter));
+            mechanism, L2S(mechanism), bParameter != null ? bParameter.length : 0, 
+                    Hex.b2s(bParameter));
     }
 }
