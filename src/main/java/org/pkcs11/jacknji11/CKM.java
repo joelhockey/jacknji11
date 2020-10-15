@@ -255,6 +255,10 @@ public class CKM {
     public static final long EC_KEY_PAIR_GEN             = 0x00001040;
     public static final long ECDSA                       = 0x00001041;
     public static final long ECDSA_SHA1                  = 0x00001042;
+    public static final long ECDSA_SHA224                = 0x00001043;
+    public static final long ECDSA_SHA256                = 0x00001044;
+    public static final long ECDSA_SHA384                = 0x00001045;
+    public static final long ECDSA_SHA512                = 0x00001046;
     public static final long ECDH1_DERIVE                = 0x00001050;
     public static final long ECDH1_COFACTOR_DERIVE       = 0x00001051;
     public static final long ECMQV_DERIVE                = 0x00001052;
@@ -282,6 +286,10 @@ public class CKM {
     public static final long DSA_PARAMETER_GEN           = 0x00002000;
     public static final long DH_PKCS_PARAMETER_GEN       = 0x00002001;
     public static final long X9_42_DH_PARAMETER_GEN      = 0x00002002;
+
+    // From PKCS#11 version 3.0
+    public static final long EC_EDWARDS_KEY_PAIR_GEN = 0x00001055;
+    public static final long EDDSA                   = 0x00001057;
 
     // Vendor defined values
     // Eracom PTK

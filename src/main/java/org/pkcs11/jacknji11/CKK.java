@@ -56,7 +56,19 @@ public class CKK {
     public static final long ACTI            = 0x00000024;
     public static final long CAMELLIA        = 0x00000025;
     public static final long ARIA            = 0x00000026;
-
+    public static final long MD5_HMAC        = 0x00000027;
+    public static final long SHA_1_HMAC      = 0x00000028;
+    public static final long RIPEMD128_HMAC  = 0x00000029;
+    public static final long RIPEMD160_HMAC  = 0x0000002a;
+    public static final long SHA256_HMAC     = 0x0000002b;
+    public static final long SHA384_HMAC     = 0x0000002c;
+    public static final long SHA512_HMAC     = 0x0000002d;
+    public static final long SHA224_HMAC     = 0x0000002e;
+    public static final long SEED            = 0x0000002f;
+    public static final long GOSTR3410       = 0x00000030;
+    public static final long GOSTR3411       = 0x00000031;
+    public static final long GOST28147       = 0x00000032;
+    public static final long CKK_EC_EDWARDS  = 0x00000040;
 
     // Vendor defined values
     // Eracom PTK

@@ -278,7 +278,7 @@ public class CryptokiTest extends TestCase {
         byte[] digestedKey = CE.DigestFinal(session);
     }
 
-    public void testSignVerifyRSA() {
+    public void testSignVerifyRSAPKCS1() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.LoginUser(session, USER_PIN);
         // Different HSMs have a little different requirements on templates, regardless of which are mandatory or not
@@ -449,6 +449,78 @@ public class CryptokiTest extends TestCase {
         CE.Verify(session, data, sig1);
 
         CE.VerifyInit(session, new CKM(CKM.ECDSA), pubKey.value());
+        try {
+            CE.Verify(session, data, new byte[64]);
+            fail("CE Verify with no real signature should throw exception");
+        } catch (CKRException e) {
+            assertEquals("Failure with invalid signature data should be CKR.SIGNATURE_INVALID", CKR.SIGNATURE_INVALID, e.getCKR());
+        }
+    }
+
+    /** https://docs.oasis-open.org/pkcs11/pkcs11-curr/v3.0/os/pkcs11-curr-v3.0-os.html#_Toc30061191
+     */
+    public void testSignVerifyEdDSA() {
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        CE.LoginUser(session, USER_PIN);
+        // CKM_EC_EDWARDS_KEY_PAIR_GEN
+        /*
+            The mechanism can only generate EC public/private key pairs over the curves edwards25519 and edwards448 as defined in RFC 8032 or the curves 
+            id-Ed25519 and id-Ed448 as defined in RFC 8410. These curves can only be specified in the CKA_EC_PARAMS attribute of the template for the 
+            public key using the curveName or the oID methods 
+        */
+        // CKM_EDDSA (signature mechanism)
+        /*
+            CK_EDDSA_PARAMS is a structure that provides the parameters for the CKM_EDDSA signature mechanism.  The structure is defined as follows:
+            typedef struct CK_EDDSA_PARAMS {
+                CK_BBOOL     phFlag;
+                CK_ULONG     ulContextDataLen;
+                CK_BYTE_PTR  pContextData;
+            }  CK_EDDSA_PARAMS
+        */
+        // CK_EDDSA_PARAMS (no params means Ed25519 in keygen?)
+        // CK_EDDSA_PARAMS_PTR is a pointer to a CK_EDDSA_PARAMS
+        // CKK_EC_EDWARDS (private and public key)
+        
+        // Attributes from PKCS #11 Cryptographic Token Interface Current Mechanisms Specification Version 2.40 section 2.3.3 - ECDSA public key objects
+        /* DER-encoding of an ANSI X9.62 Parameters, also known as "EC domain parameters". */
+        // We use a Ed25519 key, the oid 1.3.101.112 has DER encoding in Hex 06032b6570
+        byte[] ecCurveParams = Hex.s2b("06032b6570");
+        CKA[] pubTempl = new CKA[] {
+            new CKA(CKA.EC_PARAMS, ecCurveParams),
+            new CKA(CKA.WRAP, false),
+            new CKA(CKA.ENCRYPT, false),
+            new CKA(CKA.VERIFY, true),
+            new CKA(CKA.VERIFY_RECOVER, false),
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.LABEL, "label-public"),
+            new CKA(CKA.ID, "label"),
+        };
+        CKA[] privTempl = new CKA[] {
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.PRIVATE, true),
+            new CKA(CKA.SENSITIVE, true),
+            new CKA(CKA.SIGN, true),
+            new CKA(CKA.SIGN_RECOVER, false),
+            new CKA(CKA.DECRYPT, false),
+            new CKA(CKA.UNWRAP, false),
+            new CKA(CKA.EXTRACTABLE, false),
+            new CKA(CKA.LABEL, "label-private"),
+            new CKA(CKA.ID, "label"),
+        };
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        CE.GenerateKeyPair(session, new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+
+        // Direct sign, PKCS#11 "2.3.6 ECDSA without hashing"
+        byte[] data = new byte[32]; // SHA256 hash is 32 bytes
+        CE.SignInit(session, new CKM(CKM.EDDSA), privKey.value());
+        byte[] sig1 = CE.Sign(session, data);
+        assertEquals(64, sig1.length);
+
+        CE.VerifyInit(session, new CKM(CKM.EDDSA), pubKey.value());
+        CE.Verify(session, data, sig1);
+
+        CE.VerifyInit(session, new CKM(CKM.EDDSA), pubKey.value());
         try {
             CE.Verify(session, data, new byte[64]);
             fail("CE Verify with no real signature should throw exception");
