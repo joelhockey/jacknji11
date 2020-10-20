@@ -674,7 +674,7 @@ public class CryptokiTest extends TestCase {
                 new CKA(CKA.DERIVE, true));
         byte[] des3keybuf = CE.GetAttributeValue(session, des3key, CKA.VALUE).getValue();
         
-      CE.DeriveKey(session, new CKM(CKM.VENDOR_PTK_DES3_DERIVE_CBC, new byte[32]), aeskey);
+      CE.DeriveKey(session, new CKM(CKM.VENDOR_PTK_DES3_DERIVE_CBC, new byte[32]), des3key);
     }
     
     public void testRandom() {
