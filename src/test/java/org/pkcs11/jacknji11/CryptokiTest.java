@@ -511,7 +511,7 @@ public class CryptokiTest extends TestCase {
         LongRef privKey = new LongRef();
         CE.GenerateKeyPair(session, new CKM(CKM.EC_EDWARDS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
 
-        // Direct sign, PKCS#11 "2.3.6 ECDSA without hashing"
+        // Direct sign, PKCS#11 "2.3.14 EdDSA"
         byte[] data = new byte[32]; // SHA256 hash is 32 bytes
         CE.SignInit(session, new CKM(CKM.EDDSA), privKey.value());
         byte[] sig1 = CE.Sign(session, data);
@@ -587,43 +587,96 @@ public class CryptokiTest extends TestCase {
         long session = CE.OpenSession(TESTSLOT);
         CE.LoginUser(session, USER_PIN);
 
+//        CKA[] secTempl = new CKA[] {
+//                new CKA(CKA.VALUE_LEN, 32),
+//                new CKA(CKA.LABEL, "labelwrap"),
+//                new CKA(CKA.ID, "labelwrap"),
+//                new CKA(CKA.TOKEN, false),
+//                new CKA(CKA.SENSITIVE, false),
+//                new CKA(CKA.EXTRACTABLE, true),
+//                new CKA(CKA.ENCRYPT, true),
+//                new CKA(CKA.DECRYPT, true),
+//                new CKA(CKA.DERIVE, true),
+//        };
+//        long aeskey = CE.GenerateKey(session, new CKM(CKM.AES_KEY_GEN), secTempl);
+        long aeskey = CE.GenerateKey(session, new CKM(CKM.AES_KEY_GEN),
+                new CKA(CKA.VALUE_LEN, 32),
+                new CKA(CKA.LABEL, "labelwrap"),
+                new CKA(CKA.ID, "labelwrap"),
+                new CKA(CKA.TOKEN, false),
+                new CKA(CKA.SENSITIVE, false),
+                new CKA(CKA.EXTRACTABLE, true),
+                new CKA(CKA.DERIVE, true));
+        byte[] aeskeybuf = CE.GetAttributeValue(session, aeskey, CKA.VALUE).getValue();
+
+        // See comments on the method testSignVerifyRSA
+        CKA[] pubTempl = new CKA[] {
+            new CKA(CKA.MODULUS_BITS, 1024),
+            new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
+            new CKA(CKA.WRAP, true),
+            new CKA(CKA.ENCRYPT, false),
+            new CKA(CKA.VERIFY, true),
+            new CKA(CKA.VERIFY_RECOVER, true),
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.LABEL, "labelrsa3-public"),
+            new CKA(CKA.ID, "labelrsa3"),
+        };
+        CKA[] privTempl = new CKA[] {
+            new CKA(CKA.TOKEN, true),
+            new CKA(CKA.PRIVATE, true),
+            new CKA(CKA.SENSITIVE, true),
+            new CKA(CKA.SIGN, true),
+            new CKA(CKA.SIGN_RECOVER, true),
+            new CKA(CKA.DECRYPT, false),
+            new CKA(CKA.UNWRAP, true),
+            new CKA(CKA.EXTRACTABLE, false),
+            new CKA(CKA.LABEL, "labelrsa3-private"),
+            new CKA(CKA.ID, "labelrsa3"),
+        };
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        CE.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+
+        // Key wrapping, i.e. exporting a key from the HSM. Wrapping with RSA means you wrap (encrypt) the key 
+        // with the RSA public key and you unwrap (decrypt) it with the RSA private key
+        // http://docs.oasis-open.org/pkcs11/pkcs11-curr/v2.40/csprd02/pkcs11-curr-v2.40-csprd02.html#_Toc387327730
+        byte[] wrapped = CE.WrapKey(session, new CKM(CKM.RSA_PKCS), pubKey.value(), aeskey);
+
+        // We need to provide a full set of attributes for the secret key in order to unwrap it inside the HSM
+        // Unwrapping is done with the RSA private key, i.e. the secret key is never exposed unencrypted outside
+        // of the HSM (if we had generated the secret key with CKA.EXTRACTABLE=false that is)
+        CKA[] secTemplUnwrap = new CKA[] {
+                new CKA(CKA.CLASS, CKO.SECRET_KEY),
+                new CKA(CKA.KEY_TYPE, CKK.AES),
+                new CKA(CKA.LABEL, "labelunwrap"),
+                new CKA(CKA.ID, "labelunwrap"),
+                new CKA(CKA.TOKEN, false),
+                new CKA(CKA.SENSITIVE, false),
+                new CKA(CKA.EXTRACTABLE, true),
+                new CKA(CKA.ENCRYPT, true),
+                new CKA(CKA.DECRYPT, true),
+                new CKA(CKA.DERIVE, true),
+        };
+        long aeskey2 = CE.UnwrapKey(session, new CKM(CKM.RSA_PKCS), privKey.value(), wrapped, secTemplUnwrap);
+        byte[] aeskey2buf = CE.GetAttributeValue(session, aeskey2, CKA.VALUE).getValue();
+        assertTrue(Arrays.equals(aeskey2buf, aeskeybuf));
+
+    }
+
+    public void testPTKDES3Derive() {
+        long session = CE.OpenSession(TESTSLOT);
+        CE.LoginUser(session, USER_PIN);
+
         long des3key = CE.GenerateKey(session, new CKM(CKM.DES3_KEY_GEN),
                 new CKA(CKA.VALUE_LEN, 24),
                 new CKA(CKA.LABEL, "label"),
                 new CKA(CKA.SENSITIVE, false),
                 new CKA(CKA.DERIVE, true));
         byte[] des3keybuf = CE.GetAttributeValue(session, des3key, CKA.VALUE).getValue();
-
-        CKA[] pubTempl = new CKA[] {
-            new CKA(CKA.MODULUS_BITS, 512),
-            new CKA(CKA.UNWRAP, true),
-            new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
-        };
-        CKA[] privTempl = new CKA[] {
-            new CKA(CKA.WRAP, true),
-        };
-        LongRef pubKey = new LongRef();
-        LongRef privKey = new LongRef();
-        CE.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
-        final CKA[] pubExpMod = CE.GetAttributeValue(session, pubKey.value(), new long[] {CKA.PUBLIC_EXPONENT, CKA.MODULUS});
-//        System.out.println("pubExp: " + Hex.b2s(pubExpMod[0].getValue()));
-//        System.out.println("mod   : " + Hex.b2s(pubExpMod[1].getValue()));
-
-        byte[] wrappedDes3 = CE.WrapKey(session, new CKM(CKM.RSA_PKCS), privKey.value(), des3key);
-
-        BigInteger pubExp = new BigInteger(1, pubExpMod[0].getValue());
-        BigInteger mod = new BigInteger(1, pubExpMod[1].getValue());
-        byte[] unwrappedDes3 = Buf.substring(new BigInteger(1, wrappedDes3).modPow(pubExp, mod).toByteArray(), -24, 24);
-//        System.out.println("unwrapped: " + Hex.dump(unwrappedDes3));
-        assertTrue(Arrays.equals(des3keybuf, unwrappedDes3));
-
-        long des3key2 = CE.UnwrapKey(session, new CKM(CKM.RSA_PKCS), pubKey.value(), wrappedDes3);
-        byte[] des3key2buf = CE.GetAttributeValue(session, des3key2, CKA.VALUE).getValue();
-        assertTrue(Arrays.equals(des3key2buf, des3keybuf));
-
-        CE.DeriveKey(session, new CKM(CKM.VENDOR_PTK_DES3_DERIVE_CBC, new byte[32]), des3key);
+        
+      CE.DeriveKey(session, new CKM(CKM.VENDOR_PTK_DES3_DERIVE_CBC, new byte[32]), des3key);
     }
-
+    
     public void testRandom() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         byte[] buf = new byte[16];
