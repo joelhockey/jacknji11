@@ -259,31 +259,9 @@ public class CKA {
         this(type, null);
     }
 
-    /** Some HSMs return a larger value byte array than the size given by the returned length, so we must handle 
-     * that the actual value is shorter than the size of the byte array.
-     * This method checks if a returned byte array needs to be shrunken to the size P11 says it should be.
-     * 
-     * @param value byte array to copy into return value
-     * @param len length of the possibly shrunken return value
-     * @return value if value.length >= len or a new byte array with length len copied from the len first byte of value
-     */
-    private byte[] getShrunkenValue(byte[] value, long len) {
-        final byte[] ret;
-        if (value != null && len < value.length) {
-            // we have a larger byte array than the actual data, shrink it
-            ret = new byte[(int)len];
-            for (int i = 0; i < ret.length; i++) {
-                ret[i] = value[i];
-            }
-        } else {
-            ret = value;
-        }
-        return ret;
-    }
-    
     /** @return value as byte[] */
     public byte[] getValue() {
-        return pValue == null ? null : getShrunkenValue(pValue, ulValueLen);
+        return pValue == null ? null : pValue;
     }
 
     /** @return value as String */
@@ -321,7 +299,7 @@ public class CKA {
 
     /** @return value as BigInteger */
     public BigInteger getValueBigInt() {
-        return ulValueLen == 0 || pValue == null ? null : new BigInteger(getShrunkenValue(pValue, ulValueLen));
+        return ulValueLen == 0 || pValue == null ? null : new BigInteger(getValue());
     }
 
     /**
