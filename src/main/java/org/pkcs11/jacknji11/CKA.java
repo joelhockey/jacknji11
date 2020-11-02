@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.pkcs11.jacknji11.Buf;
 
 /**
  * CKA_? constants and wrapper for CK_ATTRIBUTE struct.
@@ -299,7 +300,7 @@ public class CKA {
 
     /** @return value as BigInteger */
     public BigInteger getValueBigInt() {
-        return ulValueLen == 0 || pValue == null ? null : new BigInteger(getValue());
+        return ulValueLen == 0 || pValue == null ? null : new BigInteger(Buf.substring(pValue, 0, (int)ulValueLen));
     }
 
     /**
