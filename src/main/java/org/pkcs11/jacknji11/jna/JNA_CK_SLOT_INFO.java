@@ -23,6 +23,9 @@ package org.pkcs11.jacknji11.jna;
 
 import org.pkcs11.jacknji11.CK_SLOT_INFO;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
@@ -36,6 +39,10 @@ public class JNA_CK_SLOT_INFO extends Structure {
     public NativeLong flags;
     public JNA_CK_VERSION hardwareVersion;
     public JNA_CK_VERSION firmwareVersion;
+
+    protected List<String> getFieldOrder() {
+        return Arrays.asList("slotDescription", "manufacturerID", "flags", "hardwareVersion", "firmwareVersion");
+    }
 
     public JNA_CK_SLOT_INFO readFrom(CK_SLOT_INFO info) {
         slotDescription = info.slotDescription;

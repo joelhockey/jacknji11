@@ -23,6 +23,9 @@ package org.pkcs11.jacknji11.jna;
 
 import org.pkcs11.jacknji11.CK_SESSION_INFO;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
@@ -35,6 +38,10 @@ public class JNA_CK_SESSION_INFO extends Structure {
     public NativeLong state;
     public NativeLong flags;
     public NativeLong ulDeviceError;
+
+    protected List<String> getFieldOrder() {
+        return Arrays.asList("slotID", "state", "flags", "ulDeviceError");
+    }
 
     public JNA_CK_SESSION_INFO readFrom(CK_SESSION_INFO info) {
         slotID = new NativeLong(info.slotID);

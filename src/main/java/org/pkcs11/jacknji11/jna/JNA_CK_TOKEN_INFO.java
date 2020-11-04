@@ -23,6 +23,9 @@ package org.pkcs11.jacknji11.jna;
 
 import org.pkcs11.jacknji11.CK_TOKEN_INFO;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
@@ -49,6 +52,13 @@ public class JNA_CK_TOKEN_INFO extends Structure {
     public JNA_CK_VERSION hardwareVersion;
     public JNA_CK_VERSION firmwareVersion;
     public byte[] utcTime;
+
+    protected List<String> getFieldOrder() {
+        return Arrays.asList("label", "manufacturerID", "model", "serialNumber", "flags",
+                "ulMaxSessionCount", "ulSessionCount", "ulMaxRwSessionCount", "ulRwSessionCount",
+                "ulMaxPinLen", "ulMinPinLen", "ulTotalPublicMemory", "ulFreePublicMemory",
+                "ulTotalPrivateMemory", "ulFreePrivateMemory", "hardwareVersion", "firmwareVersion", "utcTime");
+    }
 
     public JNA_CK_TOKEN_INFO readFrom(CK_TOKEN_INFO info) {
         label = info.label;
