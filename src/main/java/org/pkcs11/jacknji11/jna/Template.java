@@ -24,6 +24,7 @@ package org.pkcs11.jacknji11.jna;
 import org.pkcs11.jacknji11.CKA;
 
 import com.sun.jna.Memory;
+import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.PointerType;
@@ -55,7 +56,7 @@ public class Template extends PointerType {
         if (listLen == 0) {
             return;
         }
-        setPointer(new Memory(listLen * (NativeLong.SIZE + Pointer.SIZE + NativeLong.SIZE)));
+        setPointer(new Memory(listLen * (NativeLong.SIZE + Native.POINTER_SIZE + NativeLong.SIZE)));
         int offset = 0;
 
         for (int i = 0; i < listLen; i++) {
@@ -74,7 +75,7 @@ public class Template extends PointerType {
                 pValue.write(0, list[i].pValue, 0, (int) list[i].ulValueLen);
             }
             getPointer().setPointer(offset, pValue);
-            offset += Pointer.SIZE;
+            offset += Native.POINTER_SIZE;
 
             // ulValueLen
             if (NativeLong.SIZE == 4) {
@@ -102,7 +103,7 @@ public class Template extends PointerType {
 
             // read pValue
             Pointer ptr = getPointer().getPointer(offset);
-            offset += Pointer.SIZE;
+            offset += Native.POINTER_SIZE;
 
             // read ulValueLen
             int ulValueLen = 0;

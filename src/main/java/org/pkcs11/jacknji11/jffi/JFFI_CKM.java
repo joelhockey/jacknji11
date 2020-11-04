@@ -24,6 +24,8 @@ package org.pkcs11.jacknji11.jffi;
 import jnr.ffi.Memory;
 import jnr.ffi.Struct;
 
+import com.sun.jna.Native;
+
 import org.pkcs11.jacknji11.CKM;
 
 /**
@@ -52,7 +54,7 @@ public class JFFI_CKM extends Struct {
 
     public JFFI_CKM readFromPointer(CKM pMechanism) {
         mechanism = pMechanism.mechanism;
-        int len = pMechanism.pParameter != null ? pMechanism.pParameter.SIZE : 0;
+        int len = pMechanism.pParameter != null ? Native.POINTER_SIZE : 0;
         if (len > 0) {
             byte[] ckmParamBytes = pMechanism.pParameter.getByteArray(0, len);
             pParameter = Memory.allocate(jnr.ffi.Runtime.getSystemRuntime(), len);
