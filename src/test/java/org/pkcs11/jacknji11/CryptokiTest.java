@@ -21,7 +21,7 @@
 
 package org.pkcs11.jacknji11;
 
-import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
@@ -134,7 +134,7 @@ public class CryptokiTest extends TestCase {
         CE.SetOperationState(session, state, 0, 0);
     }
 
-    public void testCreateCopyGetSizeDestroyObject() {
+    public void testCreateCopyDestroyObject() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.Login(session, CKU.USER, USER_PIN);
         CKA[] templ = {
@@ -142,7 +142,10 @@ public class CryptokiTest extends TestCase {
             new CKA(CKA.VALUE, "datavalue"),
         };
         long o1 = CE.CreateObject(session, templ);
-        long o2 = CE.CopyObject(session, o1, null);
+        CKA[] newTempl = {
+            new CKA(CKA.TOKEN, true),
+        };
+        long o2 = CE.CopyObject(session, o1, newTempl);
         CE.DestroyObject(session, o1);
         CE.DestroyObject(session, o2);
     }
@@ -152,7 +155,8 @@ public class CryptokiTest extends TestCase {
         CE.Login(session, CKU.USER, USER_PIN);
         CKA[] templ = {
             new CKA(CKA.CLASS, CKO.DATA),
-            new CKA(CKA.VALUE, "datavalue"),
+            new CKA(CKA.PRIVATE, false),
+            new CKA(CKA.VALUE, "datavalue".getBytes(StandardCharsets.UTF_8)),
         };
         long o = CE.CreateObject(session, templ);
         long size = CE.GetObjectSize(session, o);
@@ -162,29 +166,31 @@ public class CryptokiTest extends TestCase {
         assertEquals(Long.valueOf(CKO.DATA), CE.GetAttributeValue(session, o, CKA.CLASS).getValueLong());
         assertFalse(CE.GetAttributeValue(session, o, CKA.PRIVATE).getValueBool());
         templ = new CKA[] {
-                new CKA(CKA.LABEL, "datalabel"),
-                new CKA(CKA.VALUE, "newdatavalue"),
-                new CKA(CKA.ID, "dataid"),
+                // Different HSMs are pick in different ways which attributes can be modified, 
+                // just modify label which seems to work on most
+                new CKA(CKA.LABEL, "datalabel".getBytes(StandardCharsets.UTF_8)),
         };
         CE.SetAttributeValue(session, o, templ);
         long newsize = CE.GetObjectSize(session, o);
-        assertTrue(newsize > size);
+        if (size > -1) {
+            assertTrue("newsize: " + newsize + ", size " + size, newsize > size);
+        }
         assertEquals("datalabel", CE.GetAttributeValue(session, o, CKA.LABEL).getValueStr());
-        assertEquals("dataid", CE.GetAttributeValue(session, o, CKA.ID).getValueStr());
-        assertEquals("newdatavalue", CE.GetAttributeValue(session, o, CKA.VALUE).getValueStr());
+        assertNull(CE.GetAttributeValue(session, o, CKA.ID).getValueStr());
+        assertEquals("datavalue", CE.GetAttributeValue(session, o, CKA.VALUE).getValueStr());
         assertEquals(Long.valueOf(CKO.DATA), CE.GetAttributeValue(session, o, CKA.CLASS).getValueLong());
         assertFalse(CE.GetAttributeValue(session, o, CKA.PRIVATE).getValueBool());
 
         templ = CE.GetAttributeValue(session, o, CKA.LABEL, CKA.ID, CKA.VALUE, CKA.CLASS, CKA.PRIVATE);
         assertEquals("datalabel", templ[0].getValueStr());
-        assertEquals("dataid", templ[1].getValueStr());
-        assertEquals("newdatavalue", templ[2].getValueStr());
+        assertNull(CE.GetAttributeValue(session, o, CKA.ID).getValueStr());
+        assertEquals("datavalue", templ[2].getValueStr());
         assertEquals(CKO.DATA, templ[3].getValueLong().longValue());
         assertFalse(templ[4].getValueBool());
 
         templ = CE.GetAttributeValue(session, o, CKA.LABEL, CKA.ID, CKA.OBJECT_ID, CKA.TRUSTED);
         assertEquals("datalabel", templ[0].getValueStr());
-        assertEquals("dataid", templ[1].getValueStr());
+        assertNull(CE.GetAttributeValue(session, o, CKA.ID).getValueStr());
         assertNull(templ[2].getValue());
         assertNull(templ[3].getValueBool());
     }
