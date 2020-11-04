@@ -6,7 +6,7 @@
 
   <groupId>org.pkcs11</groupId>
   <artifactId>jacknji11</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <name>jacknji11</name>
   <packaging>jar</packaging>
   
@@ -56,7 +56,7 @@
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>3.3.0</version>
+      <version>5.6.0</version>
     </dependency>
     <dependency>
       <groupId>com.github.jnr</groupId>

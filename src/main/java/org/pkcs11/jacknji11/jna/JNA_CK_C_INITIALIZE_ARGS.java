@@ -29,6 +29,9 @@ import org.pkcs11.jacknji11.CK_C_INITIALIZE_ARGS.CK_UNLOCKMUTEX;
 import org.pkcs11.jacknji11.NativePointer;
 import org.pkcs11.jacknji11.NativePointerByReference;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.sun.jna.Callback;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
@@ -47,6 +50,11 @@ public class JNA_CK_C_INITIALIZE_ARGS extends Structure {
     public JNA_CK_UNLOCKMUTEX unlockMutex;
     public NativeLong flags;
     public Pointer pReserved;
+
+    @Override
+    protected List<String> getFieldOrder() {
+        return Arrays.asList("createMutex", "destroyMutex", "lockMutex", "unlockMutex", "flags", "pReserved");
+    }
 
     public JNA_CK_C_INITIALIZE_ARGS(final CK_C_INITIALIZE_ARGS args) {
         if (args.createMutex != null) {

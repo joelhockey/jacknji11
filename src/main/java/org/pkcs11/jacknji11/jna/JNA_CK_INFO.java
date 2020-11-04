@@ -23,6 +23,9 @@ package org.pkcs11.jacknji11.jna;
 
 import org.pkcs11.jacknji11.CK_INFO;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.sun.jna.NativeLong;
 import com.sun.jna.Structure;
 
@@ -47,6 +50,11 @@ public class JNA_CK_INFO extends Structure {
      */
     public JNA_CK_INFO() {
         setAlignType(ALIGN_NONE);
+    }
+
+    @Override
+    protected List<String> getFieldOrder() {
+        return Arrays.asList("cryptokiVersion", "manufacturerID", "flags", "libraryDescription", "libraryVersion");
     }
 
     public JNA_CK_INFO readFrom(CK_INFO info) {
