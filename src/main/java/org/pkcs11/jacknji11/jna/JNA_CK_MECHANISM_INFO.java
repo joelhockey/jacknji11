@@ -38,6 +38,7 @@ public class JNA_CK_MECHANISM_INFO extends Structure {
     public NativeLong ulMaxKeySize;
     public NativeLong flags;
 
+    @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("ulMinKeySize", "ulMaxKeySize", "flags");
     }

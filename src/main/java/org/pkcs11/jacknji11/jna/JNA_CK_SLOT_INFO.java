@@ -40,6 +40,7 @@ public class JNA_CK_SLOT_INFO extends Structure {
     public JNA_CK_VERSION hardwareVersion;
     public JNA_CK_VERSION firmwareVersion;
 
+    @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("slotDescription", "manufacturerID", "flags", "hardwareVersion", "firmwareVersion");
     }

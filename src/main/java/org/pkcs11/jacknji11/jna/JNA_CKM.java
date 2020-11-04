@@ -41,6 +41,7 @@ public class JNA_CKM extends Structure {
     public Pointer pParameter;
     public NativeLong ulParameterLen;
 
+    @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("mechanism", "pParameter", "ulParameterLen");
     }

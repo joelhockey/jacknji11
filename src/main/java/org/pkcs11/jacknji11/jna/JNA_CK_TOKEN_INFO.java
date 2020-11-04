@@ -53,6 +53,7 @@ public class JNA_CK_TOKEN_INFO extends Structure {
     public JNA_CK_VERSION firmwareVersion;
     public byte[] utcTime;
 
+    @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("label", "manufacturerID", "model", "serialNumber", "flags",
                 "ulMaxSessionCount", "ulSessionCount", "ulMaxRwSessionCount", "ulRwSessionCount",

@@ -52,6 +52,7 @@ public class JNA_CK_INFO extends Structure {
         setAlignType(ALIGN_NONE);
     }
 
+    @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("cryptokiVersion", "manufacturerID", "flags", "libraryDescription", "libraryVersion");
     }

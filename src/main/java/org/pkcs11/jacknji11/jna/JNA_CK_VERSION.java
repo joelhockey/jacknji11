@@ -37,6 +37,7 @@ public class JNA_CK_VERSION extends Structure {
     public byte major;
     public byte minor;
 
+    @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("major", "minor");
     }

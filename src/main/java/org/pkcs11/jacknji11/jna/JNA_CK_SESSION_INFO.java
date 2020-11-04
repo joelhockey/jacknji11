@@ -39,6 +39,7 @@ public class JNA_CK_SESSION_INFO extends Structure {
     public NativeLong flags;
     public NativeLong ulDeviceError;
 
+    @Override
     protected List<String> getFieldOrder() {
         return Arrays.asList("slotID", "state", "flags", "ulDeviceError");
     }
