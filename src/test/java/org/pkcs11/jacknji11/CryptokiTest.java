@@ -156,7 +156,7 @@ public class CryptokiTest extends TestCase {
         CKA[] templ = {
             new CKA(CKA.CLASS, CKO.DATA),
             new CKA(CKA.PRIVATE, false),
-            new CKA(CKA.VALUE, "datavalue".getBytes(StandardCharsets.UTF_8)),
+            new CKA(CKA.VALUE, "datavalue"),
         };
         long o = CE.CreateObject(session, templ);
         long size = CE.GetObjectSize(session, o);
@@ -168,7 +168,7 @@ public class CryptokiTest extends TestCase {
         templ = new CKA[] {
                 // Different HSMs are pick in different ways which attributes can be modified, 
                 // just modify label which seems to work on most
-                new CKA(CKA.LABEL, "datalabel".getBytes(StandardCharsets.UTF_8)),
+                new CKA(CKA.LABEL, "datalabel"),
         };
         CE.SetAttributeValue(session, o, templ);
         long newsize = CE.GetObjectSize(session, o);
