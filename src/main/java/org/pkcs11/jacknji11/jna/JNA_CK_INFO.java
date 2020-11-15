@@ -31,7 +31,7 @@ import com.sun.jna.Structure;
 
 /**
  * JNA wrapper for PKCS#11 CK_INFO struct.  It sets align type to {@link Structure#ALIGN_NONE}
- * since the ULONGS (NativeLongs) dont line up on a 4 byte boundary.  You wouldn't care to know
+ * since the ULONGS (NativeLongs) don't line up on a 4 byte boundary.  You wouldn't care to know
  * how painful that learning experience was.
  * @author Joel Hockey (joel.hockey@gmail.com)
  */

@@ -1117,7 +1117,7 @@ until the application uses a call to C_Decrypt or C_DecryptFinal to actually obt
 final piece of plaintext.  To process additional data (in single or multiple parts), the
 application must call C_DecryptInit again
      * @param hSession the session's handle
-     * @param pMechanism te decryption mechanism
+     * @param pMechanism the decryption mechanism
      * @param hKey handle of decryption key
      * @return {@link CKR#ARGUMENTS_BAD}, {@link CKR#CRYPTOKI_NOT_INITIALIZED},
 {@link CKR#DEVICE_ERROR}, {@link CKR#DEVICE_MEMORY}, {@link CKR#DEVICE_REMOVED},

@@ -214,7 +214,7 @@ public class C {
     /**
      * Initialises a token.  Pad or truncate label if required.
      * @param slotID ID of the token's slot
-     * @param pin the SO's intital PIN
+     * @param pin the SO's initial PIN
      * @param label 32-byte token label (space padded).  If not 32 bytes, then
      * it will be padded or truncated as required
      * @return {@link CKR} return code
@@ -492,7 +492,7 @@ public class C {
      * Modifies the values of one or more object attributes.
      * @param session the session's handle
      * @param object the object's handle
-     * @param templ specifies attriutes and values
+     * @param templ specifies attributes and values
      * @return {@link CKR} return code
      * @see NativeProvider#C_SetAttributeValue(long, long, Template, long)
      */
@@ -508,7 +508,7 @@ public class C {
     }
 
     /**
-     * Initialises a search for token and sesion objects that match a template.
+     * Initialises a search for token and session objects that match a template.
      * @param session the session's handle
      * @param templ attribute values to match
      * @return {@link CKR} return code

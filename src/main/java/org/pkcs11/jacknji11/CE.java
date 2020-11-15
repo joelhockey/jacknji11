@@ -262,7 +262,7 @@ public class CE {
     /**
      * Initialises a token.  Pad or truncate label if required.
      * @param slotID ID of the token's slot
-     * @param pin the SO's intital PIN
+     * @param pin the SO's initial PIN
      * @param label 32-byte token label (space padded).  If not 32 bytes, then
      * it will be padded or truncated as required
      * @see C#InitToken(long, byte[], byte[])
@@ -678,7 +678,7 @@ public class CE {
      * Modifies the values of one or more object attributes.
      * @param session the session's handle
      * @param object the object's handle
-     * @param templ specifies attriutes and values
+     * @param templ specifies attributes and values
      * @see C#SetAttributeValue(long, long, CKA[])
      * @see NativeProvider#C_SetAttributeValue(long, long, Template, long)
      */
@@ -688,7 +688,7 @@ public class CE {
     }
 
     /**
-     * Initailses a search for token and sesion objects that match a template.
+     * Initailses a search for token and session objects that match a template.
      * @param session the session's handle
      * @param templ attribute values to match
      * @see C#FindObjectsInit(long, CKA[])
@@ -714,7 +714,7 @@ public class CE {
     }
 
     /**
-     * Continues a searc for token and session objects that match a template,
+     * Continues a search for token and session objects that match a template,
      * obtaining additional object handles.
      * @param session the session's handle
      * @param maxObjects maximum objects to return
@@ -748,7 +748,7 @@ public class CE {
     }
 
     /**
-     * Single-part search for token and sesion objects that match a template.
+     * Single-part search for token and session objects that match a template.
      * @param session the session's handle
      * @param templ attribute values to match
      * @return all objects matching
@@ -1208,7 +1208,7 @@ public class CE {
 
     /**
      * Signs (encrypts with private key) data in a single part, where the signature is (will be)
-     * an appendix to the data, and plaintext canot be recovered from the signature.
+     * an appendix to the data, and plaintext cannot be recovered from the signature.
      * @param session the session's handle
      * @param data the data to sign
      * @param signature gets the signature
@@ -1223,7 +1223,7 @@ public class CE {
 
     /**
      * Signs (encrypts with private key) data in a single part, where the signature is (will be)
-     * an appendix to the data, and plaintext canot be recovered from the signature.
+     * an appendix to the data, and plaintext cannot be recovered from the signature.
      * @param session the session's handle
      * @param data the data to sign
      * @return signature
@@ -1282,7 +1282,7 @@ public class CE {
 
     /**
      * Signs (encrypts with private key) data in a single part, where the signature is (will be)
-     * an appendix to the data, and plaintext canot be recovered from the signature.
+     * an appendix to the data, and plaintext cannot be recovered from the signature.
      * @param session the session's handle
      * @param mechanism the signature mechanism
      * @param key handle of signature key
@@ -1356,7 +1356,7 @@ public class CE {
 
     /**
      * Initialises a verification operation, where the signature is an appendix to the data,
-     * and plaintet cannot be recovered from the signature (e.g. DSA).
+     * and plaintext cannot be recovered from the signature (e.g. DSA).
      * @param session the session's handle
      * @param mechanism the verification mechanism
      * @param key verification key
@@ -1384,7 +1384,7 @@ public class CE {
 
     /**
      * Continues a multiple-part verification operation where the signature is an appendix to the data,
-     * and plaintet cannot be recovered from the signature.
+     * and plaintext cannot be recovered from the signature.
      * @param session the session's handle
      * @param part signed data
      * @see C#VerifyUpdate(long, byte[])
@@ -1633,7 +1633,7 @@ public class CE {
     /**
      * Generates a public-key / private-key pair, create new key objects.
      * @param session the session's handle
-     * @param mechanism key generation mechansim
+     * @param mechanism key generation mechanism
      * @param publicKeyTemplate template for the new public key
      * @param privateKeyTemplate template for the new private key
      * @param publicKey gets handle of new public key
