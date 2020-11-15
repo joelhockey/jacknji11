@@ -23,7 +23,7 @@ package org.pkcs11.jacknji11;
 
 /**
  * Exception for CKR values that are non-zero (CKR.OK).
- * Used in {@link CE} interface as alernative to returning
+ * Used in {@link CE} interface as alternative to returning
  * CKR for every function.
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
