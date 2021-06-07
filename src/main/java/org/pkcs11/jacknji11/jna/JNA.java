@@ -141,11 +141,16 @@ public class JNA implements NativeProvider {
 
     public long C_OpenSession(long slotID, long flags, NativePointer application, final CK_NOTIFY notify, LongRef phSession) {
         Pointer jna_application = new Pointer(application.getAddress());
-        JNA_CK_NOTIFY jna_notify = new JNA_CK_NOTIFY() {
-            public NativeLong invoke(NativeLong hSession, NativeLong event, Pointer pApplication) {
-                return NL(notify.invoke(hSession.longValue(), event.longValue(), new NativePointer(Pointer.nativeValue(pApplication))));
-            }
-        };
+        final JNA_CK_NOTIFY  jna_notify;
+        if (notify == null) {
+            jna_notify = null; 
+        } else {
+            jna_notify = new JNA_CK_NOTIFY() {
+                public NativeLong invoke(NativeLong hSession, NativeLong event, Pointer pApplication) {
+                    return NL(notify.invoke(hSession.longValue(), event.longValue(), new NativePointer(Pointer.nativeValue(pApplication))));
+                }
+            };
+        }
         NativeLongByReference jna_phSession = NLP(phSession.value);
         long rv = jnaNative.C_OpenSession(NL(slotID), NL(flags), jna_application, jna_notify, jna_phSession);
         application.setAddress(Pointer.nativeValue(jna_application));
