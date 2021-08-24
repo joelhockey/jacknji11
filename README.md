@@ -30,13 +30,14 @@ export JACKNJI11_TEST_SO_PIN=sopin
 export JACKNJI11_TEST_USER_PIN=userpin
 ```
 
-The tests rely on a library named libcryptoki.so being available on the LD_LIBRARY_PATH.
-If you for example run SoftHSM2, you have to see to that this exists.
+The tests rely on a library named libcryptoki.so being available on the `LD_LIBRARY_PATH`. But you can use an alternate library as described in the following section.
 
-```
-sudo ln -s /usr/local/lib/softhsm/libsofthsm2.so /usr/local/lib/softhsm/libcryptoki.so
-export LD_LIBRARY_PATH=/usr/local/lib/softhsm
-```
+## Providing alternate cryptoki dll
+The `CE` and `C` classes provide `Initialize()` and `Initialize(String)` functions. The first function does not take a cryptoki library path, but the second one takes a cryptoki library path. If you want to provide an alternate pkcs11 library, you have two choices:
+  1. Use the `JACKNJI11_PKCS11_LIB_PATH` environment variable to set the absolute path of the library. For example: 
 
-Note: LD_LIBRARY_PATH is used by Linux systems to point to directories where libraries should be loaded, apart from the system path. If your libcryptoki.so resides in a directory that is not searched by default by the system, you can use LD_LIBRARY_PATH in order for the system to find your libcryptoki.so.
+```export JACKNJI11_PKCS11_LIB_PATH=/usr/local/lib/utimaco/cs2_pkcs11.so```
+
+  2. Use the `Initialize(String)` function to provide the library manually, as below:
+```CE.Initialize("/usr/local/lib/utimaco/cs2_pkcs11.so");```
 

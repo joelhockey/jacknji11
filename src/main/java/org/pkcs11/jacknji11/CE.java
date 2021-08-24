@@ -52,8 +52,8 @@ package org.pkcs11.jacknji11;
 public class CE {
 
     /**
-     * Initialize cryptoki.
-     * @see C#Initialize()
+     * Initialize cryptoki with the default PKCS11 library set via the <code>JACKNJI11_PKCS11_LIB_PATH</code> environment variable.
+     * @see C#Initialize(String)
      * @see NativeProvider#C_Initialize(CK_C_INITIALIZE_ARGS)
      */
     public static void Initialize() {
@@ -61,6 +61,16 @@ public class CE {
         if (rv != CKR.OK) throw new CKRException(rv);
     }
 
+    /**
+     * Initialize cryptoki.
+     * @see C#Initialize(String)
+     * @see NativeProvider#C_Initialize(CK_C_INITIALIZE_ARGS)
+     * @param pkcs11LibPath The full path of the pkcs11 module
+     */
+    public static void Initialize(String pkcs11LibPath) {
+        long rv = C.Initialize(pkcs11LibPath);
+        if (rv != CKR.OK) throw new CKRException(rv);
+    }
     /**
      * Called to indicate that an application is finished with the Cryptoki library.
      * @see C#Finalize()
