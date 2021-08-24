@@ -21,10 +21,11 @@
 
 package org.pkcs11.jacknji11;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 import junit.framework.TestCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 /**
  * JUnit tests for jacknji11.
@@ -34,6 +35,12 @@ import junit.framework.TestCase;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CryptokiTest extends TestCase {
+  static {
+    System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "DEBUG");
+  }
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CryptokiTest.class);
+
   private byte[] SO_PIN = "sopin".getBytes();
   private byte[] USER_PIN = "userpin".getBytes();
   private long TESTSLOT = 0;
@@ -78,36 +85,36 @@ public class CryptokiTest extends TestCase {
   public void testGetInfo() {
     CK_INFO info = new CK_INFO();
     CE.GetInfo(info);
-       System.out.println(info);
+//       LOGGER.debug(info.toString());
   }
 
   public void testGetSlotList() {
     long[] slots = CE.GetSlotList(true);
-        System.out.println("slots: " + Arrays.toString(slots));
+//    LOGGER.debug("slots: " + Arrays.toString(slots));
   }
 
   public void testGetSlotInfo() {
     CK_SLOT_INFO info = new CK_SLOT_INFO();
     CE.GetSlotInfo(TESTSLOT, info);
-        System.out.println(info);
+//    LOGGER.debug(info.toString());
   }
 
   public void testGetTokenInfo() {
     CK_TOKEN_INFO info = new CK_TOKEN_INFO();
     CE.GetTokenInfo(TESTSLOT, info);
-//        System.out.println(info);
+//    LOGGER.debug(info.toString());
   }
 
   public void testGetMechanismList() {
     for (long mech : CE.GetMechanismList(TESTSLOT)) {
-//            System.out.println(String.format("0x%08x : %s", mech, CKM.L2S(mech)));
+      LOGGER.debug(String.format("0x%08x : %s", mech, CKM.L2S(mech)));
     }
   }
 
   public void testGetMechanismInfo() {
     CK_MECHANISM_INFO info = new CK_MECHANISM_INFO();
     CE.GetMechanismInfo(TESTSLOT, CKM.AES_CBC, info);
-//        System.out.println(info);
+    LOGGER.debug(info.toString());
   }
 
   public void testInitTokenInitPinSetPin() {
@@ -126,7 +133,7 @@ public class CryptokiTest extends TestCase {
     long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
     CK_SESSION_INFO sessionInfo = new CK_SESSION_INFO();
     CE.GetSessionInfo(session, sessionInfo);
-//        System.out.println(sessionInfo);
+//    LOGGER.debug(sessionInfo.toString());
   }
 
   public void testGetSessionInfoCloseAllSessions() {
@@ -134,7 +141,7 @@ public class CryptokiTest extends TestCase {
     long s2 = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
     CK_SESSION_INFO info = new CK_SESSION_INFO();
     CE.GetSessionInfo(s2, info);
-//        System.out.println(info);
+//    LOGGER.debug(info.toString());
     long s3 = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
     CE.CloseSession(s1);
     CE.CloseAllSessions(TESTSLOT);
