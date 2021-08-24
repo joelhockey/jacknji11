@@ -43,6 +43,7 @@ import com.sun.jna.ptr.NativeLongByReference;
 /**
  * JNA PKCS#11 provider.  Does mapping between jacknji11 structs and
  * JNA structs and calls through to {@link JNANativeI} native methods.
+ *
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class JNA implements NativeProvider {
@@ -54,13 +55,13 @@ public class JNA implements NativeProvider {
     }
 
     private JNANativeI jnaNative;
-    
+
     public JNA(String pkcs11LibPath) {
         jnaNative = Native.load(pkcs11LibPath, JNANativeI.class);
     }
 
     public long C_Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {
-        if(pInitArgs.createMutex == null && pInitArgs.destroyMutex == null && pInitArgs.lockMutex == null && pInitArgs.unlockMutex == null)
+        if (pInitArgs.createMutex == null && pInitArgs.destroyMutex == null && pInitArgs.lockMutex == null && pInitArgs.unlockMutex == null)
             return jnaNative.C_Initialize(null);
         return jnaNative.C_Initialize(new JNA_CK_C_INITIALIZE_ARGS(pInitArgs));
     }
@@ -79,7 +80,7 @@ public class JNA implements NativeProvider {
     public long C_GetSlotList(boolean tokenPresent, long[] pSlotList, LongRef pulCount) {
         LongArray jna_pSlotList = new LongArray(pSlotList);
         NativeLongByReference jna_pulCount = NLP(pulCount.value);
-        long rv = jnaNative.C_GetSlotList(tokenPresent ? (byte)1 : (byte)0, jna_pSlotList, jna_pulCount);
+        long rv = jnaNative.C_GetSlotList(tokenPresent ? (byte) 1 : (byte) 0, jna_pSlotList, jna_pulCount);
         jna_pSlotList.update();
         pulCount.value = jna_pulCount.getValue().longValue();
         return rv;
@@ -138,9 +139,9 @@ public class JNA implements NativeProvider {
 
     public long C_OpenSession(long slotID, long flags, NativePointer application, final CK_NOTIFY notify, LongRef phSession) {
         Pointer jna_application = new Pointer(application.getAddress());
-        final JNA_CK_NOTIFY  jna_notify;
+        final JNA_CK_NOTIFY jna_notify;
         if (notify == null) {
-            jna_notify = null; 
+            jna_notify = null;
         } else {
             jna_notify = new JNA_CK_NOTIFY() {
                 public NativeLong invoke(NativeLong hSession, NativeLong event, Pointer pApplication) {
@@ -178,7 +179,7 @@ public class JNA implements NativeProvider {
     }
 
     public long C_SetOperationState(long hSession, byte[] pOperationState, long ulOperationStateLen, long hEncryptionKey,
-            long hAuthenticationKey) {
+                                    long hAuthenticationKey) {
         return jnaNative.C_SetOperationState(NL(hSession), pOperationState, NL(ulOperationStateLen),
             NL(hEncryptionKey), NL(hAuthenticationKey));
     }
@@ -288,7 +289,7 @@ public class JNA implements NativeProvider {
     public long C_Decrypt(long hSession, byte[] pEncryptedData, long ulEncryptedDataLen, byte[] pData, LongRef pulDataLen) {
         NativeLongByReference jna_pulDataLen = NLP(pulDataLen.value);
         long rv = jnaNative.C_Decrypt(NL(hSession), pEncryptedData, NL(ulEncryptedDataLen), pData, jna_pulDataLen);
-        pulDataLen.value= jna_pulDataLen.getValue().longValue();
+        pulDataLen.value = jna_pulDataLen.getValue().longValue();
         return rv;
     }
 
@@ -436,7 +437,7 @@ public class JNA implements NativeProvider {
 
 
     public long C_GenerateKeyPair(long hSession, CKM pMechanism, CKA[] pPublicKeyTemplate, long ulPublicKeyAttributeCount,
-            CKA[] pPrivateKeyTemplate, long ulPrivateKeyAttributeCount, LongRef phPublicKey, LongRef phPrivateKey) {
+                                  CKA[] pPrivateKeyTemplate, long ulPrivateKeyAttributeCount, LongRef phPublicKey, LongRef phPrivateKey) {
         JNA_CKM jna_pMechanism = new JNA_CKM().readFrom(pMechanism);
         Template jna_pPublicKeyTemplate = new Template(pPublicKeyTemplate);
         Template jna_pPrivateKeyTemplate = new Template(pPrivateKeyTemplate);
@@ -458,7 +459,7 @@ public class JNA implements NativeProvider {
     }
 
     public long C_UnwrapKey(long hSession, CKM pMechanism, long hUnwrappingKey, byte[] pWrappedKey, long ulWrappedKeyLen,
-            CKA[] pTemplate, long ulAttributeCount, LongRef phKey) {
+                            CKA[] pTemplate, long ulAttributeCount, LongRef phKey) {
         JNA_CKM jna_pMechanism = new JNA_CKM().readFrom(pMechanism);
         Template jna_pTemplate = new Template(pTemplate);
         NativeLongByReference jna_phKey = NLP(phKey.value);
@@ -493,6 +494,11 @@ public class JNA implements NativeProvider {
         return jnaNative.C_CancelFunction(NL(hSession));
     }
 
-    private static NativeLong NL(long l) { return new NativeLong(l); }
-    private static NativeLongByReference NLP(long l) { return new NativeLongByReference(new NativeLong(l)); }
+    private static NativeLong NL(long l) {
+        return new NativeLong(l);
+    }
+
+    private static NativeLongByReference NLP(long l) {
+        return new NativeLongByReference(new NativeLong(l));
+    }
 }
