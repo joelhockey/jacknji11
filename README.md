@@ -30,13 +30,17 @@ export JACKNJI11_TEST_SO_PIN=sopin
 export JACKNJI11_TEST_USER_PIN=userpin
 ```
 
-The tests rely on a library named libcryptoki.so being available on the LD_LIBRARY_PATH.
-If you for example run SoftHSM2, you have to see to that this exists.
+# Loading native cryptoki library
+By default, the `cryptoki` library (`cryptoki.dll` or `libcryptoki.so`) must be available (`LD_LIBRARY_PATH` for linux).
+You must either copy/symlink your library to have this name, or you can specify the library path using
+`JACKNJI11_PKCS11_LIB_PATH`.
 
+If for example you run SoftHSM2, you have could either:
 ```
-sudo ln -s /usr/local/lib/softhsm/libsofthsm2.so /usr/local/lib/softhsm/libcryptoki.so
-export LD_LIBRARY_PATH=/usr/local/lib/softhsm
+export JACKNJI11_PKCS11_LIB_PATH=/usr/lib/softhsm/libsofthsm2.so
 ```
-
-Note: LD_LIBRARY_PATH is used by Linux systems to point to directories where libraries should be loaded, apart from the system path. If your libcryptoki.so resides in a directory that is not searched by default by the system, you can use LD_LIBRARY_PATH in order for the system to find your libcryptoki.so.
-
+or
+```
+sudo ln -s /usr/lib/softhsm/libsofthsm2.so /usr/lib/softhsm/libcryptoki.so
+export LD_LIBRARY_PATH=/usr/lib/softhsm
+```

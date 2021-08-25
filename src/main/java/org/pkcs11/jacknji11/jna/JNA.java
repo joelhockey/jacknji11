@@ -21,6 +21,7 @@
 
 package org.pkcs11.jacknji11.jna;
 
+import org.pkcs11.jacknji11.C;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.CK_C_INITIALIZE_ARGS;
@@ -55,7 +56,7 @@ public class JNA implements NativeProvider {
     private JNANativeI jnaNative = null;
     
     public JNA(){
-        this("cryptoki");
+        this(C.getLibraryName());
     }
     
     public JNA(String customLibrary) {

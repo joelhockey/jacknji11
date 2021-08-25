@@ -67,6 +67,20 @@ public class C {
     private static final NativePointer NULL = new NativePointer(0);
 
     /**
+     * Read custom libarary from environment JACKNJI11_PKCS11_LIB_PATH,
+     * or use default 'cryptoki'.
+     * @return libarary name
+     */
+    public static String getLibraryName() {
+        String lib = System.getenv("JACKNJI11_PKCS11_LIB_PATH");
+        if (lib == null || lib.length() == 0) {
+            lib = "cryptoki";
+        }
+        log.debug("Loading native library " + lib);
+        return lib;
+    }
+
+    /**
      * Initialise Cryptoki with null mutexes, and CKF_OS_LOCKING_OK flag set.
      * @see NativeProvider#C_Initialize(CK_C_INITIALIZE_ARGS)
      * @return {@link CKR} return code
