@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+  <appender name="stderr" class="org.apache.log4j.ConsoleAppender">
+    <param name="target" value="System.err" />
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d %t\t%m%n" />
+    </layout>
+  </appender>
+
+  <appender name="jacknji11" class="org.apache.log4j.DailyRollingFileAppender">
+    <param name="File" value="logs/jacknji11.log" />
+    <param name="Append" value="false" />
+    <param name="DatePattern" value="'.'yyyyMMdd" />
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d %t\t%m%n" />
+    </layout>
+  </appender>
+
+  <logger name="org.pkcs11.jacknji11" additivity="false">
+    <level value="debug" />
+    <appender-ref ref="jacknji11" />
+  </logger>
+
+  <root>
+    <priority value="error" />
+    <appender-ref ref="stderr" />
+  </root>
+</log4j:configuration>
