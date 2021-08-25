@@ -21,6 +21,7 @@
 
 package org.pkcs11.jacknji11.jna;
 
+import com.sun.jna.Native;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.CK_C_INITIALIZE_ARGS;
@@ -52,14 +53,10 @@ public class JNA implements NativeProvider {
             ? ULong.ULongSize.ULONG4 : ULong.ULongSize.ULONG8;
     }
 
-    private JNANativeI jnaNative = null;
-    
-    public JNA(){
-        this("cryptoki");
-    }
+    private JNANativeI jnaNative;
     
     public JNA(String customLibrary) {
-        jnaNative = (JNANativeI) com.sun.jna.Native.loadLibrary(customLibrary, JNANativeI.class);
+        jnaNative = Native.load(customLibrary, JNANativeI.class);
     }
 
     public long C_Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {

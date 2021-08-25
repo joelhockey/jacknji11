@@ -61,8 +61,13 @@ import org.pkcs11.jacknji11.jna.JNA;
  */
 public class C {
     private static final Log log = LogFactory.getLog(C.class);
+    /**
+     * Environment variable for setting the location of the pkcs11 library.
+     * If the variable is set, the <code>{@link C#Initialize()}</code> can be used without parameters
+     */
+    private static final String JACKNJI11_PKCS11_LIB_PATH = "JACKNJI11_PKCS11_LIB_PATH";
 
-    public static NativeProvider NATIVE = new JNA();
+    public static NativeProvider NATIVE;
 
     private static final NativePointer NULL = new NativePointer(0);
 
@@ -73,8 +78,27 @@ public class C {
      */
     public static long Initialize() {
         CK_C_INITIALIZE_ARGS args = new CK_C_INITIALIZE_ARGS(null, null, null, null,
-                CK_C_INITIALIZE_ARGS.CKF_OS_LOCKING_OK);
-        return Initialize(args);
+        CK_C_INITIALIZE_ARGS.CKF_OS_LOCKING_OK);
+        String pkcs11LibPath = System.getenv(JACKNJI11_PKCS11_LIB_PATH);
+        if (pkcs11LibPath == null || pkcs11LibPath.length() == 0) {
+            throw new IllegalStateException("Please either provide JACKNJI11_PKCS11_LIB_PATH environment variable or call Initialize(String, ..)");
+        }
+    
+        return Initialize(pkcs11LibPath, args);
+    }
+    
+    /**
+     * Initialise Cryptoki with null mutexes, and CKF_OS_LOCKING_OK flag set.
+     *
+     * @param pkcs11LibPath Optional library path for pkcs11 library. If null, then <code>JACKNJI11_PKCS11_LIB_PATH</code> environment variable must
+     *                      be set.
+     * @return {@link CKR} return code
+     * @see NativeProvider#C_Initialize(CK_C_INITIALIZE_ARGS)
+     */
+    public static long Initialize(String pkcs11LibPath) {
+        CK_C_INITIALIZE_ARGS args = new CK_C_INITIALIZE_ARGS(null, null, null, null,
+            CK_C_INITIALIZE_ARGS.CKF_OS_LOCKING_OK);
+        return Initialize(pkcs11LibPath, args);
     }
 
     /**
@@ -82,9 +106,10 @@ public class C {
      * @see NativeProvider#C_Initialize(CK_C_INITIALIZE_ARGS)
      * @return {@link CKR} return code
      */
-    public static long Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {
+    public static long Initialize(String pkcs11LibPath, CK_C_INITIALIZE_ARGS pInitArgs) {
+        NATIVE = new JNA(pkcs11LibPath);
         if (log.isDebugEnabled()) log.debug("> C_Initialize " + pInitArgs);
-        long rv =NATIVE.C_Initialize(pInitArgs);
+        long rv = NATIVE.C_Initialize(pInitArgs);
         if (log.isDebugEnabled()) log.debug(String.format("< C_Initialize rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }

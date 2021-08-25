@@ -4,3 +4,8 @@
 logs
 target
 /bin/
+*.iml
+.idea
+softhsm2.conf
+tokens
+*.log

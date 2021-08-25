@@ -37,6 +37,13 @@ public class CryptokiTest extends TestCase {
     private byte[] USER_PIN = "userpin".getBytes();
     private long TESTSLOT = 0;
     private long INITSLOT = 1;
+    /**
+     * Full or relative path
+     * Example:  PKCS11_LIB_PATH="/usr/local/lib/softhsm/libsofthsm2.so"
+     * <br>
+     * It can be set also by JACKNJI11_PKCS11_LIB_PATH environment variable
+     */
+    private static String PKCS11_LIB_PATH = "cryptoki";
 
     public void setUp() {
         String testSlotEnv = System.getenv("JACKNJI11_TEST_TESTSLOT");
@@ -55,7 +62,12 @@ public class CryptokiTest extends TestCase {
         if (userPinEnv != null && userPinEnv.length() > 0) {
             USER_PIN = userPinEnv.getBytes();
         }
-        CE.Initialize();
+        String libPath = System.getenv("JACKNJI11_PKCS11_LIB_PATH");
+        if (libPath != null && libPath.length() > 0) {
+            PKCS11_LIB_PATH = libPath;
+        }
+
+        CE.Initialize(PKCS11_LIB_PATH);
     }
 
     public void tearDown() {
