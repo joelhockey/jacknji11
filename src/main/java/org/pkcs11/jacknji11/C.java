@@ -116,7 +116,7 @@ public class C {
 
     /**
      * Called to indicate that an application is finished with the Cryptoki library.
-     * @see NativeProvider#C_Finalize(Pointer)
+     * @see NativeProvider#C_Finalize(NativePointer)
      * @return {@link CKR} return code
      */
     public static long Finalize() {
@@ -145,7 +145,7 @@ public class C {
      * @param slotList receives array of slot IDs
      * @param count receives the number of slots
      * @return {@link CKR} return code
-     * @see NativeProvider#C_GetSlotList(byte, LongArray, LongRef)
+     * @see NativeProvider#C_GetSlotList(boolean, long[], LongRef) 
      */
     public static long GetSlotList(boolean tokenPresent, long[] slotList, LongRef count) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetSlotList tokenPresent=%b count=%d", tokenPresent, count.value()));
@@ -188,7 +188,7 @@ public class C {
      * @param slot location that receives the slot ID
      * @param reserved reserved.  Should be null
      * @return {@link CKR} return code
-     * @see NativeProvider#C_WaitForSlotEvent(long, LongRef, Pointer)
+     * @see NativeProvider#C_WaitForSlotEvent(long, LongRef, NativePointer)
      */
     public static long WaitForSlotEvent(long flags, LongRef slot, NativePointer reserved) {
         if (log.isDebugEnabled()) log.debug("> C_WaitForSlotEvent");
@@ -203,7 +203,7 @@ public class C {
      * @param mechanismList gets mechanism array
      * @param count gets # of mechanisms
      * @return {@link CKR} return code
-     * @see NativeProvider#C_GetMechanismList(long, LongArray, LongRef)
+     * @see NativeProvider#C_GetMechanismList(long, long[], LongRef)
      */
     public static long GetMechanismList(long slotID, long[] mechanismList, LongRef count) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetMechanismList slotID=%d count=%d", slotID, count.value()));
@@ -299,7 +299,7 @@ public class C {
      * @param notify callback function (ok to leave it null)
      * @param session gets session handle
      * @return {@link CKR} return code
-     * @see NativeProvider#C_OpenSession(long, long, Pointer, CK_NOTIFY, LongRef)
+     * @see NativeProvider#C_OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)
      */
     public static long OpenSession(long slotID, long flags, NativePointer application, CK_NOTIFY notify, LongRef session) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_OpenSession slotID=%d flags=0x%08x{%s} application=%s notify=%s", slotID, flags, CK_SESSION_INFO.f2s(flags), application, notify));
@@ -428,7 +428,7 @@ public class C {
      * @param templ the objects template
      * @param object gets new object's handle
      * @return {@link CKR} return code
-     * @see NativeProvider#C_CreateObject(long, Template, long, LongRef)
+     * @see NativeProvider#C_CreateObject(long, CKA[], long, LongRef)
      */
     public static long CreateObject(long session, CKA[] templ, LongRef object) {
         if (log.isDebugEnabled()) {
@@ -448,7 +448,7 @@ public class C {
      * @param templ template for new object
      * @param newObject receives handle of copy
      * @return {@link CKR} return code
-     * @see NativeProvider#C_CopyObject(long, long, Template, long, LongRef)
+     * @see NativeProvider#C_CopyObject(long, long, CKA[], long, LongRef)
      */
     public static long CopyObject(long session, long object, CKA[] templ, LongRef newObject) {
         if (log.isDebugEnabled()) {
@@ -496,7 +496,7 @@ public class C {
      * @param object the objects's handle
      * @param templ specifies attributes, gets values
      * @return {@link CKR} return code
-     * @see NativeProvider#C_GetAttributeValue(long, long, Template, long)
+     * @see NativeProvider#C_GetAttributeValue(long, long, CKA[], long)
      */
     public static long GetAttributeValue(long session, long object, CKA[] templ) {
         if (log.isDebugEnabled()) {
@@ -519,7 +519,7 @@ public class C {
      * @param object the object's handle
      * @param templ specifies attributes and values
      * @return {@link CKR} return code
-     * @see NativeProvider#C_SetAttributeValue(long, long, Template, long)
+     * @see NativeProvider#C_SetAttributeValue(long, long, CKA[], long)
      */
     public static long SetAttributeValue(long session, long object, CKA[] templ) {
         if (log.isDebugEnabled()) {
@@ -537,7 +537,7 @@ public class C {
      * @param session the session's handle
      * @param templ attribute values to match
      * @return {@link CKR} return code
-     * @see NativeProvider#C_FindObjectsInit(long, Template, long)
+     * @see NativeProvider#C_FindObjectsInit(long, CKA[], long)
      */
     public static long FindObjectsInit(long session, CKA[] templ) {
         if (log.isDebugEnabled()) {
@@ -557,7 +557,7 @@ public class C {
      * @param found gets object handles
      * @param objectCount number of object handles returned
      * @return {@link CKR} return code
-     * @see NativeProvider#C_FindObjects(long, LongArray, long, LongRef)
+     * @see NativeProvider#C_FindObjects(long, long[], long, LongRef)
      */
     public static long FindObjects(long session, long[] found, LongRef objectCount) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_FindObjects session=0x%08x maxObjectCount=%d", session, found != null ? found.length : 0));
@@ -1083,7 +1083,7 @@ public class C {
      * @param encryptedPart gets ciphertext
      * @param encryptedPartLen get c-text length
      * @return {@link CKR} return code
-     * @see NativeProvider#C_DigestEncryptUpdate(long, byte[], long, byte[], long)
+     * @see NativeProvider#C_DigestEncryptUpdate(long, byte[], long, byte[], LongRef)
      */
     public static long DigestEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
@@ -1183,7 +1183,7 @@ public class C {
      * @param templ template for the new key
      * @param key gets handle of new key
      * @return {@link CKR} return code
-     * @see NativeProvider#C_GenerateKey(long, CKM, Template, long, LongRef)
+     * @see NativeProvider#C_GenerateKey(long, CKM, CKA[], long, LongRef)
      */
     public static long GenerateKey(long session, CKM mechanism, CKA[] templ, LongRef key) {
         if (log.isDebugEnabled()) {
@@ -1205,7 +1205,7 @@ public class C {
      * @param publicKey gets handle of new public key
      * @param privateKey gets handle of new private key
      * @return {@link CKR} return code
-     * @see NativeProvider#C_GenerateKeyPair(long, CKM, Template, long, Template, long, LongRef, LongRef)
+     * @see NativeProvider#C_GenerateKeyPair(long, CKM, CKA[], long, CKA[], long, LongRef, LongRef)
      */
     public static long GenerateKeyPair(long session, CKM mechanism, CKA[] publicKeyTemplate,
             CKA[] privateKeyTemplate, LongRef publicKey, LongRef privateKey) {
@@ -1264,7 +1264,7 @@ public class C {
      * @param templ new key template
      * @param key gets new handle
      * @return {@link CKR} return code
-     * @see NativeProvider#C_UnwrapKey(long, CKM, long, byte[], long, Template, long, LongRef)
+     * @see NativeProvider#C_UnwrapKey(long, CKM, long, byte[], long, CKA[], long, LongRef)
      */
     public static long UnwrapKey(long session, CKM mechanism, long unwrappingKey, byte[] wrappedKey,
             CKA[] templ, LongRef key) {
@@ -1290,7 +1290,7 @@ public class C {
      * @param templ new key template
      * @param key ges new handle
      * @return {@link CKR} return code
-     * @see NativeProvider#C_DeriveKey(long, CKM, long, Template, long, LongRef)
+     * @see NativeProvider#C_DeriveKey(long, CKM, long, CKA[], long, LongRef)
      */
     public static long DeriveKey(long session, CKM mechanism, long baseKey, CKA[] templ, LongRef key) {
         if (log.isDebugEnabled()) {
