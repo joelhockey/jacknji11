@@ -62,7 +62,7 @@ import org.pkcs11.jacknji11.jna.JNA;
 public class C {
     private static final Log log = LogFactory.getLog(C.class);
 
-    public static NativeProvider NATIVE = new JNA();
+    public static NativeProvider NATIVE;
 
     private static final NativePointer NULL = new NativePointer(0);
 
@@ -97,6 +97,9 @@ public class C {
      * @return {@link CKR} return code
      */
     public static long Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {
+        if (NATIVE == null) {
+            NATIVE = new JNA();
+        }
         if (log.isDebugEnabled()) log.debug("> C_Initialize " + pInitArgs);
         long rv =NATIVE.C_Initialize(pInitArgs);
         if (log.isDebugEnabled()) log.debug(String.format("< C_Initialize rv=0x%08x{%s}", rv, CKR.L2S(rv)));

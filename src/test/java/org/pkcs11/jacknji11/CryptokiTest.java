@@ -55,6 +55,10 @@ public class CryptokiTest extends TestCase {
         if (userPinEnv != null && userPinEnv.length() > 0) {
             USER_PIN = userPinEnv.getBytes();
         }
+        // Library path can be set with JACKNJI11_PKCS11_LIB_PATH, or done in code such as:
+        // C.NATIVE = new org.pkcs11.jacknji11.jna.JNA("/usr/lib/softhsm/libsofthsm2.so");
+        // Or JFFI can be used rather than JNA:
+        // C.NATIVE = new org.pkcs11.jacknji11.jffi.JFFI();
         CE.Initialize();
     }
 
