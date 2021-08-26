@@ -1,6 +1,10 @@
 .classpath
+.idea
 .project
 .settings
 logs
+softhsm2.conf
 target
+tokens
 /bin/
+*.iml
