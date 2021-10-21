@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.pkcs11.jacknji11.Buf;
 
 /**
  * CKA_? constants and wrapper for CK_ATTRIBUTE struct.
@@ -215,6 +214,7 @@ public class CKA {
     public long ulValueLen;
 
     // disallow zero-arg constructor
+    @SuppressWarnings("unused")
     private CKA() {
     }
 
@@ -261,14 +261,22 @@ public class CKA {
         this(type, null);
     }
 
+    /** When reading values from PKCS#11 you often send a buffer, with a specific length
+     * where the buffer may be lager than the value returned. The actual length of the value returned
+     * is then put by the HSM in ulValueLen. Before returning to Java, therefore make sure 
+     * the returned pValue hodls the actual bytes and not extra (empty) data.
+     */
+    private byte[] getValueInternal() {
+        return ulValueLen == 0 || pValue == null ? null : Buf.substring(pValue, 0, (int)ulValueLen);
+    }
     /** @return value as byte[] */
     public byte[] getValue() {
-        return pValue == null ? null : pValue;
+        return getValueInternal();
     }
 
     /** @return value as String */
     public String getValueStr() {
-        return pValue == null ? null : new String(pValue);
+        return pValue == null ? null : new String(getValueInternal());
     }
 
     /** @return value as Long */
@@ -421,6 +429,7 @@ public class CKA {
         Hex.dump(sb, value, 0, (int) ulValueLen, "    ", 32, false);
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         dump(sb);
