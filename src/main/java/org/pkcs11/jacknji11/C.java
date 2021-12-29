@@ -63,6 +63,7 @@ public class C {
 
     public static NativeProvider NATIVE;
 
+    private static NativeProvider prevNative;
     private static Ci delegate;
 
     /**
@@ -99,7 +100,11 @@ public class C {
         if (NATIVE == null) {
             NativeProvider jna = new JNA();
             NATIVE = jna;
+            prevNative = jna;
             delegate = new Ci(jna);
+        } else if (NATIVE != prevNative) {
+            prevNative = NATIVE;
+            delegate = new Ci(prevNative);
         }
         return delegate.Initialize(pInitArgs);
     }
