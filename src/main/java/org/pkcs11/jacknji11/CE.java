@@ -1786,4 +1786,27 @@ public class CE {
     public static void CancelFunction(long session) {
         NCE.CancelFunction(C.NATIVE, session);
     }
+
+    /**
+     * Set odd parity on buf and return updated buf.  Buf is modified in-place.
+     * @param buf buf to modify in place and return
+     * @return buf that was passed in
+     * @deprecated use {@link NCE#setOddParity(byte[])} instead
+     */
+    @Deprecated
+    public static byte[] setOddParity(byte[] buf) {
+        return NCE.setOddParity(buf);
+    }
+
+    /**
+     * Resize buf to specified length. If buf already size 'newSize', then return buf, else return resized buf.
+     * @param buf buf
+     * @param newSize length to resize to
+     * @return if buf already size 'newSize', then return buf, else return resized buf
+     * @deprecated use {@link NCE#resize(byte[], int)} instead
+     */
+    @Deprecated
+    public static byte[] resize(byte[] buf, int newSize) {
+        return NCE.resize(buf, newSize);
+    }
 }
