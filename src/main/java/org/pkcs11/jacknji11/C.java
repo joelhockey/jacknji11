@@ -1036,4 +1036,40 @@ public class C {
     public static long CancelFunction(long session) {
         return NC.CancelFunction(NATIVE, session);
     }
+
+    /**
+     * Helper method.  Adds all public static final long fields in c to map, mapping field value to name.
+     * @param c class
+     * @return map of field value:name
+     * @deprecated use {@link NC#createL2SMap(Class)} instead
+     */
+    @Deprecated
+    public static Map<Long, String> createL2SMap(Class<?> c) {
+        return NC.createL2SMap(c);
+    }
+
+    /**
+     * Helper method, Maps l to constant name, or value 'unknown %s constant 0x08x' % (ckx, l)'.
+     * @param map L2S map
+     * @param ckx prefix of constant type, e.g. 'CKA'
+     * @param l constant value
+     * @return constant name, or value 'unknown %s constant 0x08x' % (ckx, l)'.
+     * @deprecated use {@link NC#l2s(Map, String, long)} instead
+     */
+    @Deprecated
+    public static String l2s(Map<Long, String> map, String ckx, long l) {
+        return NC.l2s(map, ckx, l);
+    }
+
+    /**
+     * Helper method.  String format of flags.
+     * @param l2s l2s map
+     * @param flags flags
+     * @return string format of flags
+     * @deprecated use {@link NC#f2s(Map, long)} instead
+     */
+    @Deprecated
+    public static String f2s(Map<Long, String> l2s, long flags) {
+        return NC.f2s(l2s, flags);
+    }
 }
