@@ -33,11 +33,11 @@ public class CKU {
     public static final long USER    = 0x00000001;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKU.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKU.class);
     /**
      * Convert long constant value to name.
      * @param cku value
      * @return name
      */
-    public static final String L2S(long cku) { return C.l2s(L2S, CKU.class.getSimpleName(), cku); }
+    public static final String L2S(long cku) { return NC.l2s(L2S, CKU.class.getSimpleName(), cku); }
 }

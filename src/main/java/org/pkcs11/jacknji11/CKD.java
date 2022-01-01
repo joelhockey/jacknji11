@@ -34,11 +34,11 @@ public class CKD {
     public static final long SHA1_KDF_CONCATENATE    = 0x00000004;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKD.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKD.class);
     /**
      * Convert long constant value to name.
      * @param ckd value
      * @return name
      */
-    public static final String L2S(long ckd) { return C.l2s(L2S, CKD.class.getSimpleName(), ckd); }
+    public static final String L2S(long ckd) { return NC.l2s(L2S, CKD.class.getSimpleName(), ckd); }
 }

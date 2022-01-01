@@ -38,19 +38,19 @@ public class CK_C_INITIALIZE_ARGS {
     public static final long CKF_OS_LOCKING_OK = 0x00000002;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CK_C_INITIALIZE_ARGS.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CK_C_INITIALIZE_ARGS.class);
     /**
      * Convert long constant value to name.
      * @param ckf value
      * @return name
      */
-    public static final String L2S(long ckf) { return C.l2s(L2S, "CKF", ckf); }
+    public static final String L2S(long ckf) { return NC.l2s(L2S, "CKF", ckf); }
     /**
      * Convert flags to string.
      * @param flags flags
      * @return string format
      */
-    public static String f2s(long flags) { return C.f2s(L2S, flags); }
+    public static String f2s(long flags) { return NC.f2s(L2S, flags); }
 
 
     public CK_CREATEMUTEX createMutex;
@@ -77,7 +77,7 @@ public class CK_C_INITIALIZE_ARGS {
         this.unlockMutex = unlockMutex;
         this.flags = flags;
     }
-    
+
     /** @return True, if the provided flag is set */
     public boolean isFlagSet(long CKF_FLAG) {
         return (flags & CKF_FLAG) != 0L;

@@ -77,11 +77,11 @@ public class CKK {
     public static final long VENDOR_PTK_SEED            = 0x80000203L;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKK.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKK.class);
     /**
      * Convert long constant value to name.
      * @param ckk value
      * @return name
      */
-    public static final String L2S(long ckk) { return C.l2s(L2S, CKK.class.getSimpleName(), ckk); }
+    public static final String L2S(long ckk) { return NC.l2s(L2S, CKK.class.getSimpleName(), ckk); }
 }

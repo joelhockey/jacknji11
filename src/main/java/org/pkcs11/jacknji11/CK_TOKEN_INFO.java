@@ -48,19 +48,19 @@ public class CK_TOKEN_INFO {
     public static final long CKF_SO_PIN_TO_BE_CHANGED     =0x00800000;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CK_TOKEN_INFO.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CK_TOKEN_INFO.class);
     /**
      * Convert long constant value to name.
      * @param ckf value
      * @return name
      */
-    public static final String L2S(long ckf) { return C.l2s(L2S, "CKF", ckf); }
+    public static final String L2S(long ckf) { return NC.l2s(L2S, "CKF", ckf); }
     /**
      * Convert flags to string.
      * @param flags flags
      * @return string format
      */
-    public static String f2s(long flags) { return C.f2s(L2S, flags); }
+    public static String f2s(long flags) { return NC.f2s(L2S, flags); }
 
     public byte[] label = new byte[32];
     public byte[] manufacturerID = new byte[32];
@@ -85,7 +85,7 @@ public class CK_TOKEN_INFO {
     public boolean isFlagSet(long CKF_FLAG) {
         return (flags & CKF_FLAG) != 0L;
     }
-    
+
     /** @return string */
     public String toString() {
         return String.format("(\n  label=%s\n  manufacturerID=%s\n  model=%s\n  serialNumber=%s\n  flags=0x%08x{%s}" +

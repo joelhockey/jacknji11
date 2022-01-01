@@ -196,7 +196,7 @@ public class CKA {
     public static final long VENDOR_PTK_ENUM_ATTRIBUTE = 0x0000ffff;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKA.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKA.class);
 
     /**
      * Convert long constant value to name.
@@ -206,7 +206,7 @@ public class CKA {
      * @return name
      */
     public static final String L2S(long cka) {
-        return C.l2s(L2S, CKA.class.getSimpleName(), cka);
+        return NC.l2s(L2S, CKA.class.getSimpleName(), cka);
     }
 
     public long type;
@@ -263,7 +263,7 @@ public class CKA {
 
     /** When reading values from PKCS#11 you often send a buffer, with a specific length
      * where the buffer may be lager than the value returned. The actual length of the value returned
-     * is then put by the HSM in ulValueLen. Before returning to Java, therefore make sure 
+     * is then put by the HSM in ulValueLen. Before returning to Java, therefore make sure
      * the returned pValue hodls the actual bytes and not extra (empty) data.
      */
     private byte[] getValueInternal() {
@@ -435,7 +435,7 @@ public class CKA {
         dump(sb);
         return sb.toString();
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;

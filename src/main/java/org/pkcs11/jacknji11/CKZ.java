@@ -31,11 +31,11 @@ public class CKZ {
     public static final long DATA_SPECIFIED = 0x00000001;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKZ.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKZ.class);
     /**
      * Convert long constant value to name.
      * @param ckz value
      * @return name
      */
-    public static final String L2S(long ckz) { return C.l2s(L2S, CKZ.class.getSimpleName(), ckz); }
+    public static final String L2S(long ckz) { return NC.l2s(L2S, CKZ.class.getSimpleName(), ckz); }
 }

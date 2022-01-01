@@ -35,11 +35,11 @@ public class CKG {
     public static final long MGF1_SHA224 = 0x00000005;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKG.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKG.class);
     /**
      * Convert long constant value to name.
      * @param ckg value
      * @return name
      */
-    public static final String L2S(long ckg) { return C.l2s(L2S, CKG.class.getSimpleName(), ckg); }
+    public static final String L2S(long ckg) { return NC.l2s(L2S, CKG.class.getSimpleName(), ckg); }
 }

@@ -21,6 +21,8 @@
 
 package org.pkcs11.jacknji11;
 
+import org.pkcs11.jacknji11.jna.JNA;
+
 /**
  * This is the preferred java interface for calling cryptoki functions.
  *
@@ -48,27 +50,34 @@ package org.pkcs11.jacknji11;
  * </ol>
  *
  * @author Joel Hockey (joel.hockey@gmail.com)
+ * @deprecated Use the {@link CEi} class instead
  */
+@Deprecated
 public class CE {
 
     /**
      * Initialize cryptoki.
      * @see C#Initialize()
      * @see NativeProvider#C_Initialize(CK_C_INITIALIZE_ARGS)
+     * @deprecated use {@link CEi#Initialize()} instead
      */
+    @Deprecated
     public static void Initialize() {
-        long rv = C.Initialize();
-        if (rv != CKR.OK) throw new CKRException(rv);
+        if (C.NATIVE == null) {
+            C.NATIVE = new JNA();
+        }
+        NCE.Initialize(C.NATIVE);
     }
 
     /**
      * Called to indicate that an application is finished with the Cryptoki library.
      * @see C#Finalize()
      * @see NativeProvider#C_Finalize(NativePointer)
+     * @deprecated use {@link CEi#Finalize()} instead
      */
+    @Deprecated
     public static void Finalize() {
-        long rv = C.Finalize();
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.Finalize(C.NATIVE);
     }
 
     /**
@@ -76,10 +85,11 @@ public class CE {
      * @param info location that receives information
      * @see C#GetInfo(CK_INFO)
      * @see NativeProvider#C_GetInfo(CK_INFO)
+     * @deprecated use {@link CEi#GetInfo(CK_INFO)} instead
      */
+    @Deprecated
     public static void GetInfo(CK_INFO info) {
-        long rv = C.GetInfo(info);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetInfo(C.NATIVE, info);
     }
 
     /**
@@ -87,11 +97,11 @@ public class CE {
      * @return info
      * @see C#GetInfo(CK_INFO)
      * @see NativeProvider#C_GetInfo(CK_INFO)
+     * @deprecated use {@link CEi#GetInfo()} instead
      */
+    @Deprecated
     public static CK_INFO GetInfo() {
-        CK_INFO info = new CK_INFO();
-        GetInfo(info);
-        return info;
+        return NCE.GetInfo(C.NATIVE);
     }
 
     /**
@@ -101,10 +111,11 @@ public class CE {
      * @param count receives the number of slots
      * @see C#GetSlotList(boolean, long[], LongRef)
      * @see NativeProvider#C_GetSlotList(boolean, long[], LongRef)
+     * @deprecated use {@link CEi#GetSlotList(boolean, long[], LongRef)} instead
      */
+    @Deprecated
     public static void GetSlotList(boolean tokenPresent, long[] slotList, LongRef count) {
-        long rv = C.GetSlotList(tokenPresent, slotList, count);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetSlotList(C.NATIVE, tokenPresent, slotList, count);
     }
 
     /**
@@ -113,13 +124,11 @@ public class CE {
      * @return slot list
      * @see C#GetSlotList(boolean, long[], LongRef)
      * @see NativeProvider#C_GetSlotList(boolean, long[], LongRef)
+     * @deprecated use {@link CEi#GetSlotList(boolean)} instead
      */
+    @Deprecated
     public static long[] GetSlotList(boolean tokenPresent) {
-        LongRef count = new LongRef();
-        GetSlotList(tokenPresent, null, count);
-        long[] result = new long[(int) count.value()];
-        GetSlotList(tokenPresent, result, count);
-        return result;
+        return NCE.GetSlotList(C.NATIVE, tokenPresent);
     }
 
     /**
@@ -130,16 +139,11 @@ public class CE {
      * @see C#GetTokenInfo(long, CK_TOKEN_INFO)
      * @see NativeProvider#C_GetSlotList(boolean, long[], LongRef)
      * @see NativeProvider#C_GetTokenInfo(long, CK_TOKEN_INFO)
+     * @deprecated use {@link CEi#GetSlot(String)} instead
      */
+    @Deprecated
     public static long GetSlot(String label) {
-        long[] allslots = GetSlotList(true);
-        for (long slot : allslots) {
-            CK_TOKEN_INFO tok = GetTokenInfo(slot);
-            if (tok != null && tok.label != null && new String(tok.label).trim().equals(label)) {
-                return slot;
-            }
-        }
-        throw new CKRException("No slot found with label [" + label + "]", CKR.SLOT_ID_INVALID);
+        return NCE.GetSlot(C.NATIVE, label);
     }
 
     /**
@@ -148,10 +152,11 @@ public class CE {
      * @param info receives the slot information
      * @see C#GetSlotInfo(long, CK_SLOT_INFO)
      * @see NativeProvider#C_GetSlotInfo(long, CK_SLOT_INFO)
+     * @deprecated use {@link CEi#GetSlotInfo(long, CK_SLOT_INFO)} instead
      */
+    @Deprecated
     public static void GetSlotInfo(long slotID, CK_SLOT_INFO info) {
-        long rv = C.GetSlotInfo(slotID, info);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetSlotInfo(C.NATIVE, slotID, info);
     }
 
     /**
@@ -160,11 +165,11 @@ public class CE {
      * @return slot info
      * @see C#GetSlotInfo(long, CK_SLOT_INFO)
      * @see NativeProvider#C_GetSlotInfo(long, CK_SLOT_INFO)
+     * @deprecated use {@link CEi#GetSlotInfo(long)} instead
      */
+    @Deprecated
     public static CK_SLOT_INFO GetSlotInfo(long slotID) {
-        CK_SLOT_INFO info = new CK_SLOT_INFO();
-        GetSlotInfo(slotID, info);
-        return info;
+        return NCE.GetSlotInfo(C.NATIVE, slotID);
     }
 
     /**
@@ -173,10 +178,11 @@ public class CE {
      * @param info receives the token information
      * @see C#GetTokenInfo(long, CK_TOKEN_INFO)
      * @see NativeProvider#C_GetTokenInfo(long, CK_TOKEN_INFO)
+     * @deprecated use {@link CEi#GetTokenInfo(long, CK_TOKEN_INFO)} instead
      */
+    @Deprecated
     public static void GetTokenInfo(long slotID, CK_TOKEN_INFO info) {
-        long rv = C.GetTokenInfo(slotID, info);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetTokenInfo(C.NATIVE, slotID, info);
     }
 
     /**
@@ -185,11 +191,11 @@ public class CE {
      * @return token info
      * @see C#GetTokenInfo(long, CK_TOKEN_INFO)
      * @see NativeProvider#C_GetTokenInfo(long, CK_TOKEN_INFO)
+     * @deprecated use {@link CEi#GetTokenInfo(long)} instead
      */
+    @Deprecated
     public static CK_TOKEN_INFO GetTokenInfo(long slotID) {
-        CK_TOKEN_INFO info = new CK_TOKEN_INFO();
-        GetTokenInfo(slotID, info);
-        return info;
+        return NCE.GetTokenInfo(C.NATIVE, slotID);
     }
 
     /**
@@ -199,10 +205,11 @@ public class CE {
      * @param pReserved reserved.  Should be null
      * @see C#WaitForSlotEvent(long, LongRef, NativePointer)
      * @see NativeProvider#C_WaitForSlotEvent(long, LongRef, NativePointer)
+     * @deprecated use {@link CEi#WaitForSlotEvent(long, LongRef, NativePointer)} instead
      */
+    @Deprecated
     public static void WaitForSlotEvent(long flags, LongRef slot, NativePointer pReserved) {
-        long rv = C.WaitForSlotEvent(flags, slot, pReserved);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.WaitForSlotEvent(C.NATIVE, flags, slot, pReserved);
     }
 
     /**
@@ -212,10 +219,11 @@ public class CE {
      * @param count gets # of mechanisms
      * @see C#GetMechanismList(long, long[], LongRef)
      * @see NativeProvider#C_GetMechanismList(long, long[], LongRef)
+     * @deprecated use {@link CEi#GetMechanismList(long, long[], LongRef)} instead
      */
+    @Deprecated
     public static void GetMechanismList(long slotID, long[] mechanismList, LongRef count) {
-        long rv = C.GetMechanismList(slotID, mechanismList, count);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetMechanismList(C.NATIVE, slotID, mechanismList, count);
     }
 
     /**
@@ -224,13 +232,11 @@ public class CE {
      * @return mechanism list (array of {@link CKM})
      * @see C#GetMechanismList(long, long[], LongRef)
      * @see NativeProvider#C_GetMechanismList(long, long[], LongRef)
+     * @deprecated use {@link CEi#GetMechanismList(long)} instead
      */
+    @Deprecated
     public static long[] GetMechanismList(long slotID) {
-        LongRef count = new LongRef();
-        GetMechanismList(slotID, null, count);
-        long[] mechanisms = new long[(int) count.value()];
-        GetMechanismList(slotID, mechanisms, count);
-        return mechanisms;
+        return NCE.GetMechanismList(C.NATIVE, slotID);
     }
 
     /**
@@ -240,10 +246,11 @@ public class CE {
      * @param info receives mechanism info
      * @see C#GetMechanismInfo(long, long, CK_MECHANISM_INFO)
      * @see NativeProvider#C_GetMechanismInfo(long, long, CK_MECHANISM_INFO)
+     * @deprecated use {@link CEi#GetMechanismInfo(long, long, CK_MECHANISM_INFO)} instead
      */
+    @Deprecated
     public static void GetMechanismInfo(long slotID, long type, CK_MECHANISM_INFO info) {
-        long rv = C.GetMechanismInfo(slotID, type, info);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetMechanismInfo(C.NATIVE, slotID, type, info);
     }
 
     /**
@@ -252,11 +259,11 @@ public class CE {
      * @return mechanism info
      * @see C#GetMechanismInfo(long, long, CK_MECHANISM_INFO)
      * @see NativeProvider#C_GetMechanismInfo(long, long, CK_MECHANISM_INFO)
+     * @deprecated use {@link CEi#GetMechanismInfo(long, long)} instead
      */
+    @Deprecated
     public static CK_MECHANISM_INFO GetMechanismInfo(long slotID, long type) {
-        CK_MECHANISM_INFO info = new CK_MECHANISM_INFO();
-        GetMechanismInfo(slotID, type, info);
-        return info;
+        return NCE.GetMechanismInfo(C.NATIVE, slotID, type);
     }
 
     /**
@@ -267,10 +274,11 @@ public class CE {
      * it will be padded or truncated as required
      * @see C#InitToken(long, byte[], byte[])
      * @see NativeProvider#C_InitToken(long, byte[], long, byte[])
+     * @deprecated use {@link CEi#InitToken(long, byte[], byte[])} instead
      */
+    @Deprecated
     public static void InitToken(long slotID, byte[] pin, byte[] label) {
-        long rv = C.InitToken(slotID, pin, label);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.InitToken(C.NATIVE, slotID, pin, label);
     }
 
     /**
@@ -279,10 +287,11 @@ public class CE {
      * @param pin the normal user's PIN
      * @see C#InitPIN(long, byte[])
      * @see NativeProvider#C_InitPIN(long, byte[], long)
+     * @deprecated use {@link CEi#InitPIN(long, byte[])} instead
      */
+    @Deprecated
     public static void InitPIN(long session, byte[] pin) {
-        long rv = C.InitPIN(session, pin);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.InitPIN(C.NATIVE, session, pin);
     }
 
     /**
@@ -292,10 +301,11 @@ public class CE {
      * @param newPin new PIN
      * @see C#SetPIN(long, byte[], byte[])
      * @see NativeProvider#C_SetPIN(long, byte[], long, byte[], long)
+     * @deprecated use {@link CEi#SetPIN(long, byte[], byte[])} instead
      */
+    @Deprecated
     public static void SetPIN(long session, byte[] oldPin, byte[] newPin) {
-        long rv = C.SetPIN(session, oldPin, newPin);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SetPIN(C.NATIVE, session, oldPin, newPin);
     }
 
     /**
@@ -307,10 +317,11 @@ public class CE {
      * @param session gets session handle
      * @see C#OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)
      * @see NativeProvider#C_OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)
+     * @deprecated use {@link CEi#OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)} instead
      */
+    @Deprecated
     public static void OpenSession(long slotID, long flags, NativePointer application, CK_NOTIFY notify, LongRef session) {
-        long rv = C.OpenSession(slotID, flags, application, notify, session);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.OpenSession(C.NATIVE, slotID, flags, application, notify, session);
     }
 
     /**
@@ -322,11 +333,11 @@ public class CE {
      * @return session handle
      * @see C#OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)
      * @see NativeProvider#C_OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)
+     * @deprecated use {@link CEi#OpenSession(long, long, NativePointer, CK_NOTIFY)} instead
      */
+    @Deprecated
     public static long OpenSession(long slotID, long flags, NativePointer application, CK_NOTIFY notify) {
-        LongRef session = new LongRef();
-        OpenSession(slotID, flags, application, notify, session);
-        return session.value();
+        return NCE.OpenSession(C.NATIVE, slotID, flags, application, notify);
     }
 
     /**
@@ -336,9 +347,11 @@ public class CE {
      * @return session handle
      * @see C#OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)
      * @see NativeProvider#C_OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)
+     * @deprecated use {@link CEi#OpenSession(long)} instead
      */
+    @Deprecated
     public static long OpenSession(long slotID) {
-        return OpenSession(slotID, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        return NCE.OpenSession(C.NATIVE, slotID);
     }
 
     /**
@@ -346,10 +359,11 @@ public class CE {
      * @param session the session's handle
      * @see C#CloseSession(long)
      * @see NativeProvider#C_CloseSession(long)
+     * @deprecated use {@link CEi#CloseSession(long)} instead
      */
+    @Deprecated
     public static void CloseSession(long session) {
-        long rv = C.CloseSession(session);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.CloseSession(C.NATIVE, session);
     }
 
     /**
@@ -357,10 +371,11 @@ public class CE {
      * @param slotID the token's slot
      * @see C#CloseAllSessions(long)
      * @see NativeProvider#C_CloseAllSessions(long)
+     * @deprecated use {@link CEi#CloseAllSessions(long)} instead
      */
+    @Deprecated
     public static void CloseAllSessions(long slotID) {
-        long rv = C.CloseAllSessions(slotID);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.CloseAllSessions(C.NATIVE, slotID);
     }
 
     /**
@@ -369,10 +384,11 @@ public class CE {
      * @param info receives session info
      * @see C#GetSessionInfo(long, CK_SESSION_INFO)
      * @see NativeProvider#C_GetSessionInfo(long, CK_SESSION_INFO)
+     * @deprecated use {@link CEi#GetSessionInfo(long, CK_SESSION_INFO)} instead
      */
+    @Deprecated
     public static void GetSessionInfo(long session, CK_SESSION_INFO info) {
-        long rv = C.GetSessionInfo(session, info);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetSessionInfo(C.NATIVE, session, info);
     }
 
     /**
@@ -381,11 +397,11 @@ public class CE {
      * @return session info
      * @see C#GetSessionInfo(long, CK_SESSION_INFO)
      * @see NativeProvider#C_GetSessionInfo(long, CK_SESSION_INFO)
+     * @deprecated use {@link CEi#GetSessionInfo(long)} instead
      */
+    @Deprecated
     public static CK_SESSION_INFO GetSessionInfo(long session) {
-        CK_SESSION_INFO info = new CK_SESSION_INFO();
-        GetSessionInfo(session, info);
-        return info;
+        return NCE.GetSessionInfo(C.NATIVE, session);
     }
 
     /**
@@ -395,10 +411,11 @@ public class CE {
      * @param operationStateLen gets state length
      * @see C#GetOperationState(long, byte[], LongRef)
      * @see NativeProvider#C_GetOperationState(long, byte[], LongRef)
+     * @deprecated use {@link CEi#GetObjectSize(long, long, LongRef)} instead
      */
+    @Deprecated
     public static void GetOperationState(long session, byte[] operationState, LongRef operationStateLen) {
-        long rv = C.GetOperationState(session, operationState, operationStateLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetOperationState(C.NATIVE, session, operationState, operationStateLen);
     }
 
     /**
@@ -407,13 +424,11 @@ public class CE {
      * @return operation state
      * @see C#GetOperationState(long, byte[], LongRef)
      * @see NativeProvider#C_GetOperationState(long, byte[], LongRef)
+     * @deprecated use {@link CEi#GetOperationState(long)} instead
      */
+    @Deprecated
     public static byte[] GetOperationState(long session) {
-        LongRef len = new LongRef();
-        GetOperationState(session, null, len);
-        byte[] result = new byte[(int) len.value()];
-        GetOperationState(session, result, len);
-        return resize(result, (int) len.value());
+        return NCE.GetOperationState(C.NATIVE, session);
     }
 
     /**
@@ -424,10 +439,11 @@ public class CE {
      * @param authenticationKey sign/verify key
      * @see C#SetOperationState(long, byte[], long, long)
      * @see NativeProvider#C_SetOperationState(long, byte[], long, long, long)
+     * @deprecated use {@link CEi#SetOperationState(long, byte[], long, long)} instead
      */
+    @Deprecated
     public static void SetOperationState(long session, byte[] operationState, long encryptionKey, long authenticationKey) {
-        long rv = C.SetOperationState(session, operationState, encryptionKey, authenticationKey);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SetOperationState(C.NATIVE, session, operationState, encryptionKey, authenticationKey);
     }
 
     /**
@@ -437,10 +453,11 @@ public class CE {
      * @param pin the user's PIN
      * @see C#Login(long, long, byte[])
      * @see NativeProvider#C_Login(long, long, byte[], long)
+     * @deprecated use {@link CEi#Login(long, long, byte[])} instead
      */
+    @Deprecated
     public static void Login(long session, long userType, byte[] pin) {
-        long rv = C.Login(session, userType, pin);
-        if (rv != CKR.OK && rv != CKR.USER_ALREADY_LOGGED_IN) throw new CKRException(rv);
+        NCE.Login(C.NATIVE, session, userType, pin);
     }
 
     /**
@@ -449,9 +466,11 @@ public class CE {
      * @param pin the normal user's PIN
      * @see C#Login(long, long, byte[])
      * @see NativeProvider#C_Login(long, long, byte[], long)
+     * @deprecated use {@link CEi#LoginUser(long, byte[])} instead
      */
+    @Deprecated
     public static void LoginUser(long session, byte[] pin) {
-        Login(session, CKU.USER, pin);
+        NCE.LoginUser(C.NATIVE, session, pin);
     }
 
     /**
@@ -460,9 +479,11 @@ public class CE {
      * @param pin the normal user's PIN encoded in a single byte encoding format such as ISO8859-1
      * @see C#Login(long, long, byte[])
      * @see NativeProvider#C_Login(long, long, byte[], long)
+     * @deprecated use {@link CEi#LoginUser(long, String)} instead
      */
+    @Deprecated
     public static void LoginUser(long session, String pin) {
-        LoginUser(session, Buf.c2b(pin));
+        NCE.LoginUser(C.NATIVE, session, pin);
     }
 
     /**
@@ -471,9 +492,11 @@ public class CE {
      * @param pin SO PIN
      * @see C#Login(long, long, byte[])
      * @see NativeProvider#C_Login(long, long, byte[], long)
+     * @deprecated use {@link CEi#LoginSO(long, byte[])} instead
      */
+    @Deprecated
     public static void LoginSO(long session, byte[] pin) {
-        Login(session, CKU.SO, pin);
+        NCE.LoginSO(C.NATIVE, session, pin);
     }
 
     /**
@@ -482,9 +505,11 @@ public class CE {
      * @param pin SO PIN encoded in a single byte encoding format such as ISO8859-1
      * @see C#Login(long, long, byte[])
      * @see NativeProvider#C_Login(long, long, byte[], long)
+     * @deprecated use {@link CEi#LoginSO(long, String)} instead
      */
+    @Deprecated
     public static void LoginSO(long session, String pin) {
-        LoginSO(session, Buf.c2b(pin));
+        NCE.LoginSO(C.NATIVE, session, pin);
     }
 
     /**
@@ -492,10 +517,11 @@ public class CE {
      * @param session the session's handle
      * @see C#Logout(long)
      * @see NativeProvider#C_Logout(long)
+     * @deprecated use {@link CEi#Logout(long)} instead
      */
+    @Deprecated
     public static void Logout(long session) {
-        long rv = C.Logout(session);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.Logout(C.NATIVE, session);
     }
 
     /**
@@ -505,10 +531,11 @@ public class CE {
      * @param object gets new object's handle
      * @see C#CreateObject(long, CKA[], LongRef)
      * @see NativeProvider#C_CreateObject(long, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#CreateObject(long, CKA[], LongRef)} instead
      */
+    @Deprecated
     public static void CreateObject(long session, CKA[] templ, LongRef object) {
-        long rv = C.CreateObject(session, templ, object);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.CreateObject(C.NATIVE, session, templ, object);
     }
 
     /**
@@ -517,11 +544,11 @@ public class CE {
      * @return new object handle
      * @see C#CreateObject(long, CKA[], LongRef)
      * @see NativeProvider#C_CreateObject(long, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#CreateObject(long, CKA...)} instead
      */
+    @Deprecated
     public static long CreateObject(long session, CKA... templ) {
-        LongRef object = new LongRef();
-        CreateObject(session, templ, object);
-        return object.value();
+        return NCE.CreateObject(C.NATIVE, session, templ);
     }
 
     /**
@@ -532,10 +559,11 @@ public class CE {
      * @param newObject receives handle of copy
      * @see C#CopyObject(long, long, CKA[], LongRef)
      * @see NativeProvider#C_CopyObject(long, long, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#CopyObject(long, long, CKA[], LongRef)} instead
      */
+    @Deprecated
     public static void CopyObject(long session, long object, CKA[] templ, LongRef newObject) {
-        long rv = C.CopyObject(session, object, templ, newObject);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.CopyObject(C.NATIVE, session, object, templ, newObject);
     }
 
     /**
@@ -546,11 +574,11 @@ public class CE {
      * @return new object handle
      * @see C#CopyObject(long, long, CKA[], LongRef)
      * @see NativeProvider#C_CopyObject(long, long, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#CopyObject(long, long, CKA...)} instead
      */
+    @Deprecated
     public static long CopyObject(long session, long object, CKA... templ) {
-        LongRef newObject = new LongRef();
-        CopyObject(session, object, templ, newObject);
-        return newObject.value();
+        return NCE.CopyObject(C.NATIVE, session, object, templ);
     }
 
     /**
@@ -559,10 +587,11 @@ public class CE {
      * @param object the object's handle
      * @see C#DestroyObject(long, long)
      * @see NativeProvider#C_DestroyObject(long, long)
+     * @deprecated use {@link CEi#DestroyObject(long, long)} instead
      */
+    @Deprecated
     public static void DestroyObject(long session, long object) {
-        long rv = C.DestroyObject(session, object);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DestroyObject(C.NATIVE, session, object);
     }
 
     /**
@@ -572,10 +601,11 @@ public class CE {
      * @param size receives the size of object
      * @see C#GetObjectSize(long, long, LongRef)
      * @see NativeProvider#C_GetObjectSize(long, long, LongRef)
+     * @deprecated use {@link CEi#GetObjectSize(long, long, LongRef)} instead
      */
+    @Deprecated
     public static void GetObjectSize(long session, long object, LongRef size) {
-        long rv = C.GetObjectSize(session, object, size);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetObjectSize(C.NATIVE, session, object, size);
     }
 
     /**
@@ -585,11 +615,11 @@ public class CE {
      * @return size of object in bytes
      * @see C#GetObjectSize(long, long, LongRef)
      * @see NativeProvider#C_GetObjectSize(long, long, LongRef)
+     * @deprecated use {@link CEi#GetObjectSize(long, long)} instead
      */
+    @Deprecated
     public static long GetObjectSize(long session, long object) {
-        LongRef size = new LongRef();
-        GetObjectSize(session, object, size);
-        return size.value();
+        return NCE.GetObjectSize(C.NATIVE, session, object);
     }
 
     /**
@@ -599,13 +629,11 @@ public class CE {
      * @param templ specifies attributes, gets values
      * @see C#GetAttributeValue(long, long, CKA[])
      * @see NativeProvider#C_GetAttributeValue(long, long, CKA[], long)
+     * @deprecated use {@link CEi#GetAttributeValue(long, long, CKA...)} instead
      */
+    @Deprecated
     public static void GetAttributeValue(long session, long object, CKA... templ) {
-        if (templ == null || templ.length == 0) {
-            return;
-        }
-        long rv = C.GetAttributeValue(session, object, templ);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetAttributeValue(C.NATIVE, session, object, templ);
     }
 
     /**
@@ -615,20 +643,11 @@ public class CE {
      * @param cka {@link CKA} type
      * @see C#GetAttributeValue(long, long, CKA[])
      * @see NativeProvider#C_GetAttributeValue(long, long, CKA[], long)
+     * @deprecated use {@link CEi#GetAttributeValue(long, long, long)} instead
      */
+    @Deprecated
     public static CKA GetAttributeValue(long session, long object, long cka) {
-        CKA[] templ = {new CKA(cka)};
-        long rv = C.GetAttributeValue(session, object, templ);
-        if (rv == CKR.ATTRIBUTE_TYPE_INVALID || templ[0].ulValueLen == 0) {
-            return templ[0];
-        }
-        if (rv != CKR.OK) throw new CKRException(rv);
-
-        // allocate memory and call again
-        templ[0].pValue = new byte[(int) templ[0].ulValueLen];
-        rv = C.GetAttributeValue(session, object, templ);
-        if (rv != CKR.OK) throw new CKRException(rv);
-        return templ[0];
+        return NCE.GetAttributeValue(C.NATIVE, session, object, cka);
     }
 
     /**
@@ -640,38 +659,11 @@ public class CE {
      * @return attribute values
      * @see C#GetAttributeValue(long, long, CKA[])
      * @see NativeProvider#C_GetAttributeValue(long, long, CKA[], long)
+     * @deprecated use {@link CEi#GetAttributeValue(long, long, long...)} instead
      */
+    @Deprecated
     public static CKA[] GetAttributeValue(long session, long object, long... types) {
-        if (types == null || types.length == 0) {
-            return new CKA[0];
-        }
-        CKA[] templ = new CKA[types.length];
-        for (int i = 0; i < types.length; i++) {
-            templ[i] = new CKA(types[i], null);
-        }
-
-        // try getting all at once
-        try {
-            GetAttributeValue(session, object, templ);
-            // allocate memory and go again
-            for (CKA att : templ) {
-                att.pValue = att.ulValueLen > 0 ? new byte[(int) att.ulValueLen] : null;
-            }
-            GetAttributeValue(session, object, templ);
-            return templ;
-        } catch (CKRException ckre) {
-            // if we got CKR_ATTRIBUTE_TYPE_INVALID, then handle below
-            if (ckre.getCKR() != CKR.ATTRIBUTE_TYPE_INVALID) {
-                throw ckre;
-            }
-        }
-
-        // send gets one at a time
-        CKA[] result = new CKA[types.length];
-        for (int i = 0; i < types.length; i++) {
-            result[i] = GetAttributeValue(session, object, types[i]);
-        }
-        return result;
+        return NCE.GetAttributeValue(C.NATIVE, session, object, types);
     }
 
     /**
@@ -681,22 +673,24 @@ public class CE {
      * @param templ specifies attributes and values
      * @see C#SetAttributeValue(long, long, CKA[])
      * @see NativeProvider#C_SetAttributeValue(long, long, CKA[], long)
+     * @deprecated use {@link CEi#SetAttributeValue(long, long, CKA...)} instead
      */
+    @Deprecated
     public static void SetAttributeValue(long session, long object, CKA... templ) {
-        long rv = C.SetAttributeValue(session, object, templ);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SetAttributeValue(C.NATIVE, session, object, templ);
     }
 
     /**
-     * Initailses a search for token and session objects that match a template.
+     * Initialises a search for token and session objects that match a template.
      * @param session the session's handle
      * @param templ attribute values to match
      * @see C#FindObjectsInit(long, CKA[])
      * @see NativeProvider#C_FindObjectsInit(long, CKA[], long)
+     * @deprecated use {@link CEi#FindObjectsInit(long, CKA...)} instead
      */
+    @Deprecated
     public static void FindObjectsInit(long session, CKA... templ) {
-        long rv = C.FindObjectsInit(session, templ);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.FindObjectsInit(C.NATIVE, session, templ);
     }
 
     /**
@@ -707,10 +701,11 @@ public class CE {
      * @param objectCount number of object handles returned
      * @see C#FindObjects(long, long[], LongRef)
      * @see NativeProvider#C_FindObjects(long, long[], long, LongRef)
+     * @deprecated use {@link CEi#FindObjects(long, long[], LongRef)} instead
      */
+    @Deprecated
     public static void FindObjects(long session, long[] found, LongRef objectCount) {
-        long rv = C.FindObjects(session, found, objectCount);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.FindObjects(C.NATIVE, session, found, objectCount);
     }
 
     /**
@@ -721,19 +716,11 @@ public class CE {
      * @return list of object handles
      * @see C#FindObjects(long, long[], LongRef)
      * @see NativeProvider#C_FindObjects(long, long[], long, LongRef)
+     * @deprecated use {@link CEi#FindObjects(long, int)} instead
      */
+    @Deprecated
     public static long[] FindObjects(long session, int maxObjects) {
-        long[] found = new long[maxObjects];
-        LongRef len = new LongRef();
-        FindObjects(session, found, len);
-        long count = len.value();
-        if (count == maxObjects) {
-            return found;
-        } else {
-            long[] result = new long[(int) count];
-            System.arraycopy(found, 0, result, 0, result.length);
-            return result;
-        }
+        return NCE.FindObjects(C.NATIVE, session, maxObjects);
     }
 
     /**
@@ -741,10 +728,11 @@ public class CE {
      * @param session the session's handle
      * @see C#FindObjectsFinal(long)
      * @see NativeProvider#C_FindObjectsFinal(long)
+     * @deprecated use {@link CEi#FindObjectsFinal(long)} instead
      */
+    @Deprecated
     public static void FindObjectsFinal(long session) {
-        long rv = C.FindObjectsFinal(session);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.FindObjectsFinal(C.NATIVE, session);
     }
 
     /**
@@ -754,31 +742,11 @@ public class CE {
      * @return all objects matching
      * @see C#FindObjectsInit(long, CKA[])
      * @see NativeProvider#C_FindObjectsInit(long, CKA[], long)
+     * @deprecated use {@link CEi#FindObjects(long, CKA...)} instead
      */
+    @Deprecated
     public static long[] FindObjects(long session, CKA... templ) {
-        FindObjectsInit(session, templ);
-        int maxObjects = 1024;
-        // call once
-        long[] result = FindObjects(session, maxObjects);
-        // most likely we are done now
-        if (result.length < maxObjects) {
-            FindObjectsFinal(session);
-            return result;
-        }
-
-        // this is a lot of objects!
-        while (true) {
-            maxObjects *= 2;
-            long[] found = FindObjects(session, maxObjects);
-            long[] temp = new long[result.length + found.length];
-            System.arraycopy(result, 0, temp, 0, result.length);
-            System.arraycopy(found, 0, temp, result.length, found.length);
-            result = temp;
-            if (found.length < maxObjects) { // exhausted
-                FindObjectsFinal(session);
-                return result;
-            }
-        }
+        return NCE.FindObjects(C.NATIVE, session, templ);
     }
 
     /**
@@ -788,10 +756,11 @@ public class CE {
      * @param key handle of encryption key
      * @see C#EncryptInit(long, CKM, long)
      * @see NativeProvider#C_EncryptInit(long, CKM, long)
+     * @deprecated use {@link CEi#EncryptInit(long, CKM, long)} instead
      */
+    @Deprecated
     public static void EncryptInit(long session, CKM mechanism, long key) {
-        long rv = C.EncryptInit(session, mechanism, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.EncryptInit(C.NATIVE, session, mechanism, key);
     }
 
     /**
@@ -802,10 +771,11 @@ public class CE {
      * @param encryptedDataLen gets c-text size
      * @see C#Encrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Encrypt(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void Encrypt(long session, byte[] data, byte[] encryptedData, LongRef encryptedDataLen) {
-        long rv = C.Encrypt(session, data, encryptedData, encryptedDataLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.Encrypt(C.NATIVE, session, data, encryptedData, encryptedDataLen);
     }
 
     /**
@@ -816,13 +786,11 @@ public class CE {
      * @return encrypted data
      * @see C#Encrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#EncryptPad(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] EncryptPad(long session, byte[] data) {
-        LongRef l = new LongRef();
-        Encrypt(session, data, null, l);
-        byte[] result = new byte[(int) l.value()];
-        Encrypt(session, data, result, l);
-        return resize(result, (int) l.value());
+        return NCE.EncryptPad(C.NATIVE, session, data);
     }
 
     /**
@@ -833,12 +801,11 @@ public class CE {
      * @return encrypted data
      * @see C#Encrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Encrypt(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] Encrypt(long session, byte[] data) {
-        byte[] result = new byte[data.length];
-        LongRef l = new LongRef(result.length);
-        Encrypt(session, data, result, l);
-        return resize(result, (int) l.value);
+        return NCE.Encrypt(C.NATIVE, session, data);
     }
 
     /**
@@ -849,10 +816,11 @@ public class CE {
      * @param encryptedPartLen gets c-text size
      * @see C#EncryptUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_EncryptUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#EncryptUpdate(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void EncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
-        long rv = C.EncryptUpdate(session, part, encryptedPart, encryptedPartLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.EncryptUpdate(C.NATIVE, session, part, encryptedPart, encryptedPartLen);
     }
 
     /**
@@ -862,13 +830,11 @@ public class CE {
      * @return encrypted part
      * @see C#EncryptUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_EncryptUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#EncryptUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] EncryptUpdate(long session, byte[] part) {
-        LongRef l = new LongRef();
-        EncryptUpdate(session, part, null, l);
-        byte[] result = new byte[(int) l.value()];
-        EncryptUpdate(session, part, result, l);
-        return resize(result, (int) l.value());
+        return NCE.EncryptUpdate(C.NATIVE, session, part);
     }
 
     /**
@@ -878,10 +844,11 @@ public class CE {
      * @param lastEncryptedPartLen gets last size
      * @see C#EncryptFinal(long, byte[], LongRef)
      * @see NativeProvider#C_EncryptFinal(long, byte[], LongRef)
+     * @deprecated use {@link CEi#EncryptFinal(long, byte[], LongRef)} instead
      */
+    @Deprecated
     public static void EncryptFinal(long session, byte[] lastEncryptedPart, LongRef lastEncryptedPartLen) {
-        long rv = C.EncryptFinal(session, lastEncryptedPart, lastEncryptedPartLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.EncryptFinal(C.NATIVE, session, lastEncryptedPart, lastEncryptedPartLen);
     }
 
     /**
@@ -890,13 +857,11 @@ public class CE {
      * @return last encrypted part
      * @see C#EncryptFinal(long, byte[], LongRef)
      * @see NativeProvider#C_EncryptFinal(long, byte[], LongRef)
+     * @deprecated use {@link CEi#EncryptFinal(long)} instead
      */
+    @Deprecated
     public static byte[] EncryptFinal(long session) {
-        LongRef l = new LongRef();
-        EncryptFinal(session, null, l);
-        byte[] result = new byte[(int) l.value()];
-        EncryptFinal(session, result, l);
-        return resize(result, (int) l.value());
+        return NCE.EncryptFinal(C.NATIVE, session);
     }
 
     /**
@@ -909,10 +874,11 @@ public class CE {
      * @return encrypted data
      * @see C#Encrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#EncryptPad(long, CKM, long, byte[])} instead
      */
+    @Deprecated
     public static byte[] EncryptPad(long session, CKM mechanism, long key, byte[] data) {
-        EncryptInit(session, mechanism, key);
-        return EncryptPad(session, data);
+        return NCE.EncryptPad(C.NATIVE, session, mechanism, key, data);
     }
 
     /**
@@ -925,10 +891,11 @@ public class CE {
      * @return encrypted data
      * @see C#Encrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Encrypt(long, CKM, long, byte[])} instead
      */
+    @Deprecated
     public static byte[] Encrypt(long session, CKM mechanism, long key, byte[] data) {
-        EncryptInit(session, mechanism, key);
-        return Encrypt(session, data);
+        return NCE.Encrypt(C.NATIVE, session, mechanism, key, data);
     }
 
     /**
@@ -938,10 +905,11 @@ public class CE {
      * @param key handle of decryption key
      * @see C#DecryptInit(long, CKM, long)
      * @see NativeProvider#C_DecryptInit(long, CKM, long)
+     * @deprecated use {@link CEi#DecryptInit(long, CKM, long)} instead
      */
+    @Deprecated
     public static void DecryptInit(long session, CKM mechanism, long key) {
-        long rv = C.DecryptInit(session, mechanism, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DecryptInit(C.NATIVE, session, mechanism, key);
     }
 
     /**
@@ -952,11 +920,11 @@ public class CE {
      * @param dataLen gets p-text size
      * @see C#Decrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Decrypt(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void Decrypt(long session, byte[] encryptedData, byte[] data, LongRef dataLen) {
-        long rv = C.Decrypt(session, encryptedData, data, dataLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
-
+        NCE.Decrypt(C.NATIVE, session, encryptedData, data, dataLen);
     }
 
     /**
@@ -967,13 +935,11 @@ public class CE {
      * @return plaintext
      * @see C#Decrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DecryptPad(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] DecryptPad(long session, byte[] encryptedData) {
-        LongRef l = new LongRef();
-        Decrypt(session, encryptedData, null, l);
-        byte[] result = new byte[(int) l.value()];
-        Decrypt(session, encryptedData, result, l);
-        return resize(result, (int) l.value());
+        return NCE.DecryptPad(C.NATIVE, session, encryptedData);
     }
 
     /**
@@ -984,12 +950,11 @@ public class CE {
      * @return plaintext
      * @see C#Decrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Decrypt(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] Decrypt(long session, byte[] encryptedData) {
-        byte[] result = new byte[encryptedData.length];
-        LongRef l = new LongRef(result.length);
-        Decrypt(session, encryptedData, result, l);
-        return resize(result, (int) l.value());
+        return NCE.Decrypt(C.NATIVE, session, encryptedData);
     }
 
     /**
@@ -1000,10 +965,11 @@ public class CE {
      * @param dataLen get p-text size
      * @see C#DecryptUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_DecryptUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DecryptUpdate(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void DecryptUpdate(long session, byte[] encryptedPart, byte[] data, LongRef dataLen) {
-        long rv = C.DecryptUpdate(session, encryptedPart, data, dataLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DecryptUpdate(C.NATIVE, session, encryptedPart, data, dataLen);
     }
 
     /**
@@ -1013,13 +979,11 @@ public class CE {
      * @return plaintext
      * @see C#DecryptUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_DecryptUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DecryptUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] DecryptUpdate(long session, byte[] encryptedPart) {
-        LongRef l = new LongRef();
-        DecryptUpdate(session, encryptedPart, null, l);
-        byte[] result = new byte[(int) l.value()];
-        DecryptUpdate(session, encryptedPart, result, l);
-        return resize(result, (int) l.value());
+        return NCE.DecryptUpdate(C.NATIVE, session, encryptedPart);
     }
 
     /**
@@ -1029,10 +993,11 @@ public class CE {
      * @param lastPartLen p-text size
      * @see C#DecryptFinal(long, byte[], LongRef)
      * @see NativeProvider#C_DecryptFinal(long, byte[], LongRef)
+     * @deprecated use {@link CEi#DigestFinal(long, byte[], LongRef)} instead
      */
+    @Deprecated
     public static void DecryptFinal(long session, byte[] lastPart, LongRef lastPartLen) {
-        long rv = C.DecryptFinal(session, lastPart, lastPartLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DecryptFinal(C.NATIVE, session, lastPart, lastPartLen);
     }
 
     /**
@@ -1041,13 +1006,11 @@ public class CE {
      * @return last part of plaintext
      * @see C#DecryptFinal(long, byte[], LongRef)
      * @see NativeProvider#C_DecryptFinal(long, byte[], LongRef)
+     * @deprecated use {@link CEi#DigestFinal(long)} instead
      */
+    @Deprecated
     public static byte[] DecryptFinal(long session) {
-        LongRef l = new LongRef();
-        DecryptFinal(session, null, l);
-        byte[] result = new byte[(int) l.value()];
-        DecryptFinal(session, result, l);
-        return resize(result, (int) l.value());
+        return NCE.DecryptFinal(C.NATIVE, session);
     }
 
     /**
@@ -1060,10 +1023,11 @@ public class CE {
      * @return plaintext
      * @see C#Decrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DecryptPad(long, CKM, long, byte[])} instead
      */
+    @Deprecated
     public static byte[] DecryptPad(long session, CKM mechanism, long key, byte[] encryptedData) {
-        DecryptInit(session, mechanism, key);
-        return DecryptPad(session, encryptedData);
+        return NCE.DecryptPad(C.NATIVE, session, mechanism, key, encryptedData);
     }
 
     /**
@@ -1076,10 +1040,11 @@ public class CE {
      * @return plaintext
      * @see C#Decrypt(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Decrypt(long, CKM, long, byte[])} instead
      */
+    @Deprecated
     public static byte[] Decrypt(long session, CKM mechanism, long key, byte[] encryptedData) {
-        DecryptInit(session, mechanism, key);
-        return Decrypt(session, encryptedData);
+        return NCE.Decrypt(C.NATIVE, session, mechanism, key, encryptedData);
     }
 
     /**
@@ -1088,10 +1053,11 @@ public class CE {
      * @param mechanism the digesting mechanism
      * @see C#DigestInit(long, CKM)
      * @see NativeProvider#C_DigestInit(long, CKM)
+     * @deprecated use {@link CEi#DigestInit(long, CKM)} instead
      */
+    @Deprecated
     public static void DigestInit(long session, CKM mechanism) {
-        long rv = C.DigestInit(session, mechanism);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DigestInit(C.NATIVE, session, mechanism);
     }
 
     /**
@@ -1102,10 +1068,11 @@ public class CE {
      * @param digestLen gets digest length
      * @see C#Digest(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Digest(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Digest(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void Digest(long session, byte[] data, byte[] digest, LongRef digestLen) {
-        long rv = C.Digest(session, data, digest, digestLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.Digest(C.NATIVE, session, data, digest, digestLen);
     }
 
     /**
@@ -1115,13 +1082,11 @@ public class CE {
      * @return digest
      * @see C#Digest(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Digest(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Digest(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] Digest(long session, byte[] data) {
-        LongRef l = new LongRef();
-        Digest(session, data, null, l);
-        byte[] result = new byte[(int) l.value()];
-        Digest(session, data, result, l);
-        return resize(result, (int) l.value());
+        return NCE.Digest(C.NATIVE, session, data);
     }
 
     /**
@@ -1130,10 +1095,11 @@ public class CE {
      * @param part data to be digested
      * @see C#DigestUpdate(long, byte[])
      * @see NativeProvider#C_DigestUpdate(long, byte[], long)
+     * @deprecated use {@link CEi#DigestUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static void DigestUpdate(long session, byte[] part) {
-        long rv = C.DigestUpdate(session, part);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DigestUpdate(C.NATIVE, session, part);
     }
 
     /**
@@ -1143,10 +1109,11 @@ public class CE {
      * @param key secret key to digest
      * @see C#DigestKey(long, long)
      * @see NativeProvider#C_DigestKey(long, long)
+     * @deprecated use {@link CEi#DigestKey(long, long)} instead
      */
+    @Deprecated
     public static void DigestKey(long session, long key) {
-        long rv = C.DigestKey(session, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DigestKey(C.NATIVE, session, key);
     }
 
     /**
@@ -1156,10 +1123,11 @@ public class CE {
      * @param digestLen gets byte count of digest
      * @see C#DigestFinal(long, byte[], LongRef)
      * @see NativeProvider#C_DigestFinal(long, byte[], LongRef)
+     * @deprecated use {@link CEi#DigestFinal(long, byte[], LongRef)} instead
      */
+    @Deprecated
     public static void DigestFinal(long session, byte[] digest, LongRef digestLen) {
-        long rv = C.DigestFinal(session, digest, digestLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DigestFinal(C.NATIVE, session, digest, digestLen);
     }
 
     /**
@@ -1168,13 +1136,11 @@ public class CE {
      * @return digest
      * @see C#DigestFinal(long, byte[], LongRef)
      * @see NativeProvider#C_DigestFinal(long, byte[], LongRef)
+     * @deprecated use {@link CEi#DigestFinal(long)} instead
      */
+    @Deprecated
     public static byte[] DigestFinal(long session) {
-        LongRef l = new LongRef();
-        DigestFinal(session, null, l);
-        byte[] result = new byte[(int) l.value()];
-        DigestFinal(session, result, l);
-        return resize(result, (int) l.value());
+        return NCE.DigestFinal(C.NATIVE, session);
     }
 
     /**
@@ -1185,10 +1151,11 @@ public class CE {
      * @return digest
      * @see C#Digest(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Digest(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Digest(long, CKM, byte[])} instead
      */
+    @Deprecated
     public static byte[] Digest(long session, CKM mechanism, byte[] data) {
-        DigestInit(session, mechanism);
-        return Digest(session, data);
+        return NCE.Digest(C.NATIVE, session, mechanism, data);
     }
 
     /**
@@ -1200,10 +1167,11 @@ public class CE {
      * @param key handle of signature key
      * @see C#SignInit(long, CKM, long)
      * @see NativeProvider#C_SignInit(long, CKM, long)
+     * @deprecated use {@link CEi#SignInit(long, CKM, long)} instead
      */
+    @Deprecated
     public static void SignInit(long session, CKM mechanism, long key) {
-        long rv = C.SignInit(session, mechanism, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SignInit(C.NATIVE, session, mechanism, key);
     }
 
     /**
@@ -1215,10 +1183,11 @@ public class CE {
      * @param signatureLen gets signature length
      * @see C#Sign(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Sign(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Sign(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void Sign(long session, byte[] data, byte[] signature, LongRef signatureLen) {
-        long rv = C.Sign(session, data, signature, signatureLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.Sign(C.NATIVE, session, data, signature, signatureLen);
     }
 
     /**
@@ -1229,13 +1198,11 @@ public class CE {
      * @return signature
      * @see C#Sign(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Sign(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Sign(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] Sign(long session, byte[] data) {
-        LongRef l = new LongRef();
-        Sign(session, data, null, l);
-        byte[] result = new byte[(int) l.value()];
-        Sign(session, data, result, l);
-        return resize(result, (int) l.value());
+        return NCE.Sign(C.NATIVE, session, data);
     }
 
     /**
@@ -1246,10 +1213,11 @@ public class CE {
      * @param part data to sign
      * @see C#SignUpdate(long, byte[])
      * @see NativeProvider#C_SignUpdate(long, byte[], long)
+     * @deprecated use {@link CEi#SignUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static void SignUpdate(long session, byte[] part) {
-        long rv = C.SignUpdate(session, part);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SignUpdate(C.NATIVE, session, part);
     }
 
     /**
@@ -1259,10 +1227,11 @@ public class CE {
      * @param signatureLen gets signature length
      * @see C#SignFinal(long, byte[], LongRef)
      * @see NativeProvider#C_SignFinal(long, byte[], LongRef)
+     * @deprecated use {@link CEi#SignFinal(long, byte[], LongRef)} instead
      */
+    @Deprecated
     public static void SignFinal(long session, byte[] signature, LongRef signatureLen) {
-        long rv = C.SignFinal(session, signature, signatureLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SignFinal(C.NATIVE, session, signature, signatureLen);
     }
 
     /**
@@ -1271,13 +1240,11 @@ public class CE {
      * @return signature
      * @see C#SignFinal(long, byte[], LongRef)
      * @see NativeProvider#C_SignFinal(long, byte[], LongRef)
+     * @deprecated use {@link CEi#SignFinal(long)} instead
      */
+    @Deprecated
     public static byte[] SignFinal(long session) {
-        LongRef l = new LongRef();
-        SignFinal(session, null, l);
-        byte[] result = new byte[(int) l.value()];
-        SignFinal(session, result, l);
-        return resize(result, (int) l.value());
+        return NCE.SignFinal(C.NATIVE, session);
     }
 
     /**
@@ -1290,10 +1257,11 @@ public class CE {
      * @return signature
      * @see C#Sign(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_Sign(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#Sign(long, CKM, long, byte[])} instead
      */
+    @Deprecated
     public static byte[] Sign(long session, CKM mechanism, long key, byte[] data) {
-        SignInit(session, mechanism, key);
-        return Sign(session, data);
+        return NCE.Sign(C.NATIVE, session, mechanism, key, data);
     }
 
     /**
@@ -1303,10 +1271,11 @@ public class CE {
      * @param key handle f the signature key
      * @see C#SignRecoverInit(long, CKM, long)
      * @see NativeProvider#C_SignRecoverInit(long, CKM, long)
+     * @deprecated use {@link CEi#SignRecoverInit(long, CKM, long)} instead
      */
+    @Deprecated
     public static void SignRecoverInit(long session, CKM mechanism, long key) {
-        long rv = C.SignRecoverInit(session, mechanism, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SignRecoverInit(C.NATIVE, session, mechanism, key);
     }
 
     /**
@@ -1317,10 +1286,11 @@ public class CE {
      * @param signatureLen gets signature length
      * @see C#SignRecover(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_SignRecover(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#SignRecover(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void SignRecover(long session, byte[] data, byte[] signature, LongRef signatureLen) {
-        long rv = C.SignRecover(session, data, signature, signatureLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SignRecover(C.NATIVE, session, data, signature, signatureLen);
     }
 
     /**
@@ -1330,13 +1300,11 @@ public class CE {
      * @return signature
      * @see C#SignRecover(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_SignRecover(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#SignRecover(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] SignRecover(long session, byte[] data) {
-        LongRef l = new LongRef();
-        SignRecover(session, data, null, l);
-        byte[] result = new byte[(int) l.value()];
-        SignRecover(session, data, result, l);
-        return resize(result, (int) l.value());
+        return NCE.SignRecover(C.NATIVE, session, data);
     }
 
     /**
@@ -1348,10 +1316,11 @@ public class CE {
      * @return signature
      * @see C#SignRecover(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_SignRecover(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#SignRecover(long, CKM, long, byte[])} instead
      */
+    @Deprecated
     public static byte[] SignRecover(long session, CKM mechanism, long key, byte[] data) {
-        SignRecoverInit(session, mechanism, key);
-        return SignRecover(session, data);
+        return NCE.SignRecover(C.NATIVE, session, mechanism, key, data);
     }
 
     /**
@@ -1362,10 +1331,11 @@ public class CE {
      * @param key verification key
      * @see C#VerifyInit(long, CKM, long)
      * @see NativeProvider#C_VerifyInit(long, CKM, long)
+     * @deprecated use {@link CEi#VerifyInit(long, CKM, long)} instead
      */
+    @Deprecated
     public static void VerifyInit(long session, CKM mechanism, long key) {
-        long rv = C.VerifyInit(session, mechanism, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.VerifyInit(C.NATIVE, session, mechanism, key);
     }
 
     /**
@@ -1376,10 +1346,11 @@ public class CE {
      * @param signature signature
      * @see C#Verify(long, byte[], byte[])
      * @see NativeProvider#C_Verify(long, byte[], long, byte[], long)
+     * @deprecated use {@link CEi#Verify(long, byte[], byte[])} instead
      */
+    @Deprecated
     public static void Verify(long session, byte[] data, byte[] signature) {
-        long rv = C.Verify(session, data, signature);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.Verify(C.NATIVE, session, data, signature);
     }
 
     /**
@@ -1389,10 +1360,11 @@ public class CE {
      * @param part signed data
      * @see C#VerifyUpdate(long, byte[])
      * @see NativeProvider#C_VerifyUpdate(long, byte[], long)
+     * @deprecated use {@link CEi#VerifyUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static void VerifyUpdate(long session, byte[] part) {
-        long rv = C.VerifyUpdate(session, part);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.VerifyUpdate(C.NATIVE, session, part);
     }
 
     /**
@@ -1401,10 +1373,11 @@ public class CE {
      * @param signature signature to verify
      * @see C#VerifyFinal(long, byte[])
      * @see NativeProvider#C_VerifyFinal(long, byte[], long)
+     * @deprecated use {@link CEi#VerifyFinal(long, byte[])} instead
      */
+    @Deprecated
     public static void VerifyFinal(long session, byte[] signature) {
-        long rv = C.VerifyFinal(session, signature);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.VerifyFinal(C.NATIVE, session, signature);
     }
 
     /**
@@ -1417,10 +1390,11 @@ public class CE {
      * @param signature signature
      * @see C#Verify(long, byte[], byte[])
      * @see NativeProvider#C_Verify(long, byte[], long, byte[], long)
+     * @deprecated use {@link CEi#Verify(long, CKM, long, byte[], byte[])} instead
      */
+    @Deprecated
     public static void Verify(long session, CKM mechanism, long key, byte[] data, byte[] signature) {
-        VerifyInit(session, mechanism, key);
-        Verify(session, data, signature);
+        NCE.Verify(C.NATIVE, session, mechanism, key, data, signature);
     }
 
     /**
@@ -1430,10 +1404,11 @@ public class CE {
      * @param key verification key
      * @see C#VerifyRecoverInit(long, CKM, long)
      * @see NativeProvider#C_VerifyRecoverInit(long, CKM, long)
+     * @deprecated use {@link CEi#VerifyRecoverInit(long, CKM, long)} instead
      */
+    @Deprecated
     public static void VerifyRecoverInit(long session, CKM mechanism, long key) {
-        long rv = C.VerifyRecoverInit(session, mechanism, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.VerifyRecoverInit(C.NATIVE, session, mechanism, key);
     }
 
     /**
@@ -1444,10 +1419,11 @@ public class CE {
      * @param dataLen gets signed data length
      * @see C#VerifyRecover(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_VerifyRecover(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#VerifyRecover(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void VerifyRecover(long session, byte[] signature, byte[] data, LongRef dataLen) {
-        long rv = C.VerifyRecover(session, signature, data, dataLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.VerifyRecover(C.NATIVE, session, signature, data, dataLen);
     }
 
     /**
@@ -1457,13 +1433,11 @@ public class CE {
      * @return data
      * @see C#VerifyRecover(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_VerifyRecover(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#VerifyRecover(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] VerifyRecover(long session, byte[] signature) {
-        LongRef l = new LongRef();
-        VerifyRecover(session, signature, null, l);
-        byte[] result = new byte[(int) l.value()];
-        VerifyRecover(session, signature, result, l);
-        return resize(result, (int) l.value());
+        return NCE.VerifyRecover(C.NATIVE, session, signature);
     }
 
     /**
@@ -1475,10 +1449,11 @@ public class CE {
      * @return data
      * @see C#VerifyRecover(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_VerifyRecover(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#VerifyRecover(long, CKM, long, byte[])} instead
      */
+    @Deprecated
     public static byte[] VerifyRecover(long session, CKM mechanism, long key, byte[] signature) {
-        VerifyRecoverInit(session, mechanism, key);
-        return VerifyRecover(session, signature);
+        return NCE.VerifyRecover(C.NATIVE, session, mechanism, key, signature);
     }
 
     /**
@@ -1489,10 +1464,11 @@ public class CE {
      * @param encryptedPartLen get c-text length
      * @see C#DigestEncryptUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_DigestEncryptUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DigestEncryptUpdate(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void DigestEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
-        long rv = C.DigestEncryptUpdate(session, part, encryptedPart, encryptedPartLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DigestEncryptUpdate(C.NATIVE, session, part, encryptedPart, encryptedPartLen);
     }
 
     /**
@@ -1502,13 +1478,11 @@ public class CE {
      * @return encrypted part
      * @see C#DigestEncryptUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_DigestEncryptUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DigestEncryptUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] DigestEncryptUpdate(long session, byte[] part) {
-        LongRef l = new LongRef();
-        DigestEncryptUpdate(session, part, null, l);
-        byte[] result = new byte[(int) l.value()];
-        DigestEncryptUpdate(session, part, result, l);
-        return resize(result, (int) l.value());
+        return NCE.DigestEncryptUpdate(C.NATIVE, session, part);
     }
 
     /**
@@ -1519,10 +1493,11 @@ public class CE {
      * @param partLen gets plaintext length
      * @see C#DigestUpdate(long, byte[])
      * @see NativeProvider#C_DigestUpdate(long, byte[], long)
+     * @deprecated use {@link CEi#DecryptDigestUpdate(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void DecryptDigestUpdate(long session, byte[] encryptedPart, byte[] part, LongRef partLen) {
-        long rv = C.DecryptDigestUpdate(session, encryptedPart, part, partLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DecryptDigestUpdate(C.NATIVE, session, encryptedPart, part, partLen);
     }
 
     /**
@@ -1532,13 +1507,11 @@ public class CE {
      * @return plaintext
      * @see C#DecryptDigestUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_DecryptDigestUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DecryptDigestUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] DecryptDigestUpdate(long session, byte[] encryptedPart) {
-        LongRef l = new LongRef();
-        DecryptDigestUpdate(session, encryptedPart, null, l);
-        byte[] result = new byte[(int) l.value()];
-        DecryptDigestUpdate(session, encryptedPart, result, l);
-        return resize(result, (int) l.value());
+        return NCE.DecryptDigestUpdate(C.NATIVE, session, encryptedPart);
     }
 
     /**
@@ -1549,10 +1522,11 @@ public class CE {
      * @param encryptedPartLen gets c-text length
      * @see C#SignEncryptUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_SignEncryptUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#SignEncryptUpdate(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void SignEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
-        long rv = C.SignEncryptUpdate(session, part, encryptedPart, encryptedPartLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SignEncryptUpdate(C.NATIVE, session, part, encryptedPart, encryptedPartLen);
     }
 
     /**
@@ -1562,13 +1536,11 @@ public class CE {
      * @return encrypted part
      * @see C#SignEncryptUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_SignEncryptUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#SignEncryptUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] SignEncryptUpdate(long session, byte[] part) {
-        LongRef l = new LongRef();
-        SignEncryptUpdate(session, part, null, l);
-        byte[] result = new byte[(int) l.value()];
-        SignEncryptUpdate(session, part, result, l);
-        return resize(result, (int) l.value());
+        return NCE.SignEncryptUpdate(C.NATIVE, session, part);
     }
 
     /**
@@ -1579,10 +1551,11 @@ public class CE {
      * @param partLen gets p-text length
      * @see C#DecryptVerifyUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_DecryptVerifyUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DecryptVerifyUpdate(long, byte[], byte[], LongRef)} instead
      */
+    @Deprecated
     public static void DecryptVerifyUpdate(long session, byte[] encryptedPart, byte[] part, LongRef partLen) {
-        long rv = C.DecryptVerifyUpdate(session, encryptedPart, part, partLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DecryptVerifyUpdate(C.NATIVE, session, encryptedPart, part, partLen);
     }
 
     /**
@@ -1592,13 +1565,11 @@ public class CE {
      * @return plaintext
      * @see C#DecryptVerifyUpdate(long, byte[], byte[], LongRef)
      * @see NativeProvider#C_DecryptVerifyUpdate(long, byte[], long, byte[], LongRef)
+     * @deprecated use {@link CEi#DecryptVerifyUpdate(long, byte[])} instead
      */
+    @Deprecated
     public static byte[] DecryptVerifyUpdate(long session, byte[] encryptedPart) {
-        LongRef l = new LongRef();
-        DecryptVerifyUpdate(session, encryptedPart, null, l);
-        byte[] result = new byte[(int) l.value()];
-        DecryptVerifyUpdate(session, encryptedPart, result, l);
-        return resize(result, (int) l.value());
+        return NCE.DecryptVerifyUpdate(C.NATIVE, session, encryptedPart);
     }
 
     /**
@@ -1609,10 +1580,11 @@ public class CE {
      * @param key gets handle of new key
      * @see C#GenerateKey(long, CKM, CKA[], LongRef)
      * @see NativeProvider#C_GenerateKey(long, CKM, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#GenerateKey(long, CKM, CKA[], LongRef)} instead
      */
+    @Deprecated
     public static void GenerateKey(long session, CKM mechanism, CKA[] templ, LongRef key) {
-        long rv = C.GenerateKey(session, mechanism, templ, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GenerateKey(C.NATIVE, session, mechanism, templ, key);
     }
 
     /**
@@ -1623,11 +1595,11 @@ public class CE {
      * @return key handle
      * @see C#GenerateKey(long, CKM, CKA[], LongRef)
      * @see NativeProvider#C_GenerateKey(long, CKM, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#GenerateKey(long, CKM, CKA...)} instead
      */
+    @Deprecated
     public static long GenerateKey(long session, CKM mechanism, CKA... templ) {
-        LongRef key = new LongRef();
-        GenerateKey(session, mechanism, templ, key);
-        return key.value();
+        return NCE.GenerateKey(C.NATIVE, session, mechanism, templ);
     }
 
     /**
@@ -1640,11 +1612,12 @@ public class CE {
      * @param privateKey gets handle of new private key
      * @see C#GenerateKeyPair(long, CKM, CKA[], CKA[], LongRef, LongRef)
      * @see NativeProvider#C_GenerateKeyPair(long, CKM, CKA[], long, CKA[], long, LongRef, LongRef)
+     * @deprecated use {@link CEi#GenerateKeyPair(long, CKM, CKA[], CKA[], LongRef, LongRef)} instead
      */
+    @Deprecated
     public static void GenerateKeyPair(long session, CKM mechanism, CKA[] publicKeyTemplate, CKA[] privateKeyTemplate,
-            LongRef publicKey, LongRef privateKey) {
-        long rv = C.GenerateKeyPair(session, mechanism, publicKeyTemplate, privateKeyTemplate, publicKey, privateKey);
-        if (rv != CKR.OK) throw new CKRException(rv);
+                                       LongRef publicKey, LongRef privateKey) {
+        NCE.GenerateKeyPair(C.NATIVE, session, mechanism, publicKeyTemplate, privateKeyTemplate, publicKey, privateKey);
     }
 
     /**
@@ -1657,10 +1630,11 @@ public class CE {
      * @param wrappedKeyLen gets wrapped key length
      * @see C#WrapKey(long, CKM, long, long, byte[], LongRef)
      * @see NativeProvider#C_WrapKey(long, CKM, long, long, byte[], LongRef)
+     * @deprecated use {@link CEi#WrapKey(long, CKM, long, long, byte[], LongRef)} instead
      */
+    @Deprecated
     public static void WrapKey(long session, CKM mechanism, long wrappingKey, long key, byte[] wrappedKey, LongRef wrappedKeyLen) {
-        long rv = C.WrapKey(session, mechanism, wrappingKey, key, wrappedKey, wrappedKeyLen);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.WrapKey(C.NATIVE, session, mechanism, wrappingKey, key, wrappedKey, wrappedKeyLen);
     }
 
     /**
@@ -1672,13 +1646,11 @@ public class CE {
      * @return wrapped key
      * @see C#WrapKey(long, CKM, long, long, byte[], LongRef)
      * @see NativeProvider#C_WrapKey(long, CKM, long, long, byte[], LongRef)
+     * @deprecated use {@link CEi#WrapKey(long, CKM, long, long)} K} instead
      */
+    @Deprecated
     public static byte[] WrapKey(long session, CKM mechanism, long wrappingKey, long key) {
-        LongRef l = new LongRef();
-        WrapKey(session, mechanism, wrappingKey, key, null, l);
-        byte[] result = new byte[(int) l.value()];
-        WrapKey(session, mechanism, wrappingKey, key, result, l);
-        return resize(result, (int) l.value());
+        return NCE.WrapKey(C.NATIVE, session, mechanism, wrappingKey, key);
     }
 
     /**
@@ -1691,10 +1663,11 @@ public class CE {
      * @param key gets new handle
      * @see C#UnwrapKey(long, CKM, long, byte[], CKA[], LongRef)
      * @see NativeProvider#C_UnwrapKey(long, CKM, long, byte[], long, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#UnwrapKey(long, CKM, long, byte[], CKA[], LongRef)} instead
      */
+    @Deprecated
     public static void UnwrapKey(long session, CKM mechanism, long unwrappingKey, byte[] wrappedKey, CKA[] templ, LongRef key) {
-        long rv = C.UnwrapKey(session, mechanism, unwrappingKey, wrappedKey, templ, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.UnwrapKey(C.NATIVE, session, mechanism, unwrappingKey, wrappedKey, templ, key);
     }
 
     /**
@@ -1707,11 +1680,11 @@ public class CE {
      * @return key handle
      * @see C#UnwrapKey(long, CKM, long, byte[], CKA[], LongRef)
      * @see NativeProvider#C_UnwrapKey(long, CKM, long, byte[], long, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#UnwrapKey(long, CKM, long, byte[], CKA...)} instead
      */
+    @Deprecated
     public static long UnwrapKey(long session, CKM mechanism, long unwrappingKey, byte[] wrappedKey, CKA... templ) {
-        LongRef result = new LongRef();
-        UnwrapKey(session, mechanism, unwrappingKey, wrappedKey, templ, result);
-        return result.value();
+        return NCE.UnwrapKey(C.NATIVE, session, mechanism, unwrappingKey, wrappedKey, templ);
     }
 
     /**
@@ -1723,10 +1696,11 @@ public class CE {
      * @param key ges new handle
      * @see C#DeriveKey(long, CKM, long, CKA[], LongRef)
      * @see NativeProvider#C_DeriveKey(long, CKM, long, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#DeriveKey(long, CKM, long, CKA[], LongRef)} instead
      */
+    @Deprecated
     public static void DeriveKey(long session, CKM mechanism, long baseKey, CKA[] templ, LongRef key) {
-        long rv = C.DeriveKey(session, mechanism, baseKey, templ, key);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.DeriveKey(C.NATIVE, session, mechanism, baseKey, templ, key);
     }
 
     /**
@@ -1738,11 +1712,11 @@ public class CE {
      * @return new handle
      * @see C#DeriveKey(long, CKM, long, CKA[], LongRef)
      * @see NativeProvider#C_DeriveKey(long, CKM, long, CKA[], long, LongRef)
+     * @deprecated use {@link CEi#DeriveKey(long, CKM, long, CKA...)} instead
      */
+    @Deprecated
     public static long DeriveKey(long session, CKM mechanism, long baseKey, CKA... templ) {
-        LongRef key = new LongRef();
-        DeriveKey(session, mechanism, baseKey, templ, key);
-        return key.value();
+        return NCE.DeriveKey(C.NATIVE, session, mechanism, baseKey, templ);
     }
 
     /**
@@ -1751,10 +1725,11 @@ public class CE {
      * @param seed the seed material
      * @see C#SeedRandom(long, byte[])
      * @see NativeProvider#C_SeedRandom(long, byte[], long)
+     * @deprecated use {@link CEi#SeedRandom(long, byte[])} instead
      */
+    @Deprecated
     public static void SeedRandom(long session, byte[] seed) {
-        long rv = C.SeedRandom(session, seed);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.SeedRandom(C.NATIVE, session, seed);
     }
 
     /**
@@ -1763,10 +1738,11 @@ public class CE {
      * @param randomData receives the random data
      * @see C#GenerateRandom(long, byte[])
      * @see NativeProvider#C_GenerateRandom(long, byte[], long)
+     * @deprecated use {@link CEi#GenerateRandom(long, byte[])} instead
      */
+    @Deprecated
     public static void GenerateRandom(long session, byte[] randomData) {
-        long rv = C.GenerateRandom(session, randomData);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GenerateRandom(C.NATIVE, session, randomData);
     }
 
     /**
@@ -1776,11 +1752,11 @@ public class CE {
      * @return random
      * @see C#GenerateRandom(long, byte[])
      * @see NativeProvider#C_GenerateRandom(long, byte[], long)
+     * @deprecated use {@link CEi#GenerateRandom(long, int)} instead
      */
+    @Deprecated
     public static byte[] GenerateRandom(long session, int randomLen) {
-        byte[] result = new byte[randomLen];
-        GenerateRandom(session, result);
-        return result;
+        return NCE.GenerateRandom(C.NATIVE, session, randomLen);
     }
 
     /**
@@ -1790,10 +1766,11 @@ public class CE {
      * @param session the session's handle
      * @see C#GetFunctionStatus(long)
      * @see NativeProvider#C_GetFunctionStatus(long)
+     * @deprecated use {@link CEi#GetFunctionStatus(long)} instead
      */
+    @Deprecated
     public static void GetFunctionStatus(long session) {
-        long rv = C.GetFunctionStatus(session);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        NCE.GetFunctionStatus(C.NATIVE, session);
     }
 
     /**
@@ -1803,40 +1780,10 @@ public class CE {
      * @param session the session's handle
      * @see C#GetFunctionStatus(long)
      * @see NativeProvider#C_GetFunctionStatus(long)
+     * @deprecated use {@link CEi#CancelFunction(long)} instead
      */
+    @Deprecated
     public static void CancelFunction(long session) {
-        long rv = C.CancelFunction(session);
-        if (rv != CKR.OK) throw new CKRException(rv);
-    }
-
-    /**
-     * Set odd parity on buf and return updated buf.  Buf is modified in-place.
-     * @param buf buf to modify in place and return
-     * @return buf that was passed in
-     */
-    public static byte[] setOddParity(byte[] buf) {
-        for (int i = 0; i < buf.length; i++) {
-            int b = buf[i] & 0xff;
-            b ^= b >> 4;
-            b ^= b >> 2;
-            b ^= b >> 1;
-            buf[i] ^= (b & 1) ^ 1;
-        }
-        return buf;
-    }
-
-    /**
-     * Resize buf to specified length. If buf already size 'newSize', then return buf, else return resized buf.
-     * @param buf buf
-     * @param newSize length to resize to
-     * @return if buf already size 'newSize', then return buf, else return resized buf
-     */
-    public static byte[] resize(byte[] buf, int newSize) {
-        if (buf == null || newSize >= buf.length) {
-            return buf;
-        }
-        byte[] result = new byte[newSize];
-        System.arraycopy(buf, 0, result, 0, result.length);
-        return result;
+        NCE.CancelFunction(C.NATIVE, session);
     }
 }

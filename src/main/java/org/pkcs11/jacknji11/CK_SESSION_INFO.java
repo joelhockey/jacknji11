@@ -33,19 +33,19 @@ public class CK_SESSION_INFO {
     public static final long CKF_SERIAL_SESSION = 0x00000004;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CK_SESSION_INFO.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CK_SESSION_INFO.class);
     /**
      * Convert long constant value to name.
      * @param ckf value
      * @return name
      */
-    public static final String I2S(long ckf) { return C.l2s(L2S, "CKF", ckf); }
+    public static final String I2S(long ckf) { return NC.l2s(L2S, "CKF", ckf); }
     /**
      * Convert flags to string.
      * @param flags flags
      * @return string format
      */
-    public static String f2s(long flags) { return C.f2s(L2S, flags); }
+    public static String f2s(long flags) { return NC.f2s(L2S, flags); }
 
     public long slotID;
     public long state;
@@ -56,7 +56,7 @@ public class CK_SESSION_INFO {
     public boolean isFlagSet(long CKF_FLAG) {
         return (flags & CKF_FLAG) != 0L;
     }
-    
+
     /** @return string */
     public String toString() {
         return String.format("(\n  slotID=0x%08x\n  state=0x%08x{%s}\n  flags=0x%08x{%s}\n  deviceError=%d\n)",

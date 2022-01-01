@@ -34,11 +34,11 @@ public class CKH {
     public static final long VENDOR_DEFINED      = 0x80000000;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKH.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKH.class);
     /**
      * Convert long constant value to name.
      * @param ckh value
      * @return name
      */
-    public static final String L2S(long ckh) { return C.l2s(L2S, CKH.class.getSimpleName(), ckh); }
+    public static final String L2S(long ckh) { return NC.l2s(L2S, CKH.class.getSimpleName(), ckh); }
 }

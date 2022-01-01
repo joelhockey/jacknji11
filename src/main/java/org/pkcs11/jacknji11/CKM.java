@@ -347,13 +347,13 @@ public class CKM {
     public static final long VENDOR_PTK_ECIES            = 0x80000a00L;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKM.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKM.class);
     /**
      * Convert long constant value to name.
      * @param ckm value
      * @return name
      */
-    public static final String L2S(long ckm) { return C.l2s(L2S, CKM.class.getSimpleName(), ckm); }
+    public static final String L2S(long ckm) { return NC.l2s(L2S, CKM.class.getSimpleName(), ckm); }
 
     /** Default params for some mechanisms. */
     public static final Map<Long, byte[]> DEFAULT_PARAMS = new HashMap<Long, byte[]>();
@@ -396,7 +396,7 @@ public class CKM {
         ulParameterLen = paramSize;
     }
 
-    public CKM(long mechanism, byte[] param) {    
+    public CKM(long mechanism, byte[] param) {
         this.mechanism = mechanism;
         int len = (param != null) ? param.length : 0;
         if (len > 0) {
@@ -417,7 +417,7 @@ public class CKM {
     /** @return string */
     public String toString() {
         return String.format("mechanism=0x%08x{%s} paramLen=%d param=%s",
-            mechanism, L2S(mechanism), bParameter != null ? bParameter.length : 0, 
+            mechanism, L2S(mechanism), bParameter != null ? bParameter.length : 0,
                     Hex.b2s(bParameter));
     }
 }

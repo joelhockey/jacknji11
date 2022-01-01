@@ -35,11 +35,11 @@ public class CKS {
     public static final long RW_SO_FUNCTIONS = 4;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKS.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKS.class);
     /**
      * Convert long constant value to name.
      * @param cks value
      * @return name
      */
-    public static final String L2S(long cks) { return C.l2s(L2S, CKS.class.getSimpleName(), cks); }
+    public static final String L2S(long cks) { return NC.l2s(L2S, CKS.class.getSimpleName(), cks); }
 }

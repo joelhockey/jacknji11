@@ -48,11 +48,11 @@ public class CKO {
     public static final long VENDOR_PTK_FM                   = 0x8000020c;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKO.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKO.class);
     /**
      * Convert long constant value to name.
      * @param cko value
      * @return name
      */
-    public static final String L2S(long cko) { return C.l2s(L2S, CKO.class.getSimpleName(), cko); }
+    public static final String L2S(long cko) { return NC.l2s(L2S, CKO.class.getSimpleName(), cko); }
 }

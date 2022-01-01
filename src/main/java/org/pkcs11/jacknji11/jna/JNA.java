@@ -21,7 +21,6 @@
 
 package org.pkcs11.jacknji11.jna;
 
-import org.pkcs11.jacknji11.C;
 import org.pkcs11.jacknji11.CKA;
 import org.pkcs11.jacknji11.CKM;
 import org.pkcs11.jacknji11.CK_C_INITIALIZE_ARGS;
@@ -32,6 +31,7 @@ import org.pkcs11.jacknji11.CK_SESSION_INFO;
 import org.pkcs11.jacknji11.CK_SLOT_INFO;
 import org.pkcs11.jacknji11.CK_TOKEN_INFO;
 import org.pkcs11.jacknji11.LongRef;
+import org.pkcs11.jacknji11.NC;
 import org.pkcs11.jacknji11.NativePointer;
 import org.pkcs11.jacknji11.NativeProvider;
 import org.pkcs11.jacknji11.ULong;
@@ -54,11 +54,11 @@ public class JNA implements NativeProvider {
     }
 
     private JNANativeI jnaNative = null;
-    
+
     public JNA(){
-        this(C.getLibraryName());
+        this(NC.getLibraryName());
     }
-    
+
     public JNA(String customLibrary) {
         jnaNative = (JNANativeI) com.sun.jna.Native.loadLibrary(customLibrary, JNANativeI.class);
     }
@@ -144,7 +144,7 @@ public class JNA implements NativeProvider {
         Pointer jna_application = new Pointer(application.getAddress());
         final JNA_CK_NOTIFY  jna_notify;
         if (notify == null) {
-            jna_notify = null; 
+            jna_notify = null;
         } else {
             jna_notify = new JNA_CK_NOTIFY() {
                 public NativeLong invoke(NativeLong hSession, NativeLong event, Pointer pApplication) {

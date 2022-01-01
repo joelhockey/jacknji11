@@ -31,11 +31,11 @@ public class CKP {
     public static final long CKP_PKCS5_PBKD2_HMAC_SHA1 = 0x00000001;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKP.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CKP.class);
     /**
      * Convert long constant value to name.
      * @param ckp value
      * @return name
      */
-    public static final String L2S(long ckp) { return C.l2s(L2S, CKP.class.getSimpleName(), ckp); }
+    public static final String L2S(long ckp) { return NC.l2s(L2S, CKP.class.getSimpleName(), ckp); }
 }

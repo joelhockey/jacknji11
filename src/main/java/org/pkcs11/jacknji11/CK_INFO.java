@@ -30,19 +30,19 @@ import java.util.Map;
 public class CK_INFO {
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CK_INFO.class);
+    private static final Map<Long, String> L2S = NC.createL2SMap(CK_INFO.class);
     /**
      * Convert long constant value to name.
      * @param ckf value
      * @return name
      */
-    public static final String L2S(long ckf) { return C.l2s(L2S, "CKF", ckf); }
+    public static final String L2S(long ckf) { return NC.l2s(L2S, "CKF", ckf); }
     /**
      * Convert flags to string.
      * @param flags flags
      * @return string format
      */
-    public static String f2s(long flags) { return C.f2s(L2S, flags); }
+    public static String f2s(long flags) { return NC.f2s(L2S, flags); }
 
     public CK_VERSION cryptokiVersion = new CK_VERSION();
     public byte[] manufacturerID = new byte[32];
