@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 Joel Hockey (joel.hockey@gmail.com). All rights reserved.
+ * Copyright 2021 Joel Hockey (joel.hockey@gmail.com). All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -32,10 +32,8 @@ import org.apache.commons.logging.LogFactory;
 import org.pkcs11.jacknji11.jna.JNA;
 
 /**
- * Low-level static java interface that maps to
- * {@link org.pkcs11.jacknji11.NativeProvider} cryptoki calls.  This class is
- * kept for backwards compatibility, and you should prefer to use
- * the non-static {@link org.pkcs11.jacknji11.Cryptoki}.
+ * Low-level non-static java interface that maps to {@link NativeProvider}
+ * cryptoki calls.
  *
  * jacknji11 provides 3 interfaces for calling cryptoki functions (plus 2 for
  * backwards compatibility).
@@ -68,25 +66,26 @@ import org.pkcs11.jacknji11.jna.JNA;
  *
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
-public class C {
-    private static final Log log = LogFactory.getLog(C.class);
-
-    public static NativeProvider NATIVE;
+public class Cryptoki {
+    private static final Log log = LogFactory.getLog(Cryptoki.class);
 
     private static final NativePointer NULL = new NativePointer(0);
 
+    private NativeProvider provider;
+
     /**
-     * Read custom libarary from environment JACKNJI11_PKCS11_LIB_PATH,
-     * or use default 'cryptoki'.
-     * @return libarary name
+     * Default constructor uses {@link org.pkcs11.jacknji11.jna.JNA}
+     * {@link org.pkcs11.jacknji11.NativeProvider}.
      */
-    public static String getLibraryName() {
-        String lib = System.getenv("JACKNJI11_PKCS11_LIB_PATH");
-        if (lib == null || lib.length() == 0) {
-            lib = "cryptoki";
-        }
-        log.debug("Loading native library " + lib);
-        return lib;
+    public Cryptoki() {
+        this.provider = new JNA();
+    }
+
+    /**
+     * @param provider cryptoki {@link org.pkcs11.jacknji11.NativeProvider}.
+     */
+    public Cryptoki(NativeProvider provider) {
+        this.provider = provider != null ? provider : new JNA();
     }
 
     /**
@@ -94,7 +93,7 @@ public class C {
      * @see NativeProvider#C_Initialize(CK_C_INITIALIZE_ARGS)
      * @return {@link CKR} return code
      */
-    public static long Initialize() {
+    public long Initialize() {
         CK_C_INITIALIZE_ARGS args = new CK_C_INITIALIZE_ARGS(null, null, null, null,
                 CK_C_INITIALIZE_ARGS.CKF_OS_LOCKING_OK);
         return Initialize(args);
@@ -105,12 +104,9 @@ public class C {
      * @see NativeProvider#C_Initialize(CK_C_INITIALIZE_ARGS)
      * @return {@link CKR} return code
      */
-    public static long Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {
-        if (NATIVE == null) {
-            NATIVE = new JNA();
-        }
+    public long Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {
         if (log.isDebugEnabled()) log.debug("> C_Initialize " + pInitArgs);
-        long rv =NATIVE.C_Initialize(pInitArgs);
+        long rv = provider.C_Initialize(pInitArgs);
         if (log.isDebugEnabled()) log.debug(String.format("< C_Initialize rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -120,9 +116,9 @@ public class C {
      * @see NativeProvider#C_Finalize(NativePointer)
      * @return {@link CKR} return code
      */
-    public static long Finalize() {
+    public long Finalize() {
         if (log.isDebugEnabled()) log.debug("> C_Finalize");
-        long rv =NATIVE.C_Finalize(NULL);
+        long rv = provider.C_Finalize(NULL);
         if (log.isDebugEnabled()) log.debug(String.format("< C_Finalize rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -133,9 +129,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetInfo(CK_INFO)
      */
-    public static long GetInfo(CK_INFO info) {
+    public long GetInfo(CK_INFO info) {
         if (log.isDebugEnabled()) log.debug("> C_GetInfo");
-        long rv =NATIVE.C_GetInfo(info);
+        long rv = provider.C_GetInfo(info);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GetInfo rv=0x%08x{%s}\n%s", rv, CKR.L2S(rv), info));
         return rv;
     }
@@ -148,9 +144,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetSlotList(boolean, long[], LongRef) 
      */
-    public static long GetSlotList(boolean tokenPresent, long[] slotList, LongRef count) {
+    public long GetSlotList(boolean tokenPresent, long[] slotList, LongRef count) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetSlotList tokenPresent=%b count=%d", tokenPresent, count.value()));
-        long rv =NATIVE.C_GetSlotList(tokenPresent, slotList, count);
+        long rv = provider.C_GetSlotList(tokenPresent, slotList, count);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GetSlotList rv=0x%08x{%s} count=%d\n  %s", rv, CKR.L2S(rv), count.value(), Arrays.toString(slotList)));
         return rv;
     }
@@ -162,9 +158,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetSlotInfo(long, CK_SLOT_INFO)
      */
-    public static long GetSlotInfo(long slotID, CK_SLOT_INFO info) {
+    public long GetSlotInfo(long slotID, CK_SLOT_INFO info) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetSlotInfo slotID=%d", slotID));
-        long rv =NATIVE.C_GetSlotInfo(slotID, info);
+        long rv = provider.C_GetSlotInfo(slotID, info);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GetSlotInfo rv=0x%08x{%s}\n%s", rv, CKR.L2S(rv), info));
         return rv;
     }
@@ -176,9 +172,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetTokenInfo(long, CK_TOKEN_INFO)
      */
-    public static long GetTokenInfo(long slotID, CK_TOKEN_INFO info) {
+    public long GetTokenInfo(long slotID, CK_TOKEN_INFO info) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetTokenInfo slotID=%d", slotID));
-        long rv =NATIVE.C_GetTokenInfo(slotID, info);
+        long rv = provider.C_GetTokenInfo(slotID, info);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GetTokenInfo rv=0x%08x{%s}\n%s", rv, CKR.L2S(rv), info));
         return rv;
     }
@@ -191,9 +187,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_WaitForSlotEvent(long, LongRef, NativePointer)
      */
-    public static long WaitForSlotEvent(long flags, LongRef slot, NativePointer reserved) {
+    public long WaitForSlotEvent(long flags, LongRef slot, NativePointer reserved) {
         if (log.isDebugEnabled()) log.debug("> C_WaitForSlotEvent");
-        long rv =NATIVE.C_WaitForSlotEvent(flags, slot, reserved != null ? reserved : NULL);
+        long rv = provider.C_WaitForSlotEvent(flags, slot, reserved != null ? reserved : NULL);
         if (log.isDebugEnabled()) log.debug(String.format("< C_WaitForSlotEvent rv=0x%08x{%s} slot=%d", rv, CKR.L2S(rv), slot.value()));
         return rv;
     }
@@ -206,9 +202,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetMechanismList(long, long[], LongRef)
      */
-    public static long GetMechanismList(long slotID, long[] mechanismList, LongRef count) {
+    public long GetMechanismList(long slotID, long[] mechanismList, LongRef count) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetMechanismList slotID=%d count=%d", slotID, count.value()));
-        long rv =NATIVE.C_GetMechanismList(slotID, mechanismList, count);
+        long rv = provider.C_GetMechanismList(slotID, mechanismList, count);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_GetMechanismList rv=0x%08x{%s} count=%d", rv, CKR.L2S(rv), count.value()));
             if (mechanismList != null) {
@@ -230,9 +226,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetMechanismInfo(long, long, CK_MECHANISM_INFO)
      */
-    public static long GetMechanismInfo(long slotID, long type, CK_MECHANISM_INFO info) {
+    public long GetMechanismInfo(long slotID, long type, CK_MECHANISM_INFO info) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetMechanismInfo slotID=%d type=0x%08x{%s}", slotID, type, CKM.L2S(type)));
-        long rv =NATIVE.C_GetMechanismInfo(slotID, type, info);
+        long rv = provider.C_GetMechanismInfo(slotID, type, info);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GetMechanismInfo rv=0x%08x{%s}\n%s", rv, CKR.L2S(rv), info));
         return rv;
     }
@@ -246,7 +242,7 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_InitToken(long, byte[], long, byte[])
      */
-    public static long InitToken(long slotID, byte[] pin, byte[] label) {
+    public long InitToken(long slotID, byte[] pin, byte[] label) {
         byte[] label32;
         if (label != null && label.length == 32) {
             label32 = label;
@@ -258,7 +254,7 @@ public class C {
             }
         }
         if (log.isDebugEnabled()) log.debug(String.format("> C_InitToken slotID=%d pin=*** label=%s", slotID, Buf.escstr(label32)));
-        long rv =NATIVE.C_InitToken(slotID, pin, baLen(pin), label32);
+        long rv = provider.C_InitToken(slotID, pin, baLen(pin), label32);
         if (log.isDebugEnabled()) log.debug(String.format("< C_InitToken rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -270,9 +266,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_InitPIN(long, byte[], long)
      */
-    public static long InitPIN(long session, byte[] pin) {
+    public long InitPIN(long session, byte[] pin) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_InitPIN session=0x%08x pin=***", session));
-        long rv =NATIVE.C_InitPIN(session, pin, baLen(pin));
+        long rv = provider.C_InitPIN(session, pin, baLen(pin));
         if (log.isDebugEnabled()) log.debug(String.format("< C_InitPIN rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -285,9 +281,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SetPIN(long, byte[], long, byte[], long)
      */
-    public static long SetPIN(long session, byte[] oldPin, byte[] newPin) {
+    public long SetPIN(long session, byte[] oldPin, byte[] newPin) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_SetPIN session=0x%08x oldPin=*** newPin=***", session));
-        long rv =NATIVE.C_SetPIN(session, oldPin, baLen(oldPin), newPin, baLen(newPin));
+        long rv = provider.C_SetPIN(session, oldPin, baLen(oldPin), newPin, baLen(newPin));
         if (log.isDebugEnabled()) log.debug(String.format("< C_SetPIN rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -302,9 +298,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_OpenSession(long, long, NativePointer, CK_NOTIFY, LongRef)
      */
-    public static long OpenSession(long slotID, long flags, NativePointer application, CK_NOTIFY notify, LongRef session) {
+    public long OpenSession(long slotID, long flags, NativePointer application, CK_NOTIFY notify, LongRef session) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_OpenSession slotID=%d flags=0x%08x{%s} application=%s notify=%s", slotID, flags, CK_SESSION_INFO.f2s(flags), application, notify));
-        long rv =NATIVE.C_OpenSession(slotID, flags, application != null ? application : NULL, notify, session);
+        long rv = provider.C_OpenSession(slotID, flags, application != null ? application : NULL, notify, session);
         if (log.isDebugEnabled()) log.debug(String.format("< C_OpenSession rv=0x%08x{%s} session=0x%08x", rv, CKR.L2S(rv), session.value()));
         return rv;
     }
@@ -315,9 +311,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_CloseSession(long)
      */
-    public static long CloseSession(long session) {
+    public long CloseSession(long session) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_CloseSession session=0x%08x", session));
-        long rv =NATIVE.C_CloseSession(session);
+        long rv = provider.C_CloseSession(session);
         if (log.isDebugEnabled()) log.debug(String.format("< C_CloseSession rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -328,9 +324,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_CloseAllSessions(long)
      */
-    public static long CloseAllSessions(long slotID) {
+    public long CloseAllSessions(long slotID) {
         if (log.isDebugEnabled()) log.debug("> C_CloseAllSessions");
-        long rv =NATIVE.C_CloseAllSessions(slotID);
+        long rv = provider.C_CloseAllSessions(slotID);
         if (log.isDebugEnabled()) log.debug(String.format("< C_CloseAllSessions rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -342,9 +338,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetSessionInfo(long, CK_SESSION_INFO)
      */
-    public static long GetSessionInfo(long session, CK_SESSION_INFO info) {
+    public long GetSessionInfo(long session, CK_SESSION_INFO info) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetSessionInfo session=0x%08x", session));
-        long rv =NATIVE.C_GetSessionInfo(session, info);
+        long rv = provider.C_GetSessionInfo(session, info);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GetSessionInfo rv=0x%08x{%s}\n%s", rv, CKR.L2S(rv), info));
         return rv;
     }
@@ -357,9 +353,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetOperationState(long, byte[], LongRef)
      */
-    public static long GetOperationState(long session, byte[] operationState, LongRef operationStateLen) {
+    public long GetOperationState(long session, byte[] operationState, LongRef operationStateLen) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetOperationState session=0x%08x operationStateLen=%d", session, operationStateLen.value()));
-        long rv =NATIVE.C_GetOperationState(session, operationState, operationStateLen);
+        long rv = provider.C_GetOperationState(session, operationState, operationStateLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_GetOperationState rv=0x%08x{%s}\n  operationState (len=%d):\n", rv, CKR.L2S(rv), operationStateLen.value()));
             if (operationState != null) {
@@ -379,7 +375,7 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SetOperationState(long, byte[], long, long, long)
      */
-    public static long SetOperationState(long session, byte[] operationState,
+    public long SetOperationState(long session, byte[] operationState,
             long encryptionKey, long authenticationKey) {
 
         if (log.isDebugEnabled()) {
@@ -389,7 +385,7 @@ public class C {
             Hex.dump(sb, operationState, 0, operationState.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_SetOperationState(session, operationState, baLen(operationState),
+        long rv = provider.C_SetOperationState(session, operationState, baLen(operationState),
                 encryptionKey, authenticationKey);
         if (log.isDebugEnabled()) log.debug(String.format("< C_SetOperationState rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
@@ -403,9 +399,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_Login(long, long, byte[], long)
      */
-    public static long Login(long session, long userType, byte[] pin) {
+    public long Login(long session, long userType, byte[] pin) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_Login session=0x%08x userType=0x%08x{%s} pin=***", session, userType, CKU.L2S(userType)));
-        long rv =NATIVE.C_Login(session, userType, pin, baLen(pin));
+        long rv = provider.C_Login(session, userType, pin, baLen(pin));
         if (log.isDebugEnabled()) log.debug(String.format("< C_Login rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -416,9 +412,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_Logout(long)
      */
-    public static long Logout(long session) {
+    public long Logout(long session) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_Logout session=0x%08x", session));
-        long rv =NATIVE.C_Logout(session);
+        long rv = provider.C_Logout(session);
         if (log.isDebugEnabled()) log.debug(String.format("< C_Logout rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -431,13 +427,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_CreateObject(long, CKA[], long, LongRef)
      */
-    public static long CreateObject(long session, CKA[] templ, LongRef object) {
+    public long CreateObject(long session, CKA[] templ, LongRef object) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_CreateObject session=0x%08x\n", session));
             dumpTemplate(sb, templ);
             log.debug(sb);
         }
-        long rv =NATIVE.C_CreateObject(session, templ, templLen(templ), object);
+        long rv = provider.C_CreateObject(session, templ, templLen(templ), object);
         if (log.isDebugEnabled()) log.debug(String.format("< C_CreateObject rv=0x%08x{%s} object=0x%08x", rv, CKR.L2S(rv), object.value()));
         return rv;
     }
@@ -451,13 +447,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_CopyObject(long, long, CKA[], long, LongRef)
      */
-    public static long CopyObject(long session, long object, CKA[] templ, LongRef newObject) {
+    public long CopyObject(long session, long object, CKA[] templ, LongRef newObject) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_CopyObject session=0x%08x object=0x%08x\n", session, object));
             dumpTemplate(sb, templ);
             log.debug(sb);
         }
-        long rv =NATIVE.C_CopyObject(session, object, templ, templLen(templ), newObject);
+        long rv = provider.C_CopyObject(session, object, templ, templLen(templ), newObject);
         if (log.isDebugEnabled()) log.debug(String.format("< C_CopyObject rv=0x%08x{%s} newObject=0x%08x", rv, CKR.L2S(rv), newObject.value()));
         return rv;
     }
@@ -469,9 +465,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DestroyObject(long, long)
      */
-    public static long DestroyObject(long session, long object) {
+    public long DestroyObject(long session, long object) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_DestroyObject session=0x%08x object=0x%08x", session, object));
-        long rv =NATIVE.C_DestroyObject(session, object);
+        long rv = provider.C_DestroyObject(session, object);
         if (log.isDebugEnabled()) log.debug(String.format("< C_DestroyObject rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -484,9 +480,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetObjectSize(long, long, LongRef)
      */
-    public static long GetObjectSize(long session, long object, LongRef size) {
+    public long GetObjectSize(long session, long object, LongRef size) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetObjectSize session=0x%08x object=0x%08x", session, object));
-        long rv =NATIVE.C_GetObjectSize(session, object, size);
+        long rv = provider.C_GetObjectSize(session, object, size);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GetObjectSize rv=0x%08x{%s} size=%d", rv, CKR.L2S(rv), size.value()));
         return rv;
     }
@@ -499,13 +495,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetAttributeValue(long, long, CKA[], long)
      */
-    public static long GetAttributeValue(long session, long object, CKA[] templ) {
+    public long GetAttributeValue(long session, long object, CKA[] templ) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_GetAttributeValue session=0x%08x object=0x%08x\n", session, object));
             dumpTemplate(sb, templ);
             log.debug(sb);
         }
-        long rv =NATIVE.C_GetAttributeValue(session, object, templ, templLen(templ));
+        long rv = provider.C_GetAttributeValue(session, object, templ, templLen(templ));
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_GetAttributeValue rv=0x%08x{%s}\n", rv, CKR.L2S(rv)));
             dumpTemplate(sb, templ);
@@ -522,13 +518,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SetAttributeValue(long, long, CKA[], long)
      */
-    public static long SetAttributeValue(long session, long object, CKA[] templ) {
+    public long SetAttributeValue(long session, long object, CKA[] templ) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SetAttributeValue session=0x%08x object=0x%08x\n", session, object));
             dumpTemplate(sb, templ);
             log.debug(sb);
         }
-        long rv =NATIVE.C_SetAttributeValue(session, object, templ, templLen(templ));
+        long rv = provider.C_SetAttributeValue(session, object, templ, templLen(templ));
         if (log.isDebugEnabled()) log.debug(String.format("< C_SetAttributeValue rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -540,13 +536,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_FindObjectsInit(long, CKA[], long)
      */
-    public static long FindObjectsInit(long session, CKA[] templ) {
+    public long FindObjectsInit(long session, CKA[] templ) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_FindObjectsInit session=0x%08x\n", session));
             dumpTemplate(sb, templ);
             log.debug(sb);
         }
-        long rv =NATIVE.C_FindObjectsInit(session, templ, templLen(templ));
+        long rv = provider.C_FindObjectsInit(session, templ, templLen(templ));
         if (log.isDebugEnabled()) log.debug(String.format("< C_FindObjectsInit rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -560,9 +556,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_FindObjects(long, long[], long, LongRef)
      */
-    public static long FindObjects(long session, long[] found, LongRef objectCount) {
+    public long FindObjects(long session, long[] found, LongRef objectCount) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_FindObjects session=0x%08x maxObjectCount=%d", session, found != null ? found.length : 0));
-        long rv = NATIVE.C_FindObjects(session, found, found == null ? 0 : found.length, objectCount);
+        long rv = provider.C_FindObjects(session, found, found == null ? 0 : found.length, objectCount);
         if (log.isDebugEnabled()) {
             int l = (int) objectCount.value();
             // only debug found[0:l]
@@ -582,9 +578,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_FindObjectsFinal(long)
      */
-    public static long FindObjectsFinal(long session) {
+    public long FindObjectsFinal(long session) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_FindObjectsFinal session=0x%08x", session));
-        long rv =NATIVE.C_FindObjectsFinal(session);
+        long rv = provider.C_FindObjectsFinal(session);
         if (log.isDebugEnabled()) log.debug(String.format("< C_FindObjectsFinal rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -597,9 +593,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_EncryptInit(long, CKM, long)
      */
-    public static long EncryptInit(long session, CKM mechanism, long key) {
+    public long EncryptInit(long session, CKM mechanism, long key) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_EncryptInit session=0x%08x key=0x%08x\n  %s", session, key, mechanism));
-        long rv =NATIVE.C_EncryptInit(session, mechanism, key);
+        long rv = provider.C_EncryptInit(session, mechanism, key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_EncryptInit rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -613,13 +609,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_Encrypt(long, byte[], long, byte[], LongRef)
      */
-    public static long Encrypt(long session, byte[] data, byte[] encryptedData, LongRef encryptedDataLen) {
+    public long Encrypt(long session, byte[] data, byte[] encryptedData, LongRef encryptedDataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Encrypt session=0x%08x encryptedDataLen=%d data\n  (len=%d):\n", session, encryptedDataLen.value(), data.length));
             Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_Encrypt(session, data, baLen(data), encryptedData, encryptedDataLen);
+        long rv = provider.C_Encrypt(session, data, baLen(data), encryptedData, encryptedDataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Encrypt rv=0x%08x{%s}\n  encryptedData (len=%d):\n", rv, CKR.L2S(rv), encryptedDataLen.value()));
             Hex.dump(sb, encryptedData, 0, (int) encryptedDataLen.value(), "  ", 32, false);
@@ -637,13 +633,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_EncryptUpdate(long, byte[], long, byte[], LongRef)
      */
-    public static long EncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
+    public long EncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_EncryptUpdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):\n", session, encryptedPartLen.value(), part.length));
             Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_EncryptUpdate(session, part, baLen(part), encryptedPart, encryptedPartLen);
+        long rv = provider.C_EncryptUpdate(session, part, baLen(part), encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_EncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):\n", rv, CKR.L2S(rv), encryptedPartLen.value()));
             Hex.dump(sb, encryptedPart, 0, (int) encryptedPartLen.value(), "  ", 32, false);
@@ -660,9 +656,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_EncryptFinal(long, byte[], LongRef)
      */
-    public static long EncryptFinal(long session, byte[] lastEncryptedPart, LongRef lastEncryptedPartLen) {
+    public long EncryptFinal(long session, byte[] lastEncryptedPart, LongRef lastEncryptedPartLen) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_EncryptFinal session=0x%08x lastEncryptedPartLen=%d", session, lastEncryptedPartLen.value()));
-        long rv =NATIVE.C_EncryptFinal(session, lastEncryptedPart, lastEncryptedPartLen);
+        long rv = provider.C_EncryptFinal(session, lastEncryptedPart, lastEncryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_EncryptFinal rv=0x%08x{%s}\n  lastEncryptedPart (len=%d):\n", rv, CKR.L2S(rv), lastEncryptedPartLen.value()));
             Hex.dump(sb, lastEncryptedPart, 0, (int) lastEncryptedPartLen.value(), "  ", 32, false);
@@ -679,9 +675,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DecryptInit(long, CKM, long)
      */
-    public static long DecryptInit(long session, CKM mechanism, long key) {
+    public long DecryptInit(long session, CKM mechanism, long key) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_DecryptInit session=0x%08x key=0x%08x\n  %s", session, key, mechanism));
-        long rv =NATIVE.C_DecryptInit(session, mechanism, key);
+        long rv = provider.C_DecryptInit(session, mechanism, key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_DecryptInit rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -695,13 +691,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_Decrypt(long, byte[], long, byte[], LongRef)
      */
-    public static long Decrypt(long session, byte[] encryptedData, byte[] data, LongRef dataLen) {
+    public long Decrypt(long session, byte[] encryptedData, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Decrypt session=0x%08x dataLen=%d\n encryptedData (len=%d):\n", session, dataLen.value(), encryptedData.length));
             Hex.dump(sb, encryptedData, 0, encryptedData.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_Decrypt(session, encryptedData, baLen(encryptedData), data, dataLen);
+        long rv = provider.C_Decrypt(session, encryptedData, baLen(encryptedData), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Decrypt rv=0x%08x{%s}\n  data (len=%d):\n", rv, CKR.L2S(rv), dataLen.value()));
             Hex.dump(sb, data, 0, (int) dataLen.value(), "  ", 32, false);
@@ -719,13 +715,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DecryptUpdate(long, byte[], long, byte[], LongRef)
      */
-    public static long DecryptUpdate(long session, byte[] encryptedPart, byte[] data, LongRef dataLen) {
+    public long DecryptUpdate(long session, byte[] encryptedPart, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptUpdate session=0x%08x dataLen=%d\n  encryptedPart (len=%d):\n", session, dataLen.value(), encryptedPart.length));
             Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_DecryptUpdate(session, encryptedPart, baLen(encryptedPart), data, dataLen);
+        long rv = provider.C_DecryptUpdate(session, encryptedPart, baLen(encryptedPart), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptUpdate rv=0x%08x{%s}\n  data (len=%d):\n", rv, CKR.L2S(rv), dataLen.value()));
             Hex.dump(sb, data, 0, (int) dataLen.value(), "  ", 32, false);
@@ -742,9 +738,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DecryptFinal(long, byte[], LongRef)
      */
-    public static long DecryptFinal(long session, byte[] lastPart, LongRef lastPartLen) {
+    public long DecryptFinal(long session, byte[] lastPart, LongRef lastPartLen) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_DecryptFinal session=0x%08x lastPartLen=%d", session, lastPartLen.value()));
-        long rv =NATIVE.C_DecryptFinal(session, lastPart, lastPartLen);
+        long rv = provider.C_DecryptFinal(session, lastPart, lastPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptFinal rv=0x%08x{%s}\n  lastPart (len=%d):\n", rv, CKR.L2S(rv), lastPartLen.value()));
             Hex.dump(sb, lastPart, 0, (int) lastPartLen.value(), "  ", 32, false);
@@ -760,9 +756,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DigestInit(long, CKM)
      */
-    public static long DigestInit(long session, CKM mechanism) {
+    public long DigestInit(long session, CKM mechanism) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_DigestInit session=0x%08x\n  %s", session, mechanism));
-        long rv =NATIVE.C_DigestInit(session, mechanism);
+        long rv = provider.C_DigestInit(session, mechanism);
         if (log.isDebugEnabled()) log.debug(String.format("< C_DigestInit rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -776,13 +772,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_Digest(long, byte[], long, byte[], LongRef)
      */
-    public static long Digest(long session, byte[] data, byte[] digest, LongRef digestLen) {
+    public long Digest(long session, byte[] data, byte[] digest, LongRef digestLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Digest session=0x%08x digestLen=%d\n  data (len=%d):\n", session, digestLen.value(), data.length));
             Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_Digest(session, data, baLen(data), digest, digestLen);
+        long rv = provider.C_Digest(session, data, baLen(data), digest, digestLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Digest rv=0x%08x{%s}\n  digest (len=%d):\n", rv, CKR.L2S(rv), digestLen.value()));
             Hex.dump(sb, digest, 0, (int) digestLen.value(), "  ", 32, false);
@@ -798,13 +794,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DigestUpdate(long, byte[], long)
      */
-    public static long DigestUpdate(long session, byte[] part) {
+    public long DigestUpdate(long session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DigestUpdate session=0x%08x\n  part (len=%d):\n", session, part.length));
             Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_DigestUpdate(session, part, baLen(part));
+        long rv = provider.C_DigestUpdate(session, part, baLen(part));
         if (log.isDebugEnabled()) log.debug(String.format("< C_DigestUpdate rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -817,9 +813,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DigestKey(long, long)
      */
-    public static long DigestKey(long session, long key) {
+    public long DigestKey(long session, long key) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_DigestKey session=0x%08x key=0x%08x", session, key));
-        long rv =NATIVE.C_DigestKey(session, key);
+        long rv = provider.C_DigestKey(session, key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_DigestKey rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -832,9 +828,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DigestFinal(long, byte[], LongRef)
      */
-    public static long DigestFinal(long session, byte[] digest, LongRef digestLen) {
+    public long DigestFinal(long session, byte[] digest, LongRef digestLen) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_DigestFial session=0x%08x digestLen=%d", session, digestLen.value()));
-        long rv =NATIVE.C_DigestFinal(session, digest, digestLen);
+        long rv = provider.C_DigestFinal(session, digest, digestLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DigestFinal rv=0x%08x{%s}\n  digest (len=%d):\n", rv, CKR.L2S(rv), digestLen.value()));
             Hex.dump(sb, digest, 0, (int) digestLen.value(), "  ", 32, false);
@@ -853,9 +849,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SignInit(long, CKM, long)
      */
-    public static long SignInit(long session, CKM mechanism, long key) {
+    public long SignInit(long session, CKM mechanism, long key) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_SignInit session=0x%08x key=0x%08x\n  %s", session, key, mechanism));
-        long rv =NATIVE.C_SignInit(session, mechanism, key);
+        long rv = provider.C_SignInit(session, mechanism, key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_SignInit rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -870,13 +866,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_Sign(long, byte[], long, byte[], LongRef)
      */
-    public static long Sign(long session, byte[] data, byte[] signature, LongRef signatureLen) {
+    public long Sign(long session, byte[] data, byte[] signature, LongRef signatureLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Sign session=0x%08x signatureLen=%d\n  data (len=%d):\n", session, signatureLen.value(), data.length));
             Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_Sign(session, data, baLen(data), signature, signatureLen);
+        long rv = provider.C_Sign(session, data, baLen(data), signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Sign rv=0x%08x{%s}\n  signature (len=%d):\n", rv, CKR.L2S(rv), signatureLen.value()));
             Hex.dump(sb, signature, 0, (int) signatureLen.value(), "  ", 32, false);
@@ -894,13 +890,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SignUpdate(long, byte[], long)
      */
-    public static long SignUpdate(long session, byte[] part) {
+    public long SignUpdate(long session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignUpdate session=0x%08x\n  part (len=%d):\n", session, part.length));
             Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_SignUpdate(session, part, baLen(part));
+        long rv = provider.C_SignUpdate(session, part, baLen(part));
         if (log.isDebugEnabled()) log.debug(String.format("< C_SignUpdate rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -913,9 +909,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SignFinal(long, byte[], LongRef)
      */
-    public static long SignFinal(long session, byte[] signature, LongRef signatureLen) {
+    public long SignFinal(long session, byte[] signature, LongRef signatureLen) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_SignFinal session=0x%08x signatureLen=%d", session, signatureLen.value()));
-        long rv =NATIVE.C_SignFinal(session, signature, signatureLen);
+        long rv = provider.C_SignFinal(session, signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignFinal rv=0x%08x{%s}\n  signature (len=%d):\n", rv, CKR.L2S(rv), signatureLen.value()));
             Hex.dump(sb, signature, 0, (int) signatureLen.value(), "  ", 32, false);
@@ -932,9 +928,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SignRecoverInit(long, CKM, long)
      */
-    public static long SignRecoverInit(long session, CKM mechanism, long key) {
+    public long SignRecoverInit(long session, CKM mechanism, long key) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_SignRecoverInit session=0x%08x key=0x%08x\n  %s", session, key, mechanism));
-        long rv =NATIVE.C_SignRecoverInit(session, mechanism, key);
+        long rv = provider.C_SignRecoverInit(session, mechanism, key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_SignRecoverInit rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -948,13 +944,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SignRecover(long, byte[], long, byte[], LongRef)
      */
-    public static long SignRecover(long session, byte[] data, byte[] signature, LongRef signatureLen) {
+    public long SignRecover(long session, byte[] data, byte[] signature, LongRef signatureLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignRecover session=0x%08x signatureLen=%d\n  data (len=%d):\n", session, signatureLen.value(), data.length));
             Hex.dump(sb, data, 0, data.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_SignRecover(session, data, baLen(data), signature, signatureLen);
+        long rv = provider.C_SignRecover(session, data, baLen(data), signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignRecover rv=0x%08x{%s}\n  signature (len=%d):\n", rv, CKR.L2S(rv), signatureLen.value()));
             Hex.dump(sb, signature, 0, (int) signatureLen.value(), "  ", 32, false);
@@ -972,9 +968,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_VerifyInit(long, CKM, long)
      */
-    public static long VerifyInit(long session, CKM mechanism, long key) {
+    public long VerifyInit(long session, CKM mechanism, long key) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_VerifyInit session=0x%08x key=0x%08x\n  %s", session, key, mechanism));
-        long rv =NATIVE.C_VerifyInit(session, mechanism, key);
+        long rv = provider.C_VerifyInit(session, mechanism, key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_VerifyInit rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -988,7 +984,7 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_Verify(long, byte[], long, byte[], long)
      */
-    public static long Verify(long session, byte[] data, byte[] signature) {
+    public long Verify(long session, byte[] data, byte[] signature) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Verify session=0x%08x\n  data (len=%d):\n", session, data.length));
             Hex.dump(sb, data, 0, data.length, "  ", 32, false);
@@ -996,7 +992,7 @@ public class C {
             Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_Verify(session, data, baLen(data), signature, baLen(signature));
+        long rv = provider.C_Verify(session, data, baLen(data), signature, baLen(signature));
         log.debug(String.format("< C_Verify rv=0x%08x{%s} ", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -1009,13 +1005,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_VerifyUpdate(long, byte[], long)
      */
-    public static long VerifyUpdate(long session, byte[] part) {
+    public long VerifyUpdate(long session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyUpdate session=0x%08x\n  part (len=%d):\n", session, part.length));
             Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_VerifyUpdate(session, part, baLen(part));
+        long rv = provider.C_VerifyUpdate(session, part, baLen(part));
         if (log.isDebugEnabled()) log.debug(String.format("< C_VerifyUpdate rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -1027,13 +1023,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_VerifyFinal(long, byte[], long)
      */
-    public static long VerifyFinal(long session, byte[] signature) {
+    public long VerifyFinal(long session, byte[] signature) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyFinal session=0x%08x\n  signature (len=%d):\n", session, signature.length));
             Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_VerifyFinal(session, signature, baLen(signature));
+        long rv = provider.C_VerifyFinal(session, signature, baLen(signature));
         if (log.isDebugEnabled()) log.debug(String.format("< C_VerifyFinal rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -1046,9 +1042,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_VerifyRecoverInit(long, CKM, long)
      */
-    public static long VerifyRecoverInit(long session, CKM mechanism, long key) {
+    public long VerifyRecoverInit(long session, CKM mechanism, long key) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_VerifyRecoverInit session=0x%08x key=0x%08x\n  %s", session, key, mechanism));
-        long rv =NATIVE.C_VerifyRecoverInit(session, mechanism, key);
+        long rv = provider.C_VerifyRecoverInit(session, mechanism, key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_VerifyRecoverInit rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -1062,13 +1058,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_VerifyRecover(long, byte[], long, byte[], LongRef)
      */
-    public static long VerifyRecover(long session, byte[] signature, byte[] data, LongRef dataLen) {
+    public long VerifyRecover(long session, byte[] signature, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyRecover session=0x%08x dataLen=%d\n  signature (len=%d):\n", session, dataLen.value(), signature.length));
             Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_VerifyRecover(session, signature, baLen(signature), data, dataLen);
+        long rv = provider.C_VerifyRecover(session, signature, baLen(signature), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_VerifyRecover rv=0x%08x{%s}\n  data (len=%d):\n", rv, CKR.L2S(rv), dataLen.value()));
             Hex.dump(sb, data, 0, (int) dataLen.value(), "  ", 32, false);
@@ -1086,13 +1082,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DigestEncryptUpdate(long, byte[], long, byte[], LongRef)
      */
-    public static long DigestEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
+    public long DigestEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DigestEncryptUpdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):\n", session, encryptedPartLen, part.length));
             Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_DigestEncryptUpdate(session, part, baLen(part),
+        long rv = provider.C_DigestEncryptUpdate(session, part, baLen(part),
                 encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DigestEncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):\n", rv, CKR.L2S(rv), encryptedPartLen));
@@ -1111,13 +1107,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DecryptDigestUpdate(long, byte[], long, byte[], LongRef)
      */
-    public static long DecryptDigestUpdate(long session, byte[] encryptedPart, byte[] part, LongRef partLen) {
+    public long DecryptDigestUpdate(long session, byte[] encryptedPart, byte[] part, LongRef partLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptDigestUpdate session=0x%08x partLen=%d\n  encryptedPart (len=%d):\n", session, partLen.value(), encryptedPart.length));
             Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_DecryptDigestUpdate(session,
+        long rv = provider.C_DecryptDigestUpdate(session,
                 encryptedPart, baLen(encryptedPart), part, partLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptDigestUpdate rv=0x%08x{%s}\n  part (len=%d):\n", rv, CKR.L2S(rv), partLen.value()));
@@ -1136,13 +1132,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SignEncryptUpdate(long, byte[], long, byte[], LongRef)
      */
-    public static long SignEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
+    public long SignEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignEncryptUdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):\n", session, encryptedPartLen.value(), part.length));
             Hex.dump(sb, part, 0, part.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_SignEncryptUpdate(session, part, baLen(part),
+        long rv = provider.C_SignEncryptUpdate(session, part, baLen(part),
                 encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignEncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):\n", rv, CKR.L2S(rv), encryptedPartLen.value()));
@@ -1161,13 +1157,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DecryptVerifyUpdate(long, byte[], long, byte[], LongRef)
      */
-    public static long DecryptVerifyUpdate(long session, byte[] encryptedPart, byte[] part, LongRef partLen) {
+    public long DecryptVerifyUpdate(long session, byte[] encryptedPart, byte[] part, LongRef partLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptVerifyUpdate session=0x%08x partLen=%d\n  encryptedPart (len=%d):\n", session, partLen.value(), encryptedPart.length));
             Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_DecryptVerifyUpdate(session,
+        long rv = provider.C_DecryptVerifyUpdate(session,
                 encryptedPart, baLen(encryptedPart), part, partLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptVerifyUpdate rv=0x%08x{%s}\n  part (len=%d):\n", rv, CKR.L2S(rv), partLen.value()));
@@ -1186,13 +1182,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GenerateKey(long, CKM, CKA[], long, LongRef)
      */
-    public static long GenerateKey(long session, CKM mechanism, CKA[] templ, LongRef key) {
+    public long GenerateKey(long session, CKM mechanism, CKA[] templ, LongRef key) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_GenerateKey session=0x%08x %s\n", session, mechanism));
             dumpTemplate(sb, templ);
             log.debug(sb);
         }
-        long rv =NATIVE.C_GenerateKey(session, mechanism, templ, templLen(templ), key);
+        long rv = provider.C_GenerateKey(session, mechanism, templ, templLen(templ), key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GenerateKey rv=0x%08x{%s} key=0x%08x", rv, CKR.L2S(rv), key.value()));
         return rv;
     }
@@ -1208,7 +1204,7 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GenerateKeyPair(long, CKM, CKA[], long, CKA[], long, LongRef, LongRef)
      */
-    public static long GenerateKeyPair(long session, CKM mechanism, CKA[] publicKeyTemplate,
+    public long GenerateKeyPair(long session, CKM mechanism, CKA[] publicKeyTemplate,
             CKA[] privateKeyTemplate, LongRef publicKey, LongRef privateKey) {
         if (publicKey == null) {
             publicKey = new LongRef();
@@ -1225,7 +1221,7 @@ public class C {
             dumpTemplate(sb, privateKeyTemplate);
             log.debug(sb);
         }
-        long rv =NATIVE.C_GenerateKeyPair(session, mechanism,
+        long rv = provider.C_GenerateKeyPair(session, mechanism,
                 publicKeyTemplate, templLen(publicKeyTemplate), privateKeyTemplate, templLen(privateKeyTemplate), publicKey, privateKey);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GenerateKeyPair rv=0x%08x{%s} publicKey=0x%08x privateKey=0x%08x", rv, CKR.L2S(rv), publicKey.value(), privateKey.value()));
         return rv;
@@ -1242,11 +1238,11 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_WrapKey(long, CKM, long, long, byte[], LongRef)
      */
-    public static long WrapKey(long session, CKM mechanism, long wrappingKey, long key,
+    public long WrapKey(long session, CKM mechanism, long wrappingKey, long key,
             byte[] wrappedKey, LongRef wrappedKeyLen) {
 
         if (log.isDebugEnabled()) log.debug(String.format("> C_WrapKey session=0x%08x key=0x%08x\n  %s", session, key, mechanism));
-        long rv =NATIVE.C_WrapKey(session, mechanism, wrappingKey,
+        long rv = provider.C_WrapKey(session, mechanism, wrappingKey,
                 key, wrappedKey, wrappedKeyLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_WrapKey rv=0x%08x{%s}\n  wrappedKey (len=%d):\n", rv, CKR.L2S(rv), wrappedKeyLen.value()));
@@ -1267,7 +1263,7 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_UnwrapKey(long, CKM, long, byte[], long, CKA[], long, LongRef)
      */
-    public static long UnwrapKey(long session, CKM mechanism, long unwrappingKey, byte[] wrappedKey,
+    public long UnwrapKey(long session, CKM mechanism, long unwrappingKey, byte[] wrappedKey,
             CKA[] templ, LongRef key) {
 
         if (log.isDebugEnabled()) {
@@ -1277,7 +1273,7 @@ public class C {
             dumpTemplate(sb, templ);
             log.debug(sb);
         }
-        long rv =NATIVE.C_UnwrapKey(session, mechanism, unwrappingKey,
+        long rv = provider.C_UnwrapKey(session, mechanism, unwrappingKey,
                 wrappedKey, baLen(wrappedKey), templ, templLen(templ), key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_UnwrapKey rv=0x%08x{%s} key=0x%08x", rv, CKR.L2S(rv), key.value()));
         return rv;
@@ -1293,13 +1289,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_DeriveKey(long, CKM, long, CKA[], long, LongRef)
      */
-    public static long DeriveKey(long session, CKM mechanism, long baseKey, CKA[] templ, LongRef key) {
+    public long DeriveKey(long session, CKM mechanism, long baseKey, CKA[] templ, LongRef key) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DeriveKey session=0x%08x baseKey=0x%08x %s\n", session, baseKey, mechanism));
             dumpTemplate(sb, templ);
             log.debug(sb);
         }
-        long rv =NATIVE.C_DeriveKey(session, mechanism, baseKey, templ, templLen(templ), key);
+        long rv = provider.C_DeriveKey(session, mechanism, baseKey, templ, templLen(templ), key);
         if (log.isDebugEnabled()) log.debug(String.format("< C_DeriveKey rv=0x%08x{%s} key=0x%08x", rv, CKR.L2S(rv), key.value()));
         return rv;
     }
@@ -1311,13 +1307,13 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_SeedRandom(long, byte[], long)
      */
-    public static long SeedRandom(long session, byte[] seed) {
+    public long SeedRandom(long session, byte[] seed) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SeedRandom session=0x%08x\n  seed (len=%d):\n", session, seed.length));
             Hex.dump(sb, seed, 0, seed.length, "  ", 32, false);
             log.debug(sb);
         }
-        long rv =NATIVE.C_SeedRandom(session, seed, baLen(seed));
+        long rv = provider.C_SeedRandom(session, seed, baLen(seed));
         if (log.isDebugEnabled()) log.debug(String.format("< C_SeedRandom rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -1329,9 +1325,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GenerateRandom(long, byte[], long)
      */
-    public static long GenerateRandom(long session, byte[] randomData) {
+    public long GenerateRandom(long session, byte[] randomData) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GenerateRandom session=0x%08x randomLen=%d", session, randomData.length));
-        long rv =NATIVE.C_GenerateRandom(session, randomData, baLen(randomData));
+        long rv = provider.C_GenerateRandom(session, randomData, baLen(randomData));
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_GenerateRandom rv=0x%08x{%s}\n  randomData (len=%d):\n", rv, CKR.L2S(rv), randomData.length));
             Hex.dump(sb, randomData, 0, randomData.length, "  ", 32, false);
@@ -1348,9 +1344,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_GetFunctionStatus(long)
      */
-    public static long GetFunctionStatus(long session) {
+    public long GetFunctionStatus(long session) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetFunctionStatus session=0x%08x", session));
-        long rv =NATIVE.C_GetFunctionStatus(session);
+        long rv = provider.C_GetFunctionStatus(session);
         if (log.isDebugEnabled()) log.debug(String.format("< C_GetFunctionStatus rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -1363,9 +1359,9 @@ public class C {
      * @return {@link CKR} return code
      * @see NativeProvider#C_CancelFunction(long)
      */
-    public static long CancelFunction(long session) {
+    public long CancelFunction(long session) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_CancelFunction session=0x%08x", session));
-        long rv =NATIVE.C_CancelFunction(session);
+        long rv = provider.C_CancelFunction(session);
         if (log.isDebugEnabled()) log.debug(String.format("< C_CancelFunction rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
@@ -1375,7 +1371,7 @@ public class C {
      * @param buf buf
      * @return length of buf (0 if buf is null)
      */
-    private static int baLen(byte[] buf) {
+    private int baLen(byte[] buf) {
         return buf == null ? 0 : buf.length;
     }
 
@@ -1384,7 +1380,7 @@ public class C {
      * @param templ template
      * @return length of template (0 if template is null)
      */
-    private static int templLen(CKA[] templ) {
+    private int templLen(CKA[] templ) {
         return templ == null ? 0 : templ.length;
     }
 
@@ -1392,69 +1388,12 @@ public class C {
      * Dump for debug.
      * @param sb write to
      */
-    private static void dumpTemplate(StringBuilder sb, CKA[] template) {
+    private void dumpTemplate(StringBuilder sb, CKA[] template) {
         int templateLen = templLen(template);
         sb.append("  template (size=").append(templateLen).append(')');
         for (int i = 0; i < templateLen; i++) {
             sb.append("\n  ");
             template[i].dump(sb);
         }
-    }
-
-    /**
-     * Helper method.  Adds all public static final long fields in c to map, mapping field value to name.
-     * @param c class
-     * @return map of field value:name
-     */
-    public static Map<Long, String> createL2SMap(Class<?> c) {
-        Map<Long, String> map = new HashMap<Long, String>();
-        try {
-            for (Field f : c.getDeclaredFields()) {
-                // only put 'public static final long' in map
-                if (f.getType() == long.class && Modifier.isPublic(f.getModifiers())
-                        && Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers())) {
-                    map.put(f.getLong(null), f.getName());
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return map;
-    }
-
-    /**
-     * Helper method, Maps l to constant name, or value 'unknown %s constant 0x08x' % (ckx, l)'.
-     * @param map L2S map
-     * @param ckx prefix of constant type, e.g. 'CKA'
-     * @param l constant value
-     * @return constant name, or value 'unknown %s constant 0x08x' % (ckx, l)'.
-     */
-    public static String l2s(Map<Long, String> map, String ckx, long l) {
-        String s = map.get(l);
-        if (s != null) {
-            return s;
-        } else {
-          return String.format("unknown %s constant 0x%08x", ckx, l);
-        }
-    }
-
-    /**
-     * Helper method.  String format of flags.
-     * @param l2s l2s map
-     * @param flags flags
-     * @return string format of flags
-     */
-    public static String f2s(Map<Long, String> l2s, long flags) {
-        StringBuilder sb = new StringBuilder();
-        String sep = "";
-        for (int i = 63; i >= 0; i--) {
-            long mask = 1L << i;
-            if ((flags & mask) != 0) {
-                sb.append(sep);
-                sb.append(C.l2s(l2s, "CKF", mask));
-                sep = "|";
-            }
-        }
-        return sb.toString();
     }
 }
