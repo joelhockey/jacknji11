@@ -71,7 +71,7 @@ public class Cryptoki {
 
     private static final NativePointer NULL = new NativePointer(0);
 
-    private NativeProvider provider;
+    private final NativeProvider provider;
 
     /**
      * Default constructor uses {@link org.pkcs11.jacknji11.jna.JNA}
@@ -142,7 +142,7 @@ public class Cryptoki {
      * @param slotList receives array of slot IDs
      * @param count receives the number of slots
      * @return {@link CKR} return code
-     * @see NativeProvider#C_GetSlotList(boolean, long[], LongRef) 
+     * @see NativeProvider#C_GetSlotList(boolean, long[], LongRef)
      */
     public long GetSlotList(boolean tokenPresent, long[] slotList, LongRef count) {
         if (log.isDebugEnabled()) log.debug(String.format("> C_GetSlotList tokenPresent=%b count=%d", tokenPresent, count.value()));

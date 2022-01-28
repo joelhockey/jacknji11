@@ -57,16 +57,16 @@ package org.pkcs11.jacknji11;
  */
 public class CryptokiE {
 
-    private Cryptoki c;
+    private final Cryptoki c;
 
-    CryptokiE() {
+    public CryptokiE() {
       this.c = new Cryptoki();
     }
 
     /**
      * @param c Cryptoki object to wrap.
      */
-    CryptokiE(Cryptoki c) {
+    public CryptokiE(Cryptoki c) {
       this.c = c;
     }
 
