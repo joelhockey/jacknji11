@@ -63,6 +63,10 @@ public class JNA implements NativeProvider {
         jnaNative = (JNANativeI) com.sun.jna.Native.loadLibrary(customLibrary, JNANativeI.class);
     }
 
+    public JNA(JNANativeI jnaNative) {
+        this.jnaNative = jnaNative;
+    }
+
     public long C_Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {
         if(pInitArgs.createMutex == null && pInitArgs.destroyMutex == null && pInitArgs.lockMutex == null && pInitArgs.unlockMutex == null)
             return jnaNative.C_Initialize(null);
