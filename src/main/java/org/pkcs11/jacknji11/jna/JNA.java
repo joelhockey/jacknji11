@@ -68,8 +68,6 @@ public class JNA implements NativeProvider {
     }
 
     public long C_Initialize(CK_C_INITIALIZE_ARGS pInitArgs) {
-        if(pInitArgs.createMutex == null && pInitArgs.destroyMutex == null && pInitArgs.lockMutex == null && pInitArgs.unlockMutex == null)
-            return jnaNative.C_Initialize(null);
         return jnaNative.C_Initialize(new JNA_CK_C_INITIALIZE_ARGS(pInitArgs));
     }
 
