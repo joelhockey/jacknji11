@@ -31,6 +31,7 @@ public class CKU {
 
     public static final long SO      = 0x00000000;
     public static final long USER    = 0x00000001;
+    public static final long CKU_CONTEXT_SPECIFIC = 0x00000002;
 
     /** Maps from long value to String description (variable name). */
     private static final Map<Long, String> L2S = C.createL2SMap(CKU.class);
