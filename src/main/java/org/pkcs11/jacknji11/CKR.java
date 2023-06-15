@@ -182,6 +182,18 @@ public class CKR {
     public static final long VENDOR_PTK_WLD_CONFIG_ITEM_FORMAT_INVALID = 0x80002007;
     public static final long VENDOR_PTK_WLD_LOGIN_CACHE_INCONSISTENT = 0x80002010;
 
+    // Thales Luna, from cryptoki_v2.h
+    public static final long VENDOR_LUNA_HSM_RESTART_REQUIRED = 0x8000008d;
+    public static final long VENDOR_LUNA_FM_CFG_ALLOWEDFLAG_DISABLED = 0x8000008e;
+    public static final long VENDOR_LUNA_ASSIGNED_KEY_REQUIRES_AUTH_DATA = 0x8000008f;
+    public static final long VENDOR_LUNA_XTC_ERROR = 0x80001600;
+    public static final long VENDOR_LUNA_CONTEXT_INVALID = 0x80001601;
+    public static final long VENDOR_LUNA_MAX_SESSION_OBJECT_COUNT = 0x80001602;
+    public static final long VENDOR_LUNA_MAX_SESSION_COUNT = 0x80001604;
+    public static final long VENDOR_LUNA_BUSY = 0x80001604;
+    public static final long VENDOR_LUNA_NETWORK_ERROR = 0x80001605;
+    public static final long VENDOR_LUNA_SERVICE_UNAVAILABLE = 0x80001606;
+    
     /** Maps from long value to String description (variable name). */
     private static final Map<Long, String> L2S = C.createL2SMap(CKR.class);
     /**
