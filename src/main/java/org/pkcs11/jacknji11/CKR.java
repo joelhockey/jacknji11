@@ -183,7 +183,6 @@ public class CKR {
     public static final long VENDOR_PTK_WLD_LOGIN_CACHE_INCONSISTENT = 0x80002010;
 
     // Thales Luna, from cryptoki_v2.h
-    // Thales Luna, from cryptoki_v2.h
     public static final long VENDOR_LUNA_RC_ERROR = 0x80000004;
     public static final long VENDOR_LUNA_CONTAINER_HANDLE_INVALID = 0x80000005;
     public static final long VENDOR_LUNA_TOO_MANY_CONTAINERS = 0x80000006;
