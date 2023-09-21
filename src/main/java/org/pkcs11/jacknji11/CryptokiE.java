@@ -775,27 +775,46 @@ public class CryptokiE {
      * @see NativeProvider#C_FindObjectsInit(long, CKA[], long)
      */
     public long[] FindObjects(long session, CKA... templ) {
+        // According to https://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/os/pkcs11-base-v2.40-os.html#_Toc323205460:
+        // "After calling C_FindObjectsInit, the application may call
+        // C_FindObjects one or more times to obtain handles for objects
+        // matching the template, and then eventually call
+        // C_FindObjectsFinal to finish the active search operation."
         FindObjectsInit(session, templ);
-        int maxObjects = 1024;
-        // call once
-        long[] result = FindObjects(session, maxObjects);
-        // most likely we are done now
-        if (result.length < maxObjects) {
-            FindObjectsFinal(session);
-            return result;
-        }
-
-        // this is a lot of objects!
-        while (true) {
-            maxObjects *= 2;
-            long[] found = FindObjects(session, maxObjects);
-            long[] temp = new long[result.length + found.length];
-            System.arraycopy(result, 0, temp, 0, result.length);
-            System.arraycopy(found, 0, temp, result.length, found.length);
-            result = temp;
-            if (found.length < maxObjects) { // exhausted
-                FindObjectsFinal(session);
+        boolean success = false;
+        try {
+            int maxObjects = 1024;
+            // call once
+            long[] result = FindObjects(session, maxObjects);
+            // most likely we are done now
+            if (result.length < maxObjects) {
+                success = true;
                 return result;
+            }
+
+            // this is a lot of objects!
+            while (true) {
+                maxObjects *= 2;
+                long[] found = FindObjects(session, maxObjects);
+                long[] temp = new long[result.length + found.length];
+                System.arraycopy(result, 0, temp, 0, result.length);
+                System.arraycopy(found, 0, temp, result.length, found.length);
+                result = temp;
+                if (found.length < maxObjects) { // exhausted
+                    success = true;
+                    return result;
+                }
+            }
+        } finally {
+            try {
+                // Must be called even if there is an error, otherwise the
+                // session will remain in the FindObjects state and not
+                // allow any other operations.
+                FindObjectsFinal(session);
+            } catch (RuntimeException e) {
+                if (success) { // Don't throw another exception on error
+                    throw e;
+                }
             }
         }
     }
