@@ -792,15 +792,14 @@ public class CryptokiE {
                 return result;
             }
 
-            // this is a lot of objects!
+            // this is a lot of objects! try to find in batches of 1024 more, adding to result as we go
             while (true) {
-                maxObjects *= 2;
                 long[] found = FindObjects(session, maxObjects);
                 long[] temp = new long[result.length + found.length];
                 System.arraycopy(result, 0, temp, 0, result.length);
                 System.arraycopy(found, 0, temp, result.length, found.length);
                 result = temp;
-                if (found.length < maxObjects) { // exhausted
+                if (found.length < maxObjects) { // exhausted, didn't find 1024 more
                     success = true;
                     return result;
                 }
