@@ -51,6 +51,13 @@ public class Template extends PointerType {
     }
 
     /**
+     * @return number of attributes in this template
+     */
+    public int getListLen() {
+        return listLen;
+    }
+
+    /**
      * Allocates JNA Memory and writes CKA[] values.
      * @param list template
      */
