@@ -389,11 +389,22 @@ public class CKM {
      * PKCS#11 CK_MECHANISM struct constructor.
      * @param mechanism CKM_? mechanism.  Use one of the public static final long fields in this class.
      * @param param param for mechanism
+     * @param paramSize size of param
      */
-    public CKM(long mechanism, Pointer param, int paramSize) {
+    public CKM(long mechanism, Pointer param, long paramSize) {
         this.mechanism = mechanism;
         this.pParameter = param;
-        ulParameterLen = paramSize;
+        this.ulParameterLen = paramSize;
+    }
+
+    /**
+     * PKCS#11 CK_MECHANISM struct constructor.
+     *
+     * @param mechanism CKM_? mechanism.  Use one of the public static final long fields in this class.
+     * @param memory memory containing param for mechanism
+     */
+    public CKM(long mechanism, Memory memory) {
+        this(mechanism, memory, memory.size());
     }
 
     public CKM(long mechanism, byte[] param) {    
@@ -417,7 +428,7 @@ public class CKM {
     /** @return string */
     public String toString() {
         return String.format("mechanism=0x%08x{%s} paramLen=%d param=%s",
-            mechanism, L2S(mechanism), bParameter != null ? bParameter.length : 0, 
-                    Hex.b2s(bParameter));
+            mechanism, L2S(mechanism), ulParameterLen,
+                    pParameter != null ? Hex.b2s(pParameter.getByteArray(0, (int) ulParameterLen)) : "null");
     }
 }
