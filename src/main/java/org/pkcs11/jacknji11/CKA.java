@@ -238,7 +238,7 @@ public class CKA {
             pValue = (byte[]) value;
             ulValueLen = pValue.length;
         } else if (value instanceof BigInteger) {
-            byte[] pValue = ((BigInteger) value).toByteArray();
+            this.pValue = UBigInt.ubigint2b((BigInteger) value);
             ulValueLen = pValue.length;
         } else if (value instanceof Number) {
             pValue = ULong.ulong2b(((Number) value).longValue());
@@ -309,7 +309,7 @@ public class CKA {
 
     /** @return value as BigInteger */
     public BigInteger getValueBigInt() {
-        return ulValueLen == 0 || pValue == null ? null : new BigInteger(Buf.substring(pValue, 0, (int)ulValueLen));
+        return ulValueLen == 0 || pValue == null ? null : new BigInteger(1, Buf.substring(pValue, 0, (int)ulValueLen));
     }
 
     /**
