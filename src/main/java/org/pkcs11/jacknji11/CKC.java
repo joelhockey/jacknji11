@@ -35,11 +35,11 @@ public class CKC {
     public static final long CKC_VENDOR_DEFINED  = 0x80000000;
 
     /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKS.class);
+    private static final Map<Long, String> L2S = C.createL2SMap(CKC.class);
     /**
      * Convert long constant value to name.
-     * @param cks value
+     * @param ckc value
      * @return name
      */
-    public static final String L2S(long cks) { return C.l2s(L2S, CKS.class.getSimpleName(), cks); }
+    public static final String L2S(long ckc) { return C.l2s(L2S, CKC.class.getSimpleName(), ckc); }
 }
