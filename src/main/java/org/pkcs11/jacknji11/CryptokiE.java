@@ -671,9 +671,7 @@ public class CryptokiE {
         // allocate memory and call again
         templ[0].pValue = new byte[(int) templ[0].ulValueLen];
         rv = c.GetAttributeValue(session, object, templ);
-        if (rv != CKR.OK && rv != CKR.ATTRIBUTE_SENSITIVE && rv != CKR.ATTRIBUTE_TYPE_INVALID) {
-            throw new CKRException(rv);
-        }
+        if (rv != CKR.OK) throw new CKRException(rv);
         return templ[0];
     }
 
