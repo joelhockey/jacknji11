@@ -612,10 +612,15 @@ public class CryptokiE {
     }
 
     /**
-     * Obtains the value of one or more object attributes.
+     * Obtains the value of one or more object attributes, or the lengths needed to be allocated in order to retrieve the values.
+     * See PKCS#11 v2.40 section 5.7, C_GetAttributeValue.
+     *   3. Otherwise, if the pValue field has the value NULL_PTR, then the ulValueLen field is modified to hold the exact length of the specified attribute for the object
+     *   
      * @param session the session's handle
      * @param object the objects's handle
-     * @param templ specifies attributes, gets values
+     * @param templ specifies attributes, if length of templ[i].uLvalueLen is 0 it will be set to the length of the value needed, 
+     * if templ[i].pValue is allocated with the correct length to hold the value the value is filled into templ[i].pValue
+     * @see #GetAttributeValue(long, long, long...)
      * @see C#GetAttributeValue(long, long, CKA[])
      * @see NativeProvider#C_GetAttributeValue(long, long, CKA[], long)
      */
@@ -624,7 +629,17 @@ public class CryptokiE {
             return;
         }
         long rv = c.GetAttributeValue(session, object, templ);
-        if (rv != CKR.OK) throw new CKRException(rv);
+        // PKCS#11 v2.40, section 5.7, C_GetAttributeValue
+        //  Note that the error codes CKR_ATTRIBUTE_SENSITIVE, CKR_ATTRIBUTE_TYPE_INVALID, and CKR_BUFFER_TOO_SMALL 
+        //  do not denote true errors for C_GetAttributeValue.  If a call to C_GetAttributeValue returns any of these 
+        //  three values, then the call MUST nonetheless have processed every attribute in the template supplied to 
+        //  C_GetAttributeValue.  Each attribute in the template whose value can be returned by the call to 
+        //  C_GetAttributeValue will be returned by the call to C_GetAttributeValue.
+        // So we will assume that values are processed and returned, perhaps as 0 length, null values (CK_UNAVAILABLE_INFORMATION)
+        // Unless CKR_BUFFER_TOO_SMALL that actually is something the caller must fix and the caller should be notified
+        if (rv != CKR.OK && rv != CKR.ATTRIBUTE_SENSITIVE && rv != CKR.ATTRIBUTE_TYPE_INVALID) {
+            throw new CKRException(rv);
+        }
     }
 
     /**
@@ -637,8 +652,18 @@ public class CryptokiE {
      */
     public CKA GetAttributeValue(long session, long object, long cka) {
         CKA[] templ = {new CKA(cka)};
+        // first call to get how much memory we must allocate
         long rv = c.GetAttributeValue(session, object, templ);
-        if (rv == CKR.ATTRIBUTE_TYPE_INVALID || templ[0].ulValueLen == 0) {
+        // PKCS#11 v2.40, section 5.7, C_GetAttributeValue
+        //  Note that the error codes CKR_ATTRIBUTE_SENSITIVE, CKR_ATTRIBUTE_TYPE_INVALID, and CKR_BUFFER_TOO_SMALL 
+        //  do not denote true errors for C_GetAttributeValue.  If a call to C_GetAttributeValue returns any of these 
+        //  three values, then the call MUST nonetheless have processed every attribute in the template supplied to 
+        //  C_GetAttributeValue.  Each attribute in the template whose value can be returned by the call to 
+        //  C_GetAttributeValue will be returned by the call to C_GetAttributeValue.
+        // So we will assume that values are processed and returned, perhaps as 0 length, null values (CK_UNAVAILABLE_INFORMATION)
+        // Unless CKR_BUFFER_TOO_SMALL that actually is something the caller must fix and the caller should be notified
+        if (rv == CKR.ATTRIBUTE_TYPE_INVALID || rv == CKR.ATTRIBUTE_SENSITIVE || templ[0].ulValueLen == 0) {
+            // No value to fetch, so return the empty value (CK_UNAVAILABLE_INFORMATION)
             return templ[0];
         }
         if (rv != CKR.OK) throw new CKRException(rv);
@@ -669,28 +694,16 @@ public class CryptokiE {
             templ[i] = new CKA(types[i], null);
         }
 
-        // try getting all at once
-        try {
-            GetAttributeValue(session, object, templ);
-            // allocate memory and go again
-            for (CKA att : templ) {
-                att.pValue = att.ulValueLen > 0 ? new byte[(int) att.ulValueLen] : null;
-            }
-            GetAttributeValue(session, object, templ);
-            return templ;
-        } catch (CKRException ckre) {
-            // if we got CKR_ATTRIBUTE_TYPE_INVALID, then handle below
-            if (ckre.getCKR() != CKR.ATTRIBUTE_TYPE_INVALID) {
-                throw ckre;
-            }
+        // try getting all at once, first call to get how much memory we must allocate
+        GetAttributeValue(session, object, templ);
+        // allocate memory and go again
+        for (CKA att : templ) {
+            att.pValue = att.ulValueLen > 0 ? new byte[(int) att.ulValueLen] : null;
         }
-
-        // send gets one at a time
-        CKA[] result = new CKA[types.length];
-        for (int i = 0; i < types.length; i++) {
-            result[i] = GetAttributeValue(session, object, types[i]);
-        }
-        return result;
+        // Fill the allocated template with values (or no values for those that are empty or
+        // ATTRIBUTE_TYPE_INVALID or ATTRIBUTE_SENSITIVE
+        GetAttributeValue(session, object, templ);
+        return templ;
     }
 
     /**
