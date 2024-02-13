@@ -988,7 +988,7 @@ public class Cryptoki {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Verify session=0x%08x\n  data (len=%d):\n", session, data.length));
             Hex.dump(sb, data, 0, data.length, "  ", 32, false);
-            sb.append("\n  signature (len=%d):\n");
+            sb.append(String.format("\n  signature (len=%d):\n", signature.length));
             Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
             log.debug(sb);
         }
