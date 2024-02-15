@@ -115,7 +115,7 @@ public class Template extends PointerType {
             return;
         }
         int offset = 0;
-        for (int i = 0; i < list.length; i++) {
+        for (CKA cka : list) {
             offset += NativeLong.SIZE; // skip type
 
             // read pValue
@@ -133,9 +133,10 @@ public class Template extends PointerType {
 
             // read contents into pValue if ptr != null && ulValueLen > 0
             if (ptr != null && ulValueLen > 0) {
-                ptr.read(0, list[i].pValue, 0, ulValueLen);
+                ptr.read(0, cka.pValue, 0, ulValueLen);
             }
-            list[i].ulValueLen = ulValueLen;
+            cka.ulValueLen = ulValueLen;
+            cka.set();
         }
     }
 }

@@ -59,7 +59,7 @@ package org.pkcs11.jacknji11;
  */
 public class CE {
 
-    private static CryptokiE CRYPTOKIE;
+    static CryptokiE CRYPTOKIE;
 
     /**
      * Initialize cryptoki.
