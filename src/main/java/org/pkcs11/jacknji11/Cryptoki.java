@@ -74,18 +74,24 @@ public class Cryptoki {
     private final NativeProvider provider;
 
     /**
+     * Metrics for {@link #provider} calls.
+     */
+    private final NativeProviderMetrics metrics = new NativeProviderMetrics();
+
+    /**
      * Default constructor uses {@link org.pkcs11.jacknji11.jna.JNA}
      * {@link org.pkcs11.jacknji11.NativeProvider}.
      */
     public Cryptoki() {
-        this.provider = new JNA();
+        this(new JNA());
     }
 
     /**
      * @param provider cryptoki {@link org.pkcs11.jacknji11.NativeProvider}.
      */
     public Cryptoki(NativeProvider provider) {
-        this.provider = provider != null ? provider : new JNA();
+        NativeProvider p = provider != null ? provider : new JNA();
+        this.provider = this.metrics.intercept(p);
     }
 
     /**
@@ -1395,5 +1401,14 @@ public class Cryptoki {
             sb.append("\n  ");
             template[i].dump(sb);
         }
+    }
+
+    /**
+     * Obtain metrics on calls to the underlying {@link NativeProvider}
+     *
+     * @return metrics object
+     */
+    public NativeProviderMetrics getMetrics() {
+        return metrics;
     }
 }

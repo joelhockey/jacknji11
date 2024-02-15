@@ -1873,4 +1873,12 @@ public class CryptokiE {
         System.arraycopy(buf, 0, result, 0, result.length);
         return result;
     }
+
+    /**
+     * Obtain metrics for calls on underlying {@link NativeProvider}
+     * @return metrics object
+     */
+    public NativeProviderMetrics getMetrics() {
+        return c.getMetrics();
+    }
 }

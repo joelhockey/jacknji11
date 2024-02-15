@@ -1582,4 +1582,12 @@ public class CE {
         System.arraycopy(buf, 0, result, 0, result.length);
         return result;
     }
+
+    /**
+     * Obtain metrics for calls on underlying {@link NativeProvider}
+     * @return metrics object
+     */
+    public static NativeProviderMetrics getMetrics() {
+        return CRYPTOKIE.getMetrics();
+    }
 }
