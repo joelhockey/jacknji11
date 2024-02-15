@@ -21,10 +21,12 @@
 
 package org.pkcs11.jacknji11;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 import junit.framework.TestCase;
+import org.pkcs11.jacknji11.AttributeLengthStrategy.IndefiniteLengthStrategy;
+import org.pkcs11.jacknji11.AttributeLengthStrategy.MaxLengthStrategy;
 
 /**
  * JUnit tests for jacknji11.
@@ -33,6 +35,7 @@ import junit.framework.TestCase;
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CryptokiTest extends TestCase {
+
     private byte[] SO_PIN = "sopin".getBytes();
     private byte[] USER_PIN = "userpin".getBytes();
     private long TESTSLOT = 0;
@@ -701,4 +704,102 @@ public class CryptokiTest extends TestCase {
 
 //    public static native long C_WaitForSlotEvent(long flags, LongRef slot, Pointer pReserved);
 //    public static native long C_SetOperationState(long session, byte[] operation_state, long operation_state_len, long encryption_key, long authentication_key);
+
+    public void testGetAttributesOptimization() {
+
+        // set to trigger buffer too short conditions to test BufferTooSmallException
+        CE.CRYPTOKIE.setAttributeLengthStrategy(new MaxLengthStrategy(
+                MaxLengthStrategy.DEFAULT_REGULAR_ATTRIBUTE_LENGTH,
+                MaxLengthStrategy.DEFAULT_LARGE_ATTRIBUTES,
+                256
+        ));
+
+        long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        CE.LoginUser(session, USER_PIN);
+        // Different HSMs have a little different requirements on templates, regardless of which are mandatory or not
+        // in the P11 spec. To work with as many HSMs as possible, use a good default, as complete as possible, template.
+        // On most HSMs you can set CKA_ID after key generations, but some requires adding CKA_ID at generation time
+        CKA[] pubTempl = new CKA[] {
+                new CKA(CKA.MODULUS_BITS, 7168),
+                new CKA(CKA.PUBLIC_EXPONENT, Hex.s2b("010001")),
+                new CKA(CKA.WRAP, false),
+                new CKA(CKA.ENCRYPT, false),
+                new CKA(CKA.VERIFY, true),
+                new CKA(CKA.TOKEN, true),
+                new CKA(CKA.LABEL, "labelrsa-public"),
+                new CKA(CKA.ID, "labelrsa"),
+        };
+        CKA[] privTempl = new CKA[] {
+                new CKA(CKA.TOKEN, true),
+                new CKA(CKA.PRIVATE, true),
+                new CKA(CKA.SENSITIVE, true),
+                new CKA(CKA.SIGN, true),
+                new CKA(CKA.DECRYPT, false),
+                new CKA(CKA.UNWRAP, false),
+                new CKA(CKA.EXTRACTABLE, false),
+                new CKA(CKA.LABEL, "labelrsa-private"),
+                new CKA(CKA.ID, "labelrsa"),
+        };
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        CE.GenerateKeyPair(session, new CKM(CKM.RSA_PKCS_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+
+        CE.getMetrics().reset();
+
+        // Get as many attributes as possible in one fetch.
+        // MODULUS_BITS shall be invalid
+        // 1. attempt to use the pre-allocated buffer -> one attribute is invalid -> end
+        CKA[] read = CE.GetAttributeValue(session, privKey.value(), CKA.LABEL, CKA.ID, CKA.MODULUS_BITS, CKA.PUBLIC_EXPONENT, CKA.SENSITIVE, CKA.SIGN, CKA.DECRYPT, CKA.UNWRAP, CKA.EXTRACTABLE);
+        assertAttribute(read, CKA.MODULUS_BITS, CKA::isInvalid);
+
+        assertNotGreaterThan(1, CE.getMetrics().getAttempts(NativeProviderMetrics.C_GetAttributeValue));
+        assertNotGreaterThan(1, CE.getMetrics().getAttempts(NativeProviderMetrics.C_GetAttributeValue, CKR.ATTRIBUTE_TYPE_INVALID));
+        CE.getMetrics().reset();
+
+        // MODULUS shall trigger the too small error
+        // this shall use 3 calls to the native code
+        // 1. attempt to use the pre-allocated buffer -> buffer too small
+        // 2. query for lengths -> obtain lengths
+        // 3. fetch the attribute
+        read = CE.GetAttributeValue(session, privKey.value(), CKA.LABEL, CKA.ID, CKA.MODULUS, CKA.PUBLIC_EXPONENT, CKA.SENSITIVE, CKA.SIGN, CKA.DECRYPT, CKA.UNWRAP, CKA.EXTRACTABLE);
+        assertAttribute(read, CKA.MODULUS, CKA::hasValue);
+
+        assertNotGreaterThan(3, CE.getMetrics().getAttempts(NativeProviderMetrics.C_GetAttributeValue));
+        assertNotGreaterThan(1, CE.getMetrics().getAttempts(NativeProviderMetrics.C_GetAttributeValue, CKR.BUFFER_TOO_SMALL));
+        CE.getMetrics().reset();
+
+        // MODULUS_BITS shall be invalid
+        // MODULUS shall trigger the too small error
+        // it shall not affect the number of calls to the native code
+        // 1. attempt to use the pre-allocated buffer -> invalid + (hidden buffer too small)
+        // 2. query for lengths -> invalid, but we have lengths for too small attributes
+        // 3. fetch remaining attributes that are not invalid using obtained lengths
+        read = CE.GetAttributeValue(session, privKey.value(), CKA.LABEL, CKA.ID, CKA.MODULUS_BITS, CKA.MODULUS, CKA.PUBLIC_EXPONENT, CKA.SENSITIVE, CKA.SIGN, CKA.DECRYPT, CKA.UNWRAP, CKA.EXTRACTABLE);
+        assertAttribute(read, CKA.MODULUS_BITS, CKA::isInvalid);
+        assertAttribute(read, CKA.MODULUS, CKA::hasValue);
+
+        assertNotGreaterThan(3, CE.getMetrics().getAttempts(NativeProviderMetrics.C_GetAttributeValue));
+        assertNotGreaterThan(1, CE.getMetrics().getAttempts(NativeProviderMetrics.C_GetAttributeValue, CKR.BUFFER_TOO_SMALL));
+        assertNotGreaterThan(2, CE.getMetrics().getAttempts(NativeProviderMetrics.C_GetAttributeValue, CKR.ATTRIBUTE_TYPE_INVALID));
+
+        System.out.println(CE.getMetrics().toString());
+
+        CE.getMetrics().reset();
+
+        // reset back to defaults
+        CE.CRYPTOKIE.setAttributeLengthStrategy(new IndefiniteLengthStrategy());
+    }
+
+    private void assertNotGreaterThan(int bound, int actual) {
+        assertTrue("Expected " + bound + " >= " + actual, bound >= actual);
+    }
+
+    private void assertAttribute(CKA[] ckas, long type, Predicate<CKA> predicate) {
+        for (CKA cka : ckas) {
+            if (cka.type == type) {
+                assertTrue(predicate.test(cka));
+                return;
+            }
+        }
+    }
 }

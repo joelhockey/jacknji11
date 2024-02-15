@@ -32,6 +32,28 @@ public class CKD {
     public static final long SHA1_KDF                = 0x00000002;
     public static final long SHA1_KDF_ASN1           = 0x00000003;
     public static final long SHA1_KDF_CONCATENATE    = 0x00000004;
+    public static final long SHA224_KDF              = 0x00000005;
+    public static final long SHA256_KDF              = 0x00000006;
+    public static final long SHA384_KDF              = 0x00000007;
+    public static final long SHA512_KDF              = 0x00000008;
+    public static final long CPDIVERSIFY_KDF         = 0x00000009;
+    public static final long SHA3_224_KDF            = 0x0000000A;
+    public static final long SHA3_256_KDF            = 0x0000000B;
+    public static final long SHA3_384_KDF            = 0x0000000C;
+    public static final long SHA3_512_KDF            = 0x0000000D;
+    public static final long SHA1_KDF_SP800          = 0x0000000E;
+    public static final long SHA224_KDF_SP800        = 0x0000000F;
+    public static final long SHA256_KDF_SP800        = 0x00000010;
+    public static final long SHA384_KDF_SP800        = 0x00000011;
+    public static final long SHA512_KDF_SP800        = 0x00000012;
+    public static final long SHA3_224_KDF_SP800      = 0x00000013;
+    public static final long SHA3_256_KDF_SP800      = 0x00000014;
+    public static final long SHA3_384_KDF_SP800      = 0x00000015;
+    public static final long SHA3_512_KDF_SP800      = 0x00000016;
+    public static final long BLAKE2B_160_KDF         = 0x00000017;
+    public static final long BLAKE2B_256_KDF         = 0x00000018;
+    public static final long BLAKE2B_384_KDF         = 0x00000019;
+    public static final long BLAKE2B_512_KDF         = 0x0000001a;
 
     /** Maps from long value to String description (variable name). */
     private static final Map<Long, String> L2S = C.createL2SMap(CKD.class);

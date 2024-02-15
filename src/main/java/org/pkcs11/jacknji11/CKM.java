@@ -86,6 +86,8 @@ public class CKM {
     public static final long DES3_MAC                    = 0x00000134;
     public static final long DES3_MAC_GENERAL            = 0x00000135;
     public static final long DES3_CBC_PAD                = 0x00000136;
+    public static final long DES3_CMAC_GENERAL           = 0x00000137;
+    public static final long DES3_CMAC                   = 0x00000138;
     public static final long CDMF_KEY_GEN                = 0x00000140;
     public static final long CDMF_ECB                    = 0x00000141;
     public static final long CDMF_CBC                    = 0x00000142;
@@ -114,6 +116,9 @@ public class CKM {
     public static final long SHA256                      = 0x00000250;
     public static final long SHA256_HMAC                 = 0x00000251;
     public static final long SHA256_HMAC_GENERAL         = 0x00000252;
+    public static final long SHA224                      = 0x00000255;
+    public static final long SHA224_HMAC                 = 0x00000256;
+    public static final long SHA224_HMAC_GENERAL         = 0x00000257;
     public static final long SHA384                      = 0x00000260;
     public static final long SHA384_HMAC                 = 0x00000261;
     public static final long SHA384_HMAC_GENERAL         = 0x00000262;
@@ -184,6 +189,7 @@ public class CKM {
     public static final long SHA256_KEY_DERIVATION       = 0x00000393;
     public static final long SHA384_KEY_DERIVATION       = 0x00000394;
     public static final long SHA512_KEY_DERIVATION       = 0x00000395;
+    public static final long SHA224_KEY_DERIVATION       = 0x00000396;
     public static final long PBE_MD2_DES_CBC             = 0x000003a0;
     public static final long PBE_MD5_DES_CBC             = 0x000003a1;
     public static final long PBE_MD5_CAST_CBC            = 0x000003a2;
@@ -198,6 +204,9 @@ public class CKM {
     public static final long PBE_SHA1_DES2_EDE_CBC       = 0x000003a9;
     public static final long PBE_SHA1_RC2_128_CBC        = 0x000003aa;
     public static final long PBE_SHA1_RC2_40_CBC         = 0x000003ab;
+    public static final long SP800_108_COUNTER_KDF       = 0x000003ac;
+    public static final long SP800_108_FEEDBACK_KDF      = 0x000003ad;
+    public static final long SP800_108_DOUBLE_PIPELINE_KDF = 0x000003ae;
     public static final long PKCS5_PBKD2                 = 0x000003b0;
     public static final long PBA_SHA1_WITH_SHA1_HMAC     = 0x000003c0;
     public static final long WTLS_PRE_MASTER_KEY_GEN     = 0x000003d0;
@@ -270,12 +279,23 @@ public class CKM {
     public static final long JUNIPER_SHUFFLE             = 0x00001064;
     public static final long JUNIPER_WRAP                = 0x00001065;
     public static final long FASTHASH                    = 0x00001070;
+    public static final long AES_XTS                     = 0x00001071;
+    public static final long AES_XTS_KEY_GEN             = 0x00001072;
     public static final long AES_KEY_GEN                 = 0x00001080;
     public static final long AES_ECB                     = 0x00001081;
     public static final long AES_CBC                     = 0x00001082;
     public static final long AES_MAC                     = 0x00001083;
     public static final long AES_MAC_GENERAL             = 0x00001084;
     public static final long AES_CBC_PAD                 = 0x00001085;
+    public static final long AES_CTR                     = 0x00001086;
+    public static final long AES_GCM                     = 0x00001087;
+    public static final long AES_CCM                     = 0x00001088;
+    public static final long AES_CTS                     = 0x00001089;
+    public static final long AES_CMAC                    = 0x0000108A;
+    public static final long AES_CMAC_GENERAL            = 0x0000108B;
+    public static final long CKM_AES_XCBC_MAC            = 0x0000108C;
+    public static final long CKM_AES_XCBC_MAC_96         = 0x0000108D;
+    public static final long CKM_AES_GMAC                = 0x0000108E;
     public static final long DES_ECB_ENCRYPT_DATA        = 0x00001100;
     public static final long DES_CBC_ENCRYPT_DATA        = 0x00001101;
     public static final long DES3_ECB_ENCRYPT_DATA       = 0x00001102;
@@ -286,6 +306,9 @@ public class CKM {
     public static final long DSA_PARAMETER_GEN           = 0x00002000;
     public static final long DH_PKCS_PARAMETER_GEN       = 0x00002001;
     public static final long X9_42_DH_PARAMETER_GEN      = 0x00002002;
+
+    public static final long CKM_AES_KEY_WRAP            = 0x00002109;
+    public static final long CKM_AES_KEY_WRAP_PAD        = 0x0000210a;
 
     // From PKCS#11 version 3.0
     public static final long EC_EDWARDS_KEY_PAIR_GEN = 0x00001055;
@@ -389,11 +412,22 @@ public class CKM {
      * PKCS#11 CK_MECHANISM struct constructor.
      * @param mechanism CKM_? mechanism.  Use one of the public static final long fields in this class.
      * @param param param for mechanism
+     * @param paramSize size of param
      */
-    public CKM(long mechanism, Pointer param, int paramSize) {
+    public CKM(long mechanism, Pointer param, long paramSize) {
         this.mechanism = mechanism;
         this.pParameter = param;
-        ulParameterLen = paramSize;
+        this.ulParameterLen = paramSize;
+    }
+
+    /**
+     * PKCS#11 CK_MECHANISM struct constructor.
+     *
+     * @param mechanism CKM_? mechanism.  Use one of the public static final long fields in this class.
+     * @param memory memory containing param for mechanism
+     */
+    public CKM(long mechanism, Memory memory) {
+        this(mechanism, memory, memory.size());
     }
 
     public CKM(long mechanism, byte[] param) {    
@@ -417,7 +451,7 @@ public class CKM {
     /** @return string */
     public String toString() {
         return String.format("mechanism=0x%08x{%s} paramLen=%d param=%s",
-            mechanism, L2S(mechanism), bParameter != null ? bParameter.length : 0, 
-                    Hex.b2s(bParameter));
+            mechanism, L2S(mechanism), ulParameterLen,
+                    pParameter != null ? Hex.b2s(pParameter.getByteArray(0, (int) ulParameterLen)) : "null");
     }
 }

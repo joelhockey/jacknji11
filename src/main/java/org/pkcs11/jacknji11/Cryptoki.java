@@ -21,11 +21,7 @@
 
 package org.pkcs11.jacknji11;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,18 +70,24 @@ public class Cryptoki {
     private final NativeProvider provider;
 
     /**
+     * Metrics for {@link #provider} calls.
+     */
+    private final NativeProviderMetrics metrics = new NativeProviderMetrics();
+
+    /**
      * Default constructor uses {@link org.pkcs11.jacknji11.jna.JNA}
      * {@link org.pkcs11.jacknji11.NativeProvider}.
      */
     public Cryptoki() {
-        this.provider = new JNA();
+        this(new JNA());
     }
 
     /**
      * @param provider cryptoki {@link org.pkcs11.jacknji11.NativeProvider}.
      */
     public Cryptoki(NativeProvider provider) {
-        this.provider = provider != null ? provider : new JNA();
+        NativeProvider p = provider != null ? provider : new JNA();
+        this.provider = this.metrics.intercept(p);
     }
 
     /**
@@ -359,7 +361,7 @@ public class Cryptoki {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_GetOperationState rv=0x%08x{%s}\n  operationState (len=%d):\n", rv, CKR.L2S(rv), operationStateLen.value()));
             if (operationState != null) {
-                Hex.dump(sb, operationState, 0, (int) operationStateLen.value(), "  ", 32, false);
+                hexDumpOut(rv, sb, operationState, (int) operationStateLen.value());
             }
             log.debug(sb);
         }
@@ -382,7 +384,7 @@ public class Cryptoki {
             StringBuilder sb = new StringBuilder(String.format(
                     "> C_SetOperationState session=0x%08x encryptionKey=0x%08x authenticationKey=0x%08x\n  operationState (len=%d):\n",
                     session, encryptionKey, authenticationKey, operationState.length));
-            Hex.dump(sb, operationState, 0, operationState.length, "  ", 32, false);
+            hexDump(sb, operationState, operationState.length);
             log.debug(sb);
         }
         long rv = provider.C_SetOperationState(session, operationState, baLen(operationState),
@@ -612,13 +614,13 @@ public class Cryptoki {
     public long Encrypt(long session, byte[] data, byte[] encryptedData, LongRef encryptedDataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Encrypt session=0x%08x encryptedDataLen=%d data\n  (len=%d):\n", session, encryptedDataLen.value(), data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
+            hexDump(sb, data, data.length);
             log.debug(sb);
         }
         long rv = provider.C_Encrypt(session, data, baLen(data), encryptedData, encryptedDataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Encrypt rv=0x%08x{%s}\n  encryptedData (len=%d):\n", rv, CKR.L2S(rv), encryptedDataLen.value()));
-            Hex.dump(sb, encryptedData, 0, (int) encryptedDataLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, encryptedData, (int) encryptedDataLen.value());
             log.debug(sb);
         }
         return rv;
@@ -636,13 +638,13 @@ public class Cryptoki {
     public long EncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_EncryptUpdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):\n", session, encryptedPartLen.value(), part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
+            hexDump(sb, part, part.length);
             log.debug(sb);
         }
         long rv = provider.C_EncryptUpdate(session, part, baLen(part), encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_EncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):\n", rv, CKR.L2S(rv), encryptedPartLen.value()));
-            Hex.dump(sb, encryptedPart, 0, (int) encryptedPartLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, encryptedPart, (int) encryptedPartLen.value());
             log.debug(sb);
         }
         return rv;
@@ -661,7 +663,7 @@ public class Cryptoki {
         long rv = provider.C_EncryptFinal(session, lastEncryptedPart, lastEncryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_EncryptFinal rv=0x%08x{%s}\n  lastEncryptedPart (len=%d):\n", rv, CKR.L2S(rv), lastEncryptedPartLen.value()));
-            Hex.dump(sb, lastEncryptedPart, 0, (int) lastEncryptedPartLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, lastEncryptedPart, (int) lastEncryptedPartLen.value());
             log.debug(sb);
         }
         return rv;
@@ -694,13 +696,13 @@ public class Cryptoki {
     public long Decrypt(long session, byte[] encryptedData, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Decrypt session=0x%08x dataLen=%d\n encryptedData (len=%d):\n", session, dataLen.value(), encryptedData.length));
-            Hex.dump(sb, encryptedData, 0, encryptedData.length, "  ", 32, false);
+            hexDump(sb, encryptedData, encryptedData.length);
             log.debug(sb);
         }
         long rv = provider.C_Decrypt(session, encryptedData, baLen(encryptedData), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Decrypt rv=0x%08x{%s}\n  data (len=%d):\n", rv, CKR.L2S(rv), dataLen.value()));
-            Hex.dump(sb, data, 0, (int) dataLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, data, (int) dataLen.value());
             log.debug(sb);
         }
         return rv;
@@ -718,13 +720,13 @@ public class Cryptoki {
     public long DecryptUpdate(long session, byte[] encryptedPart, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptUpdate session=0x%08x dataLen=%d\n  encryptedPart (len=%d):\n", session, dataLen.value(), encryptedPart.length));
-            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
+            hexDump(sb, encryptedPart, encryptedPart.length);
             log.debug(sb);
         }
         long rv = provider.C_DecryptUpdate(session, encryptedPart, baLen(encryptedPart), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptUpdate rv=0x%08x{%s}\n  data (len=%d):\n", rv, CKR.L2S(rv), dataLen.value()));
-            Hex.dump(sb, data, 0, (int) dataLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, data, (int) dataLen.value());
             log.debug(sb);
         }
         return rv;
@@ -743,7 +745,7 @@ public class Cryptoki {
         long rv = provider.C_DecryptFinal(session, lastPart, lastPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptFinal rv=0x%08x{%s}\n  lastPart (len=%d):\n", rv, CKR.L2S(rv), lastPartLen.value()));
-            Hex.dump(sb, lastPart, 0, (int) lastPartLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, lastPart, (int) lastPartLen.value());
             log.debug(sb);
         }
         return rv;
@@ -775,13 +777,13 @@ public class Cryptoki {
     public long Digest(long session, byte[] data, byte[] digest, LongRef digestLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Digest session=0x%08x digestLen=%d\n  data (len=%d):\n", session, digestLen.value(), data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
+            hexDump(sb, data, data.length);
             log.debug(sb);
         }
         long rv = provider.C_Digest(session, data, baLen(data), digest, digestLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Digest rv=0x%08x{%s}\n  digest (len=%d):\n", rv, CKR.L2S(rv), digestLen.value()));
-            Hex.dump(sb, digest, 0, (int) digestLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, digest, (int) digestLen.value());
             log.debug(sb);
         }
         return rv;
@@ -797,7 +799,7 @@ public class Cryptoki {
     public long DigestUpdate(long session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DigestUpdate session=0x%08x\n  part (len=%d):\n", session, part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
+            hexDump(sb, part, part.length);
             log.debug(sb);
         }
         long rv = provider.C_DigestUpdate(session, part, baLen(part));
@@ -833,7 +835,7 @@ public class Cryptoki {
         long rv = provider.C_DigestFinal(session, digest, digestLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DigestFinal rv=0x%08x{%s}\n  digest (len=%d):\n", rv, CKR.L2S(rv), digestLen.value()));
-            Hex.dump(sb, digest, 0, (int) digestLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, digest, (int) digestLen.value());
             log.debug(sb);
         }
         return rv;
@@ -869,13 +871,13 @@ public class Cryptoki {
     public long Sign(long session, byte[] data, byte[] signature, LongRef signatureLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Sign session=0x%08x signatureLen=%d\n  data (len=%d):\n", session, signatureLen.value(), data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
+            hexDump(sb, data, data.length);
             log.debug(sb);
         }
         long rv = provider.C_Sign(session, data, baLen(data), signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_Sign rv=0x%08x{%s}\n  signature (len=%d):\n", rv, CKR.L2S(rv), signatureLen.value()));
-            Hex.dump(sb, signature, 0, (int) signatureLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, signature, (int) signatureLen.value());
             log.debug(sb);
         }
         return rv;
@@ -893,7 +895,7 @@ public class Cryptoki {
     public long SignUpdate(long session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignUpdate session=0x%08x\n  part (len=%d):\n", session, part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
+            hexDump(sb, part, part.length);
             log.debug(sb);
         }
         long rv = provider.C_SignUpdate(session, part, baLen(part));
@@ -914,7 +916,7 @@ public class Cryptoki {
         long rv = provider.C_SignFinal(session, signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignFinal rv=0x%08x{%s}\n  signature (len=%d):\n", rv, CKR.L2S(rv), signatureLen.value()));
-            Hex.dump(sb, signature, 0, (int) signatureLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, signature, (int) signatureLen.value());
             log.debug(sb);
         }
         return rv;
@@ -947,13 +949,13 @@ public class Cryptoki {
     public long SignRecover(long session, byte[] data, byte[] signature, LongRef signatureLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignRecover session=0x%08x signatureLen=%d\n  data (len=%d):\n", session, signatureLen.value(), data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
+            hexDump(sb, data, data.length);
             log.debug(sb);
         }
         long rv = provider.C_SignRecover(session, data, baLen(data), signature, signatureLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignRecover rv=0x%08x{%s}\n  signature (len=%d):\n", rv, CKR.L2S(rv), signatureLen.value()));
-            Hex.dump(sb, signature, 0, (int) signatureLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, signature, (int) signatureLen.value());
             log.debug(sb);
         }
         return rv;
@@ -987,9 +989,9 @@ public class Cryptoki {
     public long Verify(long session, byte[] data, byte[] signature) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_Verify session=0x%08x\n  data (len=%d):\n", session, data.length));
-            Hex.dump(sb, data, 0, data.length, "  ", 32, false);
-            sb.append("\n  signature (len=%d):\n");
-            Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
+            hexDump(sb, data, data.length);
+            sb.append(String.format("\n  signature (len=%d):\n", signature.length));
+            hexDump(sb, signature, signature.length);
             log.debug(sb);
         }
         long rv = provider.C_Verify(session, data, baLen(data), signature, baLen(signature));
@@ -1008,7 +1010,7 @@ public class Cryptoki {
     public long VerifyUpdate(long session, byte[] part) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyUpdate session=0x%08x\n  part (len=%d):\n", session, part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
+            hexDump(sb, part, part.length);
             log.debug(sb);
         }
         long rv = provider.C_VerifyUpdate(session, part, baLen(part));
@@ -1026,7 +1028,7 @@ public class Cryptoki {
     public long VerifyFinal(long session, byte[] signature) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyFinal session=0x%08x\n  signature (len=%d):\n", session, signature.length));
-            Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
+            hexDump(sb, signature, signature.length);
             log.debug(sb);
         }
         long rv = provider.C_VerifyFinal(session, signature, baLen(signature));
@@ -1061,13 +1063,13 @@ public class Cryptoki {
     public long VerifyRecover(long session, byte[] signature, byte[] data, LongRef dataLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_VerifyRecover session=0x%08x dataLen=%d\n  signature (len=%d):\n", session, dataLen.value(), signature.length));
-            Hex.dump(sb, signature, 0, signature.length, "  ", 32, false);
+            hexDump(sb, signature, signature.length);
             log.debug(sb);
         }
         long rv = provider.C_VerifyRecover(session, signature, baLen(signature), data, dataLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_VerifyRecover rv=0x%08x{%s}\n  data (len=%d):\n", rv, CKR.L2S(rv), dataLen.value()));
-            Hex.dump(sb, data, 0, (int) dataLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, data, (int) dataLen.value());
             log.debug(sb);
         }
         return rv;
@@ -1085,14 +1087,14 @@ public class Cryptoki {
     public long DigestEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DigestEncryptUpdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):\n", session, encryptedPartLen, part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
+            hexDump(sb, part, part.length);
             log.debug(sb);
         }
         long rv = provider.C_DigestEncryptUpdate(session, part, baLen(part),
                 encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DigestEncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):\n", rv, CKR.L2S(rv), encryptedPartLen));
-            Hex.dump(sb, encryptedPart, 0, (int) encryptedPartLen.value, "  ", 32, false);
+            hexDumpOut(rv, sb, encryptedPart, (int) encryptedPartLen.value());
             log.debug(sb);
         }
         return rv;
@@ -1110,14 +1112,14 @@ public class Cryptoki {
     public long DecryptDigestUpdate(long session, byte[] encryptedPart, byte[] part, LongRef partLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptDigestUpdate session=0x%08x partLen=%d\n  encryptedPart (len=%d):\n", session, partLen.value(), encryptedPart.length));
-            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
+            hexDump(sb, encryptedPart, encryptedPart.length);
             log.debug(sb);
         }
         long rv = provider.C_DecryptDigestUpdate(session,
                 encryptedPart, baLen(encryptedPart), part, partLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptDigestUpdate rv=0x%08x{%s}\n  part (len=%d):\n", rv, CKR.L2S(rv), partLen.value()));
-            Hex.dump(sb, part, 0, (int) partLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, part, (int) partLen.value());
             log.debug(sb);
         }
         return rv;
@@ -1135,14 +1137,14 @@ public class Cryptoki {
     public long SignEncryptUpdate(long session, byte[] part, byte[] encryptedPart, LongRef encryptedPartLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SignEncryptUdate session=0x%08x encryptedPartLen=%d\n  part (len=%d):\n", session, encryptedPartLen.value(), part.length));
-            Hex.dump(sb, part, 0, part.length, "  ", 32, false);
+            hexDump(sb, part, part.length);
             log.debug(sb);
         }
         long rv = provider.C_SignEncryptUpdate(session, part, baLen(part),
                 encryptedPart, encryptedPartLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_SignEncryptUpdate rv=0x%08x{%s}\n  encryptedPart (len=%d):\n", rv, CKR.L2S(rv), encryptedPartLen.value()));
-            Hex.dump(sb, encryptedPart, 0, (int) encryptedPartLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, encryptedPart, (int) encryptedPartLen.value());
             log.debug(sb);
         }
         return rv;
@@ -1160,14 +1162,14 @@ public class Cryptoki {
     public long DecryptVerifyUpdate(long session, byte[] encryptedPart, byte[] part, LongRef partLen) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_DecryptVerifyUpdate session=0x%08x partLen=%d\n  encryptedPart (len=%d):\n", session, partLen.value(), encryptedPart.length));
-            Hex.dump(sb, encryptedPart, 0, encryptedPart.length, "  ", 32, false);
+            hexDump(sb, encryptedPart, encryptedPart.length);
             log.debug(sb);
         }
         long rv = provider.C_DecryptVerifyUpdate(session,
                 encryptedPart, baLen(encryptedPart), part, partLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_DecryptVerifyUpdate rv=0x%08x{%s}\n  part (len=%d):\n", rv, CKR.L2S(rv), partLen.value()));
-            Hex.dump(sb, part, 0, (int) partLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, part, (int) partLen.value());
             log.debug(sb);
         }
         return rv;
@@ -1246,7 +1248,7 @@ public class Cryptoki {
                 key, wrappedKey, wrappedKeyLen);
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_WrapKey rv=0x%08x{%s}\n  wrappedKey (len=%d):\n", rv, CKR.L2S(rv), wrappedKeyLen.value()));
-            Hex.dump(sb, wrappedKey, 0, (int) wrappedKeyLen.value(), "  ", 32, false);
+            hexDumpOut(rv, sb, wrappedKey, (int) wrappedKeyLen.value());
             log.debug(sb);
         }
         return rv;
@@ -1268,7 +1270,7 @@ public class Cryptoki {
 
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_UnwrapKey session=0x%08x unwrappingKey=0x%08x %s\n  wrappedKey (len=%d):\n", session, unwrappingKey, mechanism, wrappedKey.length));
-            Hex.dump(sb, wrappedKey, 0, wrappedKey.length, "  ", 32, false);
+            hexDump(sb, wrappedKey, wrappedKey.length);
             sb.append('\n');
             dumpTemplate(sb, templ);
             log.debug(sb);
@@ -1310,13 +1312,14 @@ public class Cryptoki {
     public long SeedRandom(long session, byte[] seed) {
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("> C_SeedRandom session=0x%08x\n  seed (len=%d):\n", session, seed.length));
-            Hex.dump(sb, seed, 0, seed.length, "  ", 32, false);
+            hexDump(sb, seed, seed.length);
             log.debug(sb);
         }
         long rv = provider.C_SeedRandom(session, seed, baLen(seed));
         if (log.isDebugEnabled()) log.debug(String.format("< C_SeedRandom rv=0x%08x{%s}", rv, CKR.L2S(rv)));
         return rv;
     }
+
 
     /**
      * Generates random or pseudo-random data.
@@ -1330,7 +1333,7 @@ public class Cryptoki {
         long rv = provider.C_GenerateRandom(session, randomData, baLen(randomData));
         if (log.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder(String.format("< C_GenerateRandom rv=0x%08x{%s}\n  randomData (len=%d):\n", rv, CKR.L2S(rv), randomData.length));
-            Hex.dump(sb, randomData, 0, randomData.length, "  ", 32, false);
+            hexDumpOut(rv, sb, randomData, randomData.length);
             log.debug(sb);
         }
         return rv;
@@ -1395,5 +1398,37 @@ public class Cryptoki {
             sb.append("\n  ");
             template[i].dump(sb);
         }
+    }
+
+    private static void hexDump(StringBuilder sb, byte[] data, int len) {
+        Hex.dump(sb, data, 0, len, "  ", 32, false);
+    }
+
+    /**
+     * Hex dump data into string builder unless rv is CKR.BUFFER_TOO_SMALL
+     * which is indicated by appending "<buffer too small>" to the string builder.
+     * <p>
+     * Note: it does not make sense to dump data if rv is CKR.BUFFER_TOO_SMALL.
+     *
+     * @param rv return value
+     * @param sb string builder
+     * @param data data to dump
+     * @param dataLen data length
+     */
+    private static void hexDumpOut(long rv, StringBuilder sb, byte[] data, int dataLen) {
+        if (rv != CKR.BUFFER_TOO_SMALL) {
+            hexDump(sb, data, dataLen);
+        } else {
+            sb.append("  <buffer too small>");
+        }
+    }
+
+    /**
+     * Obtain metrics on calls to the underlying {@link NativeProvider}
+     *
+     * @return metrics object
+     */
+    public NativeProviderMetrics getMetrics() {
+        return metrics;
     }
 }

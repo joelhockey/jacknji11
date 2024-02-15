@@ -30,6 +30,57 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * CKA_? constants and wrapper for CK_ATTRIBUTE struct.
+ * <p>
+ * Generally the state of attribute depends on whether it before or after reading the value from PKCS#11.
+ * We distinguish that by <code>{@link #isSet}</code> flag. The same values of other
+ * fields can have different meanings depending on the state of this flag.
+ * <p>
+ * The attribute can be in one of the following states:
+ *
+ * <ul>
+ *     <li>
+ *         <b>INDEFINITE</b> when the attribute is not yet set and its lengths is unknown, also there is no buffer allocated.
+ *         ulValueLen = 0
+ *         pValue = null
+ *         isSet = false
+ *     </li>
+ *     <li>
+ *         <b>ALLOCATED</b> when the attribute is not yet set but a buffer is allocated to receive data of known length.
+ *         ulValueLen = BUFFERLEN
+ *         pValue = new byte[BUFFERLEN]
+ *         isSet = false
+ *     </li>
+ *     <li>
+ *         <b>DEFINITE</b> when the attribute is set and its length is known but the value is not yet set (pValue is null)
+ *         because the buffer has not been allocated.
+ *         ulValueLen != 0
+ *         pValue = null
+ *         isSet = true
+ *     </li>
+ *     <li>
+ *         <b>HAS_VALUE</b> when the attribute is set and its length is known and the value is set.
+ *         ulValueLen = LEN // LEN > 0
+ *         pValue = new byte[BUFFERLEN] // where BUFFERLEN >= LEN
+ *         isSet = true
+ *     </li>
+ *     <li>
+ *        <b>EMPTY</b> when the attribute is set and its length is known to be 0, irrespective of whether the
+ *        buffer had been allocated or not.
+ *        ulValueLen = 0
+ *        pValue = new byte[BUFFERLEN] or null
+ *        isSet = true
+ *     </li>
+ *     <li>
+ *        <b>INVALID</b> when the attribute is known to not be present in the object or if it is sensitive,
+ *        therefore its value cannot be read.
+ *        ulValueLen = CK.UNAVAILABLE_INFORMATION // -1
+ *        isSet = ?
+ *        pValue = ?
+ *     </li>
+ * </ul>
+ *
+ * Note: attribute that is INVALID is not the same as attribute that is EMPTY. INVALID means that the attribute
+ * is not present in the object or is sensitive. EMPTY means that the attribute is valid but has no actual value.
  *
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
@@ -212,10 +263,16 @@ public class CKA {
     public long type;
     public byte[] pValue;
     public long ulValueLen;
+    /**
+     * Indicates that attribute is actually set.
+     * <p>
+     * This is used when creating new objects which contain a zeroized byte array as a receiving buffer but
+     * are not yet populated with actual data.
+     */
+    private boolean isSet;
 
-    // disallow zero-arg constructor
-    @SuppressWarnings("unused")
-    private CKA() {
+    private CKA(long type) {
+        this.type = type;
     }
 
     /**
@@ -238,7 +295,7 @@ public class CKA {
             pValue = (byte[]) value;
             ulValueLen = pValue.length;
         } else if (value instanceof BigInteger) {
-            byte[] pValue = ((BigInteger) value).toByteArray();
+            this.pValue = UBigInt.ubigint2b((BigInteger) value);
             ulValueLen = pValue.length;
         } else if (value instanceof Number) {
             pValue = ULong.ulong2b(((Number) value).longValue());
@@ -249,25 +306,86 @@ public class CKA {
         } else {
             throw new RuntimeException("Unknown att type: " + value.getClass());
         }
+        isSet = true;
     }
 
     /**
      * PKCS#11 CK_ATTRIBUTE struct constructor with null value.
+     * <p>
+     * Use this variant to create an empty attribute with initial buffer to receive data.
      *
      * @param type
      *            CKA_? type. Use one of the public static final long fields in this class.
+     *
+     * @param size 
+     *            initial buffer size, if 0 then no buffer is allocated
+     * @return an unset attribute with buffer of given size            
      */
-    public CKA(long type) {
-        this(type, null);
+    public static CKA allocate(long type, int size) {
+        CKA cka = new CKA(type);
+        cka.pValue = size > 0 ? new byte[size] : null;
+        cka.ulValueLen = size;
+        return cka;
+    }
+
+    /**
+     * Prepare an empty unset attribute to receive length of value.
+     * 
+     * @param type CKA_? type. Use one of the public static final long fields in this class.
+     *             
+     * @return an unset attribute with buffer of size 0 to receive length of value
+     */
+    public static CKA indefinite(long type) {
+        return allocate(type, 0);
+    }
+
+    /**
+     * Returns true if the attribute has a non-empty value.
+     * <p>
+     * Note: see HAS_VALUE state description in class javadoc.
+     * @return true if the attribute has a non-empty value set, false otherwise
+     */
+    public boolean hasValue() {
+        // the last condition shall not arise, however if buffer too short error is indicated
+        // by the implementation that does not set CK.UNAVAILABLE_INFORMATION in ulValueLen
+        return isSet && ulValueLen > 0 && pValue != null && pValue.length >= ulValueLen;
+    }
+
+    /**
+     * Check if value is invalid.
+     */
+    public boolean isInvalid() {
+        return ulValueLen == CK.UNAVAILABLE_INFORMATION;
+    }
+
+    /**
+     * Check if value is empty.
+     */
+    public boolean isEmpty() {
+        return isSet && ulValueLen == 0;
+    }
+
+    /**
+     * Check if value has been set by PKCS#11 provider.
+     */
+    public boolean isSet() {
+        return isSet;
+    }
+
+    /**
+     * Mark this attribute as set.
+     */
+    public void set() {
+        this.isSet = true;
     }
 
     /** When reading values from PKCS#11 you often send a buffer, with a specific length
      * where the buffer may be lager than the value returned. The actual length of the value returned
      * is then put by the HSM in ulValueLen. Before returning to Java, therefore make sure 
-     * the returned pValue hodls the actual bytes and not extra (empty) data.
+     * the returned pValue holds the actual bytes and not extra (empty) data.
      */
     private byte[] getValueInternal() {
-        return ulValueLen == 0 || pValue == null ? null : Buf.substring(pValue, 0, (int)ulValueLen);
+        return hasValue() ? Buf.substring(pValue, 0, (int) ulValueLen) : null;
     }
     /** @return value as byte[] */
     public byte[] getValue() {
@@ -276,12 +394,12 @@ public class CKA {
 
     /** @return value as String */
     public String getValueStr() {
-        return pValue == null ? null : new String(getValueInternal());
+        return hasValue() ? new String(getValueInternal()) : null;
     }
 
     /** @return value as Long */
     public Long getValueLong() {
-        if (ulValueLen == 0 || pValue == null) {
+        if (!hasValue()) {
             return null;
         }
         if (ulValueLen != ULong.ULONG_SIZE.size()) {
@@ -295,7 +413,7 @@ public class CKA {
 
     /** @return value as boolean */
     public Boolean getValueBool() {
-        if (ulValueLen == 0 || pValue == null) {
+        if (!hasValue()) {
             return null;
         }
         if (ulValueLen != 1) {
@@ -309,7 +427,7 @@ public class CKA {
 
     /** @return value as BigInteger */
     public BigInteger getValueBigInt() {
-        return ulValueLen == 0 || pValue == null ? null : new BigInteger(Buf.substring(pValue, 0, (int)ulValueLen));
+        return hasValue() ? UBigInt.b2ubigint(getValueInternal()) : null;
     }
 
     /**
@@ -319,13 +437,22 @@ public class CKA {
      *            write to
      */
     public void dump(StringBuilder sb) {
-        sb.append(String.format("type=0x%08x{%s} valueLen=%d", type, L2S(type), ulValueLen));
+        sb.append(String.format("type=0x%08x{%s} ", type, L2S(type)));
+
+        dumpState(sb);
+
+        if (hasValue()) {
+            dumpValue(sb);
+        }
+    }
+
+    private void dumpValue(StringBuilder sb) {
 
         try {
             switch ((int) type) {
             case (int) CLASS: // lookup CKO
                 Long cko = getValueLong();
-                sb.append(String.format(" value=0x%08x{%s}", type, cko != null ? CKO.L2S(cko) : "null"));
+                sb.append(String.format(" value=0x%08x{%s}", cko != null ? cko : -1, cko != null ? CKO.L2S(cko) : "null"));
                 return;
             case (int) TOKEN: // boolean
             case (int) PRIVATE:
@@ -378,11 +505,11 @@ public class CKA {
                 return;
             case (int) CERTIFICATE_TYPE: // lookup CKC
                 Long ckc = getValueLong();
-                sb.append(String.format(" value=0x%08x{%s}", type, ckc != null ? CKC.L2S(ckc) : "null"));
+                sb.append(String.format(" value=0x%08x{%s}", ckc != null ? ckc : -1, ckc != null ? CKC.L2S(ckc) : "null"));
                 return;
             case (int) KEY_TYPE: // lookup CKK
                 Long ckk = getValueLong();
-                sb.append(String.format(" value=0x%08x{%s}", type, ckk != null ? CKK.L2S(ckk) : "null"));
+                sb.append(String.format(" value=0x%08x{%s}", ckk != null ? ckk : -1, ckk != null ? CKK.L2S(ckk) : "null"));
                 return;
             case (int) MODULUS_BITS: // long
             case (int) PRIME_BITS:
@@ -429,6 +556,37 @@ public class CKA {
         Hex.dump(sb, value, 0, (int) ulValueLen, "    ", 32, false);
     }
 
+    /**
+     * Dump the state of attribute according to the state description in class javadoc.
+     *
+     * @param sb the StringBuilder to append to
+     */
+    private void dumpState(StringBuilder sb) {
+        if (isSet) {
+            if (ulValueLen == 0) {
+                sb.append(" EMPTY");
+            } else if (ulValueLen == -1) {
+                sb.append(" INVALID");
+            } else {
+                if (pValue == null) {
+                    sb.append(" DEFINITE");
+                }
+                sb.append(String.format(" [%dB]", ulValueLen));
+            }
+        } else {
+            if (ulValueLen == 0) {
+                sb.append(" INDEFINITE");
+            } else if (ulValueLen == -1) {
+                sb.append(" INVALID");
+            } else {
+                if (pValue != null) {
+                    sb.append(" ALLOCATED");
+                }
+                sb.append(String.format(" [%dB]", ulValueLen));
+            }
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -440,9 +598,12 @@ public class CKA {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + Arrays.hashCode(pValue);
         result = prime * result + (int) (type ^ (type >>> 32));
         result = prime * result + (int) (ulValueLen ^ (ulValueLen >>> 32));
+        result = prime * result + (isSet ? 1231 : 1237);
+        if (isSet) {
+            result = prime * result + Arrays.hashCode(getValueInternal());
+        }
         return result;
     }
 
@@ -455,11 +616,13 @@ public class CKA {
         if (getClass() != obj.getClass())
             return false;
         CKA other = (CKA) obj;
-        if (!Arrays.equals(pValue, other.pValue))
+        if (ulValueLen != other.ulValueLen)
             return false;
         if (type != other.type)
             return false;
-        if (ulValueLen != other.ulValueLen)
+        if (isSet != other.isSet)
+            return false;
+        if (isSet && !Arrays.equals(getValueInternal(), other.getValueInternal()))
             return false;
         return true;
     }

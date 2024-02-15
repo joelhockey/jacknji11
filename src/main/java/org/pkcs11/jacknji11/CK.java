@@ -18,28 +18,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.pkcs11.jacknji11;
 
-import java.util.Map;
-
 /**
- * CKC_? constants.
- * @author Joel Hockey (joel.hockey@gmail.com)
+ * PKCS#11 CK_? constants.
+ *
+ * @author Tomasz Wysocki
  */
-public class CKC {
+public class CK {
 
-    public static final long CKC_X_509           = 0x00000000;
-    public static final long CKC_X_509_ATTR_CERT = 0x00000001;
-    public static final long CKC_WTLS            = 0x00000002;
-    public static final long CKC_VENDOR_DEFINED  = 0x80000000;
-
-    /** Maps from long value to String description (variable name). */
-    private static final Map<Long, String> L2S = C.createL2SMap(CKC.class);
     /**
-     * Convert long constant value to name.
-     * @param ckc value
-     * @return name
+     * Value of invalid handles.
      */
-    public static final String L2S(long ckc) { return C.l2s(L2S, CKC.class.getSimpleName(), ckc); }
+    public static final long INVALID_HANDLE = 0x00000000L;
+
+    /**
+     * Value of infinite used for max session counts.
+     */
+    public static final long EFFECTIVELY_INFINITE = 0x00000000L;
+
+    /**
+     * Value returned in <code>ulValueLen</code> when attribute is not available.
+     */
+    public static final long UNAVAILABLE_INFORMATION = -1L;
+
 }

@@ -59,7 +59,7 @@ package org.pkcs11.jacknji11;
  */
 public class CE {
 
-    private static CryptokiE CRYPTOKIE;
+    static CryptokiE CRYPTOKIE;
 
     /**
      * Initialize cryptoki.
@@ -1581,5 +1581,13 @@ public class CE {
         byte[] result = new byte[newSize];
         System.arraycopy(buf, 0, result, 0, result.length);
         return result;
+    }
+
+    /**
+     * Obtain metrics for calls on underlying {@link NativeProvider}
+     * @return metrics object
+     */
+    public static NativeProviderMetrics getMetrics() {
+        return CRYPTOKIE.getMetrics();
     }
 }

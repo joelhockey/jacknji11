@@ -23,7 +23,7 @@ package org.pkcs11.jacknji11;
 
 /**
  * This is the preferred java interface for calling cryptoki functions.
- *
+ * <p>
  * jacknji11 provides 3 interfaces for calling cryptoki functions (plus 2 for
  * backwards compatibility).
  * <ol>
@@ -57,7 +57,30 @@ package org.pkcs11.jacknji11;
  */
 public class CryptokiE {
 
+    /**
+     * Underlying Cryptoki object.
+     */
     private final Cryptoki c;
+
+    /**
+     * Strategy for determining the length of attributes in a GetAttribute process.
+     * <p>
+     * Default: {@link AttributeLengthStrategy.IndefiniteLengthStrategy}
+     *
+     * @see AttributeLengthStrategy.MaxLengthStrategy
+     * @see AttributeLengthStrategy.IndefiniteLengthStrategy
+     */
+    private AttributeLengthStrategy attributeLengthStrategy = new AttributeLengthStrategy.IndefiniteLengthStrategy();
+
+    /**
+     * Flag enabling batch mode for getting attributes.
+     * If <code>true</code>, then all attributes are retrieved in a single call to
+     * <code>C_GetAttributeValue</code>.  If <code>false</code>, then each attribute is
+     * retrieved in a separate call to <code>C_GetAttributeValue</code>.
+     * <p>
+     * Default: true
+     */
+    private boolean attributeBatchModeEnabled = true;
 
     public CryptokiE() {
       this.c = new Cryptoki();
@@ -651,28 +674,8 @@ public class CryptokiE {
      * @see NativeProvider#C_GetAttributeValue(long, long, CKA[], long)
      */
     public CKA GetAttributeValue(long session, long object, long cka) {
-        CKA[] templ = {new CKA(cka)};
-        // first call to get how much memory we must allocate
-        long rv = c.GetAttributeValue(session, object, templ);
-        // PKCS#11 v2.40, section 5.7, C_GetAttributeValue
-        //  Note that the error codes CKR_ATTRIBUTE_SENSITIVE, CKR_ATTRIBUTE_TYPE_INVALID, and CKR_BUFFER_TOO_SMALL 
-        //  do not denote true errors for C_GetAttributeValue.  If a call to C_GetAttributeValue returns any of these 
-        //  three values, then the call MUST nonetheless have processed every attribute in the template supplied to 
-        //  C_GetAttributeValue.  Each attribute in the template whose value can be returned by the call to 
-        //  C_GetAttributeValue will be returned by the call to C_GetAttributeValue.
-        // So we will assume that values are processed and returned, perhaps as 0 length, null values (CK_UNAVAILABLE_INFORMATION)
-        // Unless CKR_BUFFER_TOO_SMALL that actually is something the caller must fix and the caller should be notified
-        if (rv == CKR.ATTRIBUTE_TYPE_INVALID || rv == CKR.ATTRIBUTE_SENSITIVE || templ[0].ulValueLen == 0) {
-            // No value to fetch, so return the empty value (CK_UNAVAILABLE_INFORMATION)
-            return templ[0];
-        }
-        if (rv != CKR.OK) throw new CKRException(rv);
-
-        // allocate memory and call again
-        templ[0].pValue = new byte[(int) templ[0].ulValueLen];
-        rv = c.GetAttributeValue(session, object, templ);
-        if (rv != CKR.OK) throw new CKRException(rv);
-        return templ[0];
+        // the general fetching process optimizes single fetch as well
+        return GetAttributeValue(session, object, new long[] { cka })[0];
     }
 
     /**
@@ -689,21 +692,8 @@ public class CryptokiE {
         if (types == null || types.length == 0) {
             return new CKA[0];
         }
-        CKA[] templ = new CKA[types.length];
-        for (int i = 0; i < types.length; i++) {
-            templ[i] = new CKA(types[i], null);
-        }
 
-        // try getting all at once, first call to get how much memory we must allocate
-        GetAttributeValue(session, object, templ);
-        // allocate memory and go again
-        for (CKA att : templ) {
-            att.pValue = att.ulValueLen > 0 ? new byte[(int) att.ulValueLen] : null;
-        }
-        // Fill the allocated template with values (or no values for those that are empty or
-        // ATTRIBUTE_TYPE_INVALID or ATTRIBUTE_SENSITIVE
-        GetAttributeValue(session, object, templ);
-        return templ;
+        return new GetAttributeProcess(c, session, object, attributeLengthStrategy, attributeBatchModeEnabled, types).fetch();
     }
 
     /**
@@ -1872,5 +1862,49 @@ public class CryptokiE {
         byte[] result = new byte[newSize];
         System.arraycopy(buf, 0, result, 0, result.length);
         return result;
+    }
+
+    /**
+     * Obtain metrics for calls on underlying {@link NativeProvider}
+     * @return metrics object
+     */
+    public NativeProviderMetrics getMetrics() {
+        return c.getMetrics();
+    }
+
+    /**
+     * Set the strategy to use for getting the length of an attribute.
+     *
+     * @param attributeLengthStrategy the strategy to use for getting the length of an attribute
+     */
+    public void setAttributeLengthStrategy(AttributeLengthStrategy attributeLengthStrategy) {
+        this.attributeLengthStrategy = attributeLengthStrategy;
+    }
+
+    /**
+     * Get the strategy to use for getting the length of an attribute.
+     *
+     * @return the strategy to use for getting the length of an attribute
+     */
+    public AttributeLengthStrategy getAttributeLengthStrategy() {
+        return attributeLengthStrategy;
+    }
+
+    /**
+     * Set the mode to use for getting attribute values.
+     *
+     * @param attributeBatchModeEnabled if true, then batch mode is enabled
+     */
+    public void setAttributeBatchModeEnabled(boolean attributeBatchModeEnabled) {
+        this.attributeBatchModeEnabled = attributeBatchModeEnabled;
+    }
+
+    /**
+     * Get the mode to use for getting attribute values.
+     *
+     * @return if true, then batch mode is enabled
+     */
+    public boolean isAttributeBatchModeEnabled() {
+        return attributeBatchModeEnabled;
     }
 }
