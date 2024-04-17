@@ -40,6 +40,14 @@ public interface AttributeLengthStrategy {
      * and their maximum length as well as a default length for regular attributes.
      * <p>
      * Use to avoid querying length of attributes for every call to C_GetAttributeValue.
+     * <p>
+     * Note that implementations need to adhere strictly to the PKCS#11 for this strategy 
+     * to work. One detail where implementations (even popular ones) are known to be
+     * non-compliant is returning CKR_BUFFER_TOO_SMALL and setting uLVlaueLength to 
+     * CK_UNAVAILABLE_INFORMATION if sent a pre-allocated but too small buffer.
+     * Due to this, using this strategy requires careful testing with your HSM, for 
+     * your use case.
+     *
      */
     class MaxLengthStrategy implements AttributeLengthStrategy {
 
