@@ -259,8 +259,7 @@ class GetAttributeProcess {
                 processError(rv, query);
             }
 
-            // if we are here it means that there was no actual error,
-            // and we can extract available attributes
+            // we can extract available attributes, and leave the ones with error for the next round
             processAvailable(query);
 
             // next iteration will either fetch rest of attributes or there is nothing to fetch
@@ -302,10 +301,18 @@ class GetAttributeProcess {
              in which case it shall be the last one.
             */
             if (countUnavailable(response) > 1 && maxLengthUsedInLastQuery) {
-                bufferTooSmall(response);
+                // Unfortunately we must set bufferToSMall for every item to sort out the real ones
+                for (CKA cka : response) {
+                    getEntry(cka.type).bufferTooSmall();
+                }
             } else {
                 attributesInvalid(response);
             }
+        } else if (rv == CKR.DEVICE_ERROR && maxLengthUsedInLastQuery) {
+            // Some HSMs (Thales TCT f.ex) returns DEVICE_ERROR instead of BUFFER_TOO_SMALL.
+            // This is a clear violation of PKCS#11, and has been reported.
+            // as a workaround we treat it as BUFFER_TO_SMALL if have been using maxLength speculation
+            bufferTooSmall(response);
         } else {
             // any other error will be thrown as an exception
             throw new CKRException("Error fetching " + listUnavailable(response) + " attributes, rv = "+rv, rv);
@@ -375,8 +382,12 @@ class GetAttributeProcess {
     private void bufferTooSmall(CKA[] response) {
         for (CKA cka : response) {
             Entry entry = getEntry(cka.type);
-            if (cka.ulValueLen == CK.UNAVAILABLE_INFORMATION) {
+            // We would make a simple check here, according to PKCS#11 C_GetAttributeValue that
+            // if (cka.ulValueLen == CK.UNAVAILABLE_INFORMATION) {
+            // But some HSMs do not honor this and simply leaves the size as the same as it was on calling (Thales DPoD f.ex)
+            if (cka.ulValueLen == CK.UNAVAILABLE_INFORMATION || cka.ulValueLen == entry.length) {
                 entry.bufferTooSmall();
+                cka.ulValueLen = CK.UNAVAILABLE_INFORMATION; // Workaround for when HSM leaves cka.ulValueLen == entry.length
             }
         }
     }
