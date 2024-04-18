@@ -56,8 +56,9 @@ public interface AttributeLengthStrategy {
         /**
          * Default of 2KB has been established by following facts:
          * Modulus of 15Kb RSA (maximum) is around 2KB.
-         * For 8192 bit RSA (which is a practical limit) certificates are just above about 2K
-         * (with standard set of extensions).
+         * For 8192 bit RSA (which is a practical limit) public keys are less than 2K while certificates 
+         * are just above about 2K (with standard set of extensions), but those should be rare. There is
+         * a balance and limits are configurable for your own use case.
          * <p>
          * Note: CKA_VALUE is used for certificate objects, and PQC key values, so it is large value as well
          * which is shame since value is typically used for symmetric keys which are relatively small size.
