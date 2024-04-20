@@ -41,23 +41,27 @@ public interface AttributeLengthStrategy {
      * <p>
      * Use to avoid querying length of attributes for every call to C_GetAttributeValue.
      * <p>
-     * Note that implementations need to adhere strictly to the PKCS#11 for this strategy 
-     * to work. One detail where implementations (even popular ones) are known to be
-     * non-compliant is returning CKR_BUFFER_TOO_SMALL and setting uLVlaueLength to 
-     * CK_UNAVAILABLE_INFORMATION if sent a pre-allocated but too small buffer.
-     * Due to this, using this strategy requires careful testing with your HSM, for 
-     * your use case.
-     *
+     * Note that implementations need to adhere strictly to PKCS#11 for this strategy 
+     * to work robustly. One detail that this implementation relies on is that PKCS#11, 
+     * base specification section 5.7.5 C_GetAttributeValue,
+     * specifies returning CKR_BUFFER_TOO_SMALL and setting uLValueLen to 
+     * CK_UNAVAILABLE_INFORMATION, if sent a pre-allocated buffer that is too small to hold the value.
+     * There are multuple variations of implementation errors with either the wrong return value
+     * or failing to set uLValueLen to the correct value.
+     * Due to these common implementation issued, using this strategy requires careful testing 
+     * with your HSM, for your use case.
      */
     class MaxLengthStrategy implements AttributeLengthStrategy {
 
         /**
          * Default of 2KB has been established by following facts:
          * Modulus of 15Kb RSA (maximum) is around 2KB.
-         * For 7168Kb RSA (which is a practical limit) certificates are about 2K (without extensions).
+         * For 8192 bit RSA (which is a practical limit) public keys are less than 2K while certificates 
+         * are just above about 2K (with standard set of extensions), but those should be rare. There is
+         * a balance and limits are configurable for your own use case.
          * <p>
-         * Note: CKA_VALUE is used also for certificate objects, so it is large value as well - which is shame
-         * since value is typically used for symmetric keys which are relatively small size.
+         * Note: CKA_VALUE is used for certificate objects, and PQC key values, so it is large value as well
+         * which is shame since value is typically used for symmetric keys which are relatively small size.
          * <p>
          * If set to 0 then max length strategy is not used for large attributes.
          */
