@@ -26,7 +26,6 @@ import org.pkcs11.jacknji11.CKM;
 import java.util.Arrays;
 import java.util.List;
 
-import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
@@ -40,6 +39,12 @@ public class JNA_CKM extends Structure {
     public NativeLong mechanism;
     public Pointer pParameter;
     public NativeLong ulParameterLen;
+
+    public JNA_CKM() {
+        // Need to set alignment to none since 'pParameter' is not
+        // aligned to a 8 byte boundary on Win64 (long is 4 bytes there)
+        super(ALIGN_NONE);
+    }
 
     @Override
     protected List<String> getFieldOrder() {
