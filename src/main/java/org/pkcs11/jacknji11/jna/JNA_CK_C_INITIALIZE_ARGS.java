@@ -57,6 +57,10 @@ public class JNA_CK_C_INITIALIZE_ARGS extends Structure {
     }
 
     public JNA_CK_C_INITIALIZE_ARGS(final CK_C_INITIALIZE_ARGS args) {
+        // Need to set alignment to none. Otherwise there would be alignment
+        // padding before 'pReserved' on Win64 (there, long is 4 bytes but
+        // pointers have 8 byte alignment)
+        super(ALIGN_NONE);
         if (args.createMutex != null) {
             this.createMutex = new JNA_CK_CREATEMUTEX() {
                 public long invoke(NativePointerByReference mutex) {
