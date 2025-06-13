@@ -82,6 +82,10 @@ public class Cryptoki {
         this(new JNA());
     }
 
+    public Cryptoki(String libraryPath) {
+        this(new JNA(libraryPath));
+    }
+
     /**
      * @param provider cryptoki {@link org.pkcs11.jacknji11.NativeProvider}.
      */

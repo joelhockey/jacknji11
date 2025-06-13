@@ -86,6 +86,10 @@ public class CryptokiE {
       this.c = new Cryptoki();
     }
 
+    public CryptokiE(String libraryPath) {
+      this.c = new Cryptoki(libraryPath);
+    }
+
     /**
      * @param c Cryptoki object to wrap.
      */
