@@ -29,6 +29,7 @@ import com.sun.jna.Pointer;
 
 /**
  * CKM_? constants and CK_MECHANISM struct wrapper.
+ * https://github.com/oasis-tcs/pkcs11/blob/master/working/headers/pkcs11t.h
  * @author Joel Hockey (joel.hockey@gmail.com)
  */
 public class CKM {
@@ -65,6 +66,26 @@ public class CKM {
     public static final long SHA512_RSA_PKCS_PSS         = 0x00000045;
     public static final long SHA224_RSA_PKCS             = 0x00000046;
     public static final long SHA224_RSA_PKCS_PSS         = 0x00000047;
+    public static final long SHA512_224                  = 0x00000048;
+    public static final long SHA512_224_HMAC             = 0x00000049;
+    public static final long SHA512_224_HMAC_GENERAL     = 0x0000004a;
+    public static final long SHA512_224_KEY_DERIVATION   = 0x0000004b;
+    public static final long SHA512_256                  = 0x0000004c;
+    public static final long SHA512_256_HMAC             = 0x0000004d;
+    public static final long SHA512_256_HMAC_GENERAL     = 0x0000004e;
+    public static final long SHA512_256_KEY_DERIVATION   = 0x0000004f;
+    public static final long SHA512_T                    = 0x00000050;
+    public static final long SHA512_T_HMAC               = 0x00000051;
+    public static final long SHA512_T_HMAC_GENERAL       = 0x00000052;
+    public static final long SHA512_T_KEY_DERIVATION     = 0x00000053;
+    public static final long SHA3_256_RSA_PKCS           = 0x00000060;
+    public static final long SHA3_384_RSA_PKCS           = 0x00000061;
+    public static final long SHA3_512_RSA_PKCS           = 0x00000062;
+    public static final long SHA3_256_RSA_PKCS_PSS       = 0x00000063;
+    public static final long SHA3_384_RSA_PKCS_PSS       = 0x00000064;
+    public static final long SHA3_512_RSA_PKCS_PSS       = 0x00000065;
+    public static final long SHA3_224_RSA_PKCS           = 0x00000066;
+    public static final long SHA3_224_RSA_PKCS_PSS       = 0x00000067;
     public static final long RC2_KEY_GEN                 = 0x00000100;
     public static final long RC2_ECB                     = 0x00000101;
     public static final long RC2_CBC                     = 0x00000102;
@@ -131,6 +152,22 @@ public class CKM {
     public static final long HOTP                        = 0x00000291;
     public static final long ACTI                        = 0x000002a0;
     public static final long ACTI_KEY_GEN                = 0x000002a1;
+    public static final long SHA3_256                    = 0x000002b0;
+    public static final long SHA3_256_HMAC               = 0x000002b1;
+    public static final long SHA3_256_HMAC_GENERAL       = 0x000002b2;
+    public static final long SHA3_256_KEY_GEN            = 0x000002b3;
+    public static final long SHA3_224                    = 0x000002b5;
+    public static final long SHA3_224_HMAC               = 0x000002b6;
+    public static final long SHA3_224_HMAC_GENERAL       = 0x000002b7;
+    public static final long SHA3_224_KEY_GEN            = 0x000002b8;
+    public static final long SHA3_384                    = 0x000002c0;
+    public static final long SHA3_384_HMAC               = 0x000002c1;
+    public static final long SHA3_384_HMAC_GENERAL       = 0x000002c2;
+    public static final long SHA3_384_KEY_GEN            = 0x000002c3;
+    public static final long SHA3_512                    = 0x000002d0;
+    public static final long SHA3_512_HMAC               = 0x000002d1;
+    public static final long SHA3_512_HMAC_GENERAL       = 0x000002d2;
+    public static final long SHA3_512_KEY_GEN            = 0x000002d3;
     public static final long CAST_KEY_GEN                = 0x00000300;
     public static final long CAST_ECB                    = 0x00000301;
     public static final long CAST_CBC                    = 0x00000302;
@@ -190,6 +227,18 @@ public class CKM {
     public static final long SHA384_KEY_DERIVATION       = 0x00000394;
     public static final long SHA512_KEY_DERIVATION       = 0x00000395;
     public static final long SHA224_KEY_DERIVATION       = 0x00000396;
+    public static final long SHA3_256_KEY_DERIVATION     = 0x00000397;
+    public static final long SHA3_224_KEY_DERIVATION     = 0x00000398;
+    public static final long SHA3_384_KEY_DERIVATION     = 0x00000399;
+    public static final long SHA3_512_KEY_DERIVATION     = 0x0000039a;
+    public static final long SHAKE_128_KEY_DERIVATION    = 0x0000039b;
+    public static final long SHAKE_256_KEY_DERIVATION    = 0x0000039c;
+    public static final long SHA3_256_KEY_DERIVE = SHA3_256_KEY_DERIVATION;
+    public static final long SHA3_224_KEY_DERIVE = SHA3_224_KEY_DERIVATION;
+    public static final long SHA3_384_KEY_DERIVE = SHA3_384_KEY_DERIVATION;
+    public static final long SHA3_512_KEY_DERIVE = SHA3_512_KEY_DERIVATION;
+    public static final long SHAKE_128_KEY_DERIVE = SHAKE_128_KEY_DERIVATION;
+    public static final long SHAKE_256_KEY_DERIVE = SHAKE_256_KEY_DERIVATION;
     public static final long PBE_MD2_DES_CBC             = 0x000003a0;
     public static final long PBE_MD5_DES_CBC             = 0x000003a1;
     public static final long PBE_MD5_CAST_CBC            = 0x000003a2;
@@ -238,7 +287,14 @@ public class CKM {
     public static final long ARIA_CBC_PAD                = 0x00000565;
     public static final long ARIA_ECB_ENCRYPT_DATA       = 0x00000566;
     public static final long ARIA_CBC_ENCRYPT_DATA       = 0x00000567;
-
+    public static final long SEED_KEY_GEN                = 0x00000650;
+    public static final long SEED_ECB                    = 0x00000651;
+    public static final long SEED_CBC                    = 0x00000652;
+    public static final long SEED_MAC                    = 0x00000653;
+    public static final long SEED_MAC_GENERAL            = 0x00000654;
+    public static final long SEED_CBC_PAD                = 0x00000655;
+    public static final long SEED_ECB_ENCRYPT_DATA       = 0x00000656;
+    public static final long SEED_CBC_ENCRYPT_DATA       = 0x00000657;
     public static final long SKIPJACK_KEY_GEN            = 0x00001000;
     public static final long SKIPJACK_ECB64              = 0x00001001;
     public static final long SKIPJACK_CBC64              = 0x00001002;
@@ -268,9 +324,12 @@ public class CKM {
     public static final long ECDSA_SHA256                = 0x00001044;
     public static final long ECDSA_SHA384                = 0x00001045;
     public static final long ECDSA_SHA512                = 0x00001046;
+    public static final long EC_KEY_PAIR_GEN_W_EXTRA_BITS = 0x0000140b;
     public static final long ECDH1_DERIVE                = 0x00001050;
     public static final long ECDH1_COFACTOR_DERIVE       = 0x00001051;
     public static final long ECMQV_DERIVE                = 0x00001052;
+    public static final long ECDH_AES_KEY_WRAP           = 0x00001053;
+    public static final long RSA_AES_KEY_WRAP            = 0x00001054;
 
     public static final long JUNIPER_KEY_GEN             = 0x00001060;
     public static final long JUNIPER_ECB128              = 0x00001061;
@@ -306,13 +365,65 @@ public class CKM {
     public static final long DSA_PARAMETER_GEN           = 0x00002000;
     public static final long DH_PKCS_PARAMETER_GEN       = 0x00002001;
     public static final long X9_42_DH_PARAMETER_GEN      = 0x00002002;
-
+    public static final long AES_OFB                     = 0x00002104;
+    public static final long AES_CFB64                   = 0x00002105;
+    public static final long AES_CFB8                    = 0x00002106;
+    public static final long AES_CFB128                  = 0x00002107;
+    public static final long AES_CFB1                    = 0x00002108;
     public static final long CKM_AES_KEY_WRAP            = 0x00002109;
     public static final long CKM_AES_KEY_WRAP_PAD        = 0x0000210a;
 
-    // From PKCS#11 version 3.0
-    public static final long EC_EDWARDS_KEY_PAIR_GEN = 0x00001055;
-    public static final long EDDSA                   = 0x00001057;
+    public static final long ECDSA_SHA3_224              = 0x00001047;
+    public static final long ECDSA_SHA3_256              = 0x00001048;
+    public static final long ECDSA_SHA3_384              = 0x00001049;
+    public static final long ECDSA_SHA3_512              = 0x0000104a;
+    public static final long EC_EDWARDS_KEY_PAIR_GEN     = 0x00001055;
+    public static final long EC_MONTGOMERY_KEY_PAIR_GEN  = 0x00001056;
+    public static final long EDDSA                       = 0x00001057;
+
+    public static final long IKE2_PRF_PLUS_DERIVE        = 0x0000402e;
+    public static final long IKE_PRF_DERIVE              = 0x0000402f;
+    public static final long IKE1_PRF_DERIVE             = 0x00004030;
+    public static final long IKE1_EXTENDED_DERIVE        = 0x00004031;
+    public static final long HSS_KEY_PAIR_GEN            = 0x00004032;
+    public static final long HSS                         = 0x00004033;
+    public static final long XMSS_KEY_PAIR_GEN           = 0x00004034;
+    public static final long XMSSMT_KEY_PAIR_GEN         = 0x00004035;
+    public static final long XMSS                        = 0x00004036;
+    public static final long XMSSMT                      = 0x00004037;
+    public static final long ECDH_X_AES_KEY_WRAP         = 0x00004038;
+    public static final long ECDH_COF_AES_KEY_WRAP       = 0x00004039;
+    public static final long PUB_KEY_FROM_PRIV_KEY       = 0x0000403a;
+
+    public static final long ML_KEM_KEY_PAIR_GEN         = 0x0000000f;
+    public static final long ML_KEM                      = 0x00000017;
+    public static final long ML_DSA_KEY_PAIR_GEN         = 0x0000001c;
+    public static final long ML_DSA                      = 0x0000001d;
+    public static final long HASH_ML_DSA                 = 0x0000001f;
+    public static final long HASH_ML_DSA_SHA224          = 0x00000023;
+    public static final long HASH_ML_DSA_SHA256          = 0x00000024;
+    public static final long HASH_ML_DSA_SHA384          = 0x00000025;
+    public static final long HASH_ML_DSA_SHA512          = 0x00000026;
+    public static final long HASH_ML_DSA_SHA3_224        = 0x00000027;
+    public static final long HASH_ML_DSA_SHA3_256        = 0x00000028;
+    public static final long HASH_ML_DSA_SHA3_384        = 0x00000029;
+    public static final long HASH_ML_DSA_SHA3_512        = 0x0000002a;
+    public static final long HASH_ML_DSA_SHAKE128        = 0x0000002b;
+    public static final long HASH_ML_DSA_SHAKE256        = 0x0000002c;
+
+    public static final long SLH_DSA_KEY_PAIR_GEN        = 0x0000002d;
+    public static final long SLH_DSA                     = 0x0000002e;
+    public static final long HASH_SLH_DSA                = 0x00000034;
+    public static final long HASH_SLH_DSA_SHA224         = 0x00000036;
+    public static final long HASH_SLH_DSA_SHA256         = 0x00000037;
+    public static final long HASH_SLH_DSA_SHA384         = 0x00000038;
+    public static final long HASH_SLH_DSA_SHA512         = 0x00000039;
+    public static final long HASH_SLH_DSA_SHA3_224       = 0x0000003a;
+    public static final long HASH_SLH_DSA_SHA3_256       = 0x0000003b;
+    public static final long HASH_SLH_DSA_SHA3_384       = 0x0000003c;
+    public static final long HASH_SLH_DSA_SHA3_512       = 0x0000003d;
+    public static final long HASH_SLH_DSA_SHAKE128       = 0x0000003e;
+    public static final long HASH_SLH_DSA_SHAKE256       = 0x0000003f;
 
     // Vendor defined values
     // Eracom PTK
@@ -379,7 +490,7 @@ public class CKM {
     public static final String L2S(long ckm) { return C.l2s(L2S, CKM.class.getSimpleName(), ckm); }
 
     /** Default params for some mechanisms. */
-    public static final Map<Long, byte[]> DEFAULT_PARAMS = new HashMap<Long, byte[]>();
+    public static final Map<Long, byte[]> DEFAULT_PARAMS = new HashMap<>();
     static {
         byte[] zero8 = new byte[8];
         byte[] zero16 = new byte[16];
@@ -430,7 +541,7 @@ public class CKM {
         this(mechanism, memory, memory.size());
     }
 
-    public CKM(long mechanism, byte[] param) {    
+    public CKM(long mechanism, byte[] param) {
         this.mechanism = mechanism;
         int len = (param != null) ? param.length : 0;
         if (len > 0) {
@@ -449,9 +560,11 @@ public class CKM {
     }
 
     /** @return string */
+    @Override
     public String toString() {
         return String.format("mechanism=0x%08x{%s} paramLen=%d param=%s",
             mechanism, L2S(mechanism), ulParameterLen,
                     pParameter != null ? Hex.b2s(pParameter.getByteArray(0, (int) ulParameterLen)) : "null");
     }
 }
+

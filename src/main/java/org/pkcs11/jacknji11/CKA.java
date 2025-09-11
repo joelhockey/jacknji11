@@ -187,6 +187,17 @@ public class CKA {
     public static final long SUPPORTED_CMS_ATTRIBUTES = 0x00000503;
     public static final long ALLOWED_MECHANISMS = (CKF_ARRAY_ATTRIBUTE | 0x00000600);
 
+    /* HSS */
+    public static final long HSS_LEVELS                   = 0x00000617;
+    public static final long HSS_LMS_TYPE                 = 0x00000618;
+    public static final long HSS_LMOTS_TYPE               = 0x00000619;
+    public static final long HSS_LMS_TYPES                = 0x0000061a;
+    public static final long HSS_LMOTS_TYPES              = 0x0000061b;
+    public static final long HSS_KEYS_REMAINING           = 0x0000061c;
+    /* new post-quantum (general) */
+    public static final long PARAMETER_SET                = 0x0000061d;
+    public static final long SEED                         = 0x00000637;
+
     // Vendor defined values
     // Eracom PTK
     public static final long VENDOR_PTK_USAGE_COUNT = 0x80000101;
@@ -317,9 +328,9 @@ public class CKA {
      * @param type
      *            CKA_? type. Use one of the public static final long fields in this class.
      *
-     * @param size 
+     * @param size
      *            initial buffer size, if 0 then no buffer is allocated
-     * @return an unset attribute with buffer of given size            
+     * @return an unset attribute with buffer of given size
      */
     public static CKA allocate(long type, int size) {
         CKA cka = new CKA(type);
@@ -330,9 +341,9 @@ public class CKA {
 
     /**
      * Prepare an empty unset attribute to receive length of value.
-     * 
+     *
      * @param type CKA_? type. Use one of the public static final long fields in this class.
-     *             
+     *
      * @return an unset attribute with buffer of size 0 to receive length of value
      */
     public static CKA indefinite(long type) {
@@ -381,7 +392,7 @@ public class CKA {
 
     /** When reading values from PKCS#11 you often send a buffer, with a specific length
      * where the buffer may be lager than the value returned. The actual length of the value returned
-     * is then put by the HSM in ulValueLen. Before returning to Java, therefore make sure 
+     * is then put by the HSM in ulValueLen. Before returning to Java, therefore make sure
      * the returned pValue holds the actual bytes and not extra (empty) data.
      */
     private byte[] getValueInternal() {
@@ -593,7 +604,7 @@ public class CKA {
         dump(sb);
         return sb.toString();
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -628,3 +639,4 @@ public class CKA {
     }
 
 }
+
