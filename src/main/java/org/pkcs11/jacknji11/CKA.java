@@ -194,8 +194,26 @@ public class CKA {
     public static final long HSS_LMS_TYPES                = 0x0000061a;
     public static final long HSS_LMOTS_TYPES              = 0x0000061b;
     public static final long HSS_KEYS_REMAINING           = 0x0000061c;
+    
     /* new post-quantum (general) */
     public static final long PARAMETER_SET                = 0x0000061d;
+    
+    public static final long ENCAPSULATE_TEMPLATE		  = 0x0000062a;
+    public static final long DECAPSULATE_TEMPLATE         = 0x0000062b;
+    
+    /* trust objects */
+    public static final long TRUST_SERVER_AUTH            = 0x0000062c;
+    public static final long TRUST_CLIENT_AUTH            = 0x0000062d;
+    public static final long TRUST_CODE_SIGNING           = 0x0000062e;
+    public static final long TRUST_EMAIL_PROTECTION       = 0x0000062f;
+    public static final long TRUST_IPSEC_IKE              = 0x00000630;
+    public static final long TRUST_TIME_STAMPING          = 0x00000631;
+    public static final long TRUST_OCSP_SIGNING           = 0x00000632;
+    public static final long ENCAPSULATE                  = 0x00000633;
+    public static final long DECAPSULATE                  = 0x00000634;
+    public static final long HASH_OF_CERTIFICATE          = 0x00000635;
+    
+    /* new post-quantum (general) */
     public static final long SEED                         = 0x00000637;
 
     // Vendor defined values
