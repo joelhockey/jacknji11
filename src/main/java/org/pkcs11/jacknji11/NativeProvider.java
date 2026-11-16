@@ -2067,6 +2067,51 @@ attribute set to CK_FALSE.
     long C_DeriveKey(long hSession, CKM pMechanism, long hBaseKey, CKA[] pTemplate, long ulAttributeCount, LongRef phKey);
 
     /**
+C_EncapsulateKey (PKCS#11 v3.2) uses a key encapsulation mechanism (KEM) with a public key
+to generate a shared secret, creating a new secret key object holding the shared secret and
+returning the ciphertext that encapsulates it. hSession is the session's handle; pMechanism
+points to the encapsulation mechanism; hPublicKey is the handle of the encapsulating key;
+pTemplate points to the template for the new key; ulAttributeCount is the number of
+attributes in the template; pCiphertext points to the location that receives the ciphertext;
+pulCiphertextLen points to the location that holds the length of the ciphertext; phKey
+points to the location that receives the handle of the new key.
+<p>The CKA_ENCAPSULATE attribute of the encapsulating key must be CK_TRUE.
+<p>C_EncapsulateKey uses the convention described in Section 5.2 on producing output.
+If pCiphertext is NULL_PTR only the length of the ciphertext is returned and no key object is created.
+     * @param hSession the session's handle
+     * @param pMechanism encapsulation mechanism
+     * @param hPublicKey encapsulating key
+     * @param pTemplate new key template
+     * @param ulAttributeCount template length
+     * @param pCiphertext gets ciphertext
+     * @param pulCiphertextLen gets ciphertext size
+     * @param phKey gets new handle
+     * @return {@link CKR} return code
+     */
+    long C_EncapsulateKey(long hSession, CKM pMechanism, long hPublicKey, CKA[] pTemplate, long ulAttributeCount, byte[] pCiphertext, LongRef pulCiphertextLen, LongRef phKey);
+
+    /**
+C_DecapsulateKey (PKCS#11 v3.2) uses a key encapsulation mechanism (KEM) with a private key
+to recover the shared secret from a ciphertext, creating a new secret key object holding the
+shared secret. hSession is the session's handle; pMechanism points to the decapsulation
+mechanism; hPrivateKey is the handle of the decapsulating key; pTemplate points to the
+template for the new key; ulAttributeCount is the number of attributes in the template;
+pCiphertext points to the ciphertext; ulCiphertextLen is the length of the ciphertext;
+phKey points to the location that receives the handle of the new key.
+<p>The CKA_DECAPSULATE attribute of the decapsulating key must be CK_TRUE.
+     * @param hSession the session's handle
+     * @param pMechanism decapsulation mechanism
+     * @param hPrivateKey decapsulating key
+     * @param pTemplate new key template
+     * @param ulAttributeCount template length
+     * @param pCiphertext the ciphertext
+     * @param ulCiphertextLen ciphertext length
+     * @param phKey gets new handle
+     * @return {@link CKR} return code
+     */
+    long C_DecapsulateKey(long hSession, CKM pMechanism, long hPrivateKey, CKA[] pTemplate, long ulAttributeCount, byte[] pCiphertext, long ulCiphertextLen, LongRef phKey);
+
+    /**
 C_SeedRandom mixes additional seed material into the token's random number
 generator.  hSession is the session's handle;  pSeed points to the seed material; and
 ulSeedLen is the length in bytes of the seed material.

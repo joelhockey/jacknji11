@@ -108,6 +108,8 @@ public class NativeProviderMetrics {
     public static final String C_WrapKey = "C_WrapKey";
     public static final String C_UnwrapKey = "C_UnwrapKey";
     public static final String C_DeriveKey = "C_DeriveKey";
+    public static final String C_EncapsulateKey = "C_EncapsulateKey";
+    public static final String C_DecapsulateKey = "C_DecapsulateKey";
     public static final String C_SeedRandom = "C_SeedRandom";
     public static final String C_GenerateRandom = "C_GenerateRandom";
     public static final String C_GetFunctionStatus = "C_GetFunctionStatus";

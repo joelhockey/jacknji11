@@ -1786,6 +1786,75 @@ public class CryptokiE {
     }
 
     /**
+     * Encapsulates a shared secret with a public key (KEM), creating a new secret key object.
+     * @param session the session's handle
+     * @param mechanism encapsulation mechanism
+     * @param publicKey encapsulating public key
+     * @param templ new key template
+     * @param ciphertext gets ciphertext, or null to only get ciphertext length
+     * @param ciphertextLen gets ciphertext length
+     * @param key gets new handle
+     * @see C#EncapsulateKey(long, CKM, long, CKA[], byte[], LongRef, LongRef)
+     * @see NativeProvider#C_EncapsulateKey(long, CKM, long, CKA[], long, byte[], LongRef, LongRef)
+     */
+    public void EncapsulateKey(long session, CKM mechanism, long publicKey, CKA[] templ, byte[] ciphertext, LongRef ciphertextLen, LongRef key) {
+        long rv = c.EncapsulateKey(session, mechanism, publicKey, templ, ciphertext, ciphertextLen, key);
+        if (rv != CKR.OK) throw new CKRException(rv);
+    }
+
+    /**
+     * Encapsulates a shared secret with a public key (KEM), creating a new secret key object.
+     * @param session the session's handle
+     * @param mechanism encapsulation mechanism
+     * @param publicKey encapsulating public key
+     * @param key gets new handle
+     * @param templ new key template
+     * @return ciphertext
+     * @see C#EncapsulateKey(long, CKM, long, CKA[], byte[], LongRef, LongRef)
+     * @see NativeProvider#C_EncapsulateKey(long, CKM, long, CKA[], long, byte[], LongRef, LongRef)
+     */
+    public byte[] EncapsulateKey(long session, CKM mechanism, long publicKey, LongRef key, CKA... templ) {
+        LongRef l = new LongRef();
+        EncapsulateKey(session, mechanism, publicKey, templ, null, l, key);
+        byte[] result = new byte[(int) l.value()];
+        EncapsulateKey(session, mechanism, publicKey, templ, result, l, key);
+        return resize(result, (int) l.value());
+    }
+
+    /**
+     * Decapsulates a shared secret with a private key (KEM), creating a new secret key object.
+     * @param session the session's handle
+     * @param mechanism decapsulation mechanism
+     * @param privateKey decapsulating private key
+     * @param templ new key template
+     * @param ciphertext the ciphertext
+     * @param key gets new handle
+     * @see C#DecapsulateKey(long, CKM, long, CKA[], byte[], LongRef)
+     * @see NativeProvider#C_DecapsulateKey(long, CKM, long, CKA[], long, byte[], long, LongRef)
+     */
+    public void DecapsulateKey(long session, CKM mechanism, long privateKey, CKA[] templ, byte[] ciphertext, LongRef key) {
+        long rv = c.DecapsulateKey(session, mechanism, privateKey, templ, ciphertext, key);
+        if (rv != CKR.OK) throw new CKRException(rv);
+    }
+
+    /**
+     * Decapsulates a shared secret with a private key (KEM), creating a new secret key object.
+     * @param session the session's handle
+     * @param mechanism decapsulation mechanism
+     * @param privateKey decapsulating private key
+     * @param ciphertext the ciphertext
+     * @param templ new key template
+     * @return new handle
+     * @see C#DecapsulateKey(long, CKM, long, CKA[], byte[], LongRef)
+     * @see NativeProvider#C_DecapsulateKey(long, CKM, long, CKA[], long, byte[], long, LongRef)
+     */
+    public long DecapsulateKey(long session, CKM mechanism, long privateKey, byte[] ciphertext, CKA... templ) {
+        LongRef key = new LongRef();
+        DecapsulateKey(session, mechanism, privateKey, templ, ciphertext, key);
+        return key.value();
+    }
+
+    /**
      * Mixes additional seed material into the token's random number generator.
      * @param session the session's handle
      * @param seed the seed material

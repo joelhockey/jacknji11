@@ -1495,6 +1495,67 @@ public class CE {
     }
 
     /**
+     * Encapsulates a shared secret with a public key (KEM), creating a new secret key object. Introduced in PKCS#11 v3.2.
+     * @param session the session's handle
+     * @param mechanism encapsulation mechanism
+     * @param publicKey encapsulating public key
+     * @param templ new key template
+     * @param ciphertext gets ciphertext, or null to only get ciphertext length
+     * @param ciphertextLen gets ciphertext length
+     * @param key gets new handle
+     * @see C#EncapsulateKey(long, CKM, long, CKA[], byte[], LongRef, LongRef)
+     * @see NativeProvider#C_EncapsulateKey(long, CKM, long, CKA[], long, byte[], LongRef, LongRef)
+     */
+    public static void EncapsulateKey(long session, CKM mechanism, long publicKey, CKA[] templ, byte[] ciphertext, LongRef ciphertextLen, LongRef key) {
+        CRYPTOKIE.EncapsulateKey(session, mechanism, publicKey, templ, ciphertext, ciphertextLen, key);
+    }
+
+    /**
+     * Encapsulates a shared secret with a public key (KEM), creating a new secret key object. Introduced in PKCS#11 v3.2.
+     * @param session the session's handle
+     * @param mechanism encapsulation mechanism
+     * @param publicKey encapsulating public key
+     * @param key gets new handle
+     * @param templ new key template
+     * @return ciphertext
+     * @see C#EncapsulateKey(long, CKM, long, CKA[], byte[], LongRef, LongRef)
+     * @see NativeProvider#C_EncapsulateKey(long, CKM, long, CKA[], long, byte[], LongRef, LongRef)
+     */
+    public static byte[] EncapsulateKey(long session, CKM mechanism, long publicKey, LongRef key, CKA... templ) {
+        return CRYPTOKIE.EncapsulateKey(session, mechanism, publicKey, key, templ);
+    }
+
+    /**
+     * Decapsulates a shared secret with a private key (KEM), creating a new secret key object. Introduced in PKCS#11 v3.2.
+     * @param session the session's handle
+     * @param mechanism decapsulation mechanism
+     * @param privateKey decapsulating private key
+     * @param templ new key template
+     * @param ciphertext the ciphertext
+     * @param key gets new handle
+     * @see C#DecapsulateKey(long, CKM, long, CKA[], byte[], LongRef)
+     * @see NativeProvider#C_DecapsulateKey(long, CKM, long, CKA[], long, byte[], long, LongRef)
+     */
+    public static void DecapsulateKey(long session, CKM mechanism, long privateKey, CKA[] templ, byte[] ciphertext, LongRef key) {
+        CRYPTOKIE.DecapsulateKey(session, mechanism, privateKey, templ, ciphertext, key);
+    }
+
+    /**
+     * Decapsulates a shared secret with a private key (KEM), creating a new secret key object. Introduced in PKCS#11 v3.2.
+     * @param session the session's handle
+     * @param mechanism decapsulation mechanism
+     * @param privateKey decapsulating private key
+     * @param ciphertext the ciphertext
+     * @param templ new key template
+     * @return new handle
+     * @see C#DecapsulateKey(long, CKM, long, CKA[], byte[], LongRef)
+     * @see NativeProvider#C_DecapsulateKey(long, CKM, long, CKA[], long, byte[], long, LongRef)
+     */
+    public static long DecapsulateKey(long session, CKM mechanism, long privateKey, byte[] ciphertext, CKA... templ) {
+        return CRYPTOKIE.DecapsulateKey(session, mechanism, privateKey, ciphertext, templ);
+    }
+
+    /**
      * Mixes additional seed material into the token's random number generator.
      * @param session the session's handle
      * @param seed the seed material

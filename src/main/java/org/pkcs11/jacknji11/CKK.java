@@ -69,6 +69,7 @@ public class CKK {
     public static final long GOSTR3411       = 0x00000031;
     public static final long GOST28147       = 0x00000032;
     public static final long CKK_EC_EDWARDS  = 0x00000040;
+    public static final long ML_KEM          = 0x00000049;
 
     // Vendor defined values
     // Eracom PTK

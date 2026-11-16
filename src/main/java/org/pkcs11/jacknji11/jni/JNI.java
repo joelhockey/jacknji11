@@ -107,6 +107,8 @@ public class JNI implements NativeProvider {
     public native long C_WrapKey(long hSession, CKM pMechanism, long hWrappingKey, long hKey, byte[] pWrappedKey, LongRef pulWrappedKeyLen);
     public native long C_UnwrapKey(long hSession, CKM pMechanism, long hUnwrappingKey, byte[] pWrappedKey, long ulWrappedKeyLen, CKA[] pTemplate, long ulAttributeCount, LongRef phKey);
     public native long C_DeriveKey(long hSession, CKM pMechanism, long hBaseKey, CKA[] pTemplate, long ulAttributeCount, LongRef phKey);
+    public native long C_EncapsulateKey(long hSession, CKM pMechanism, long hPublicKey, CKA[] pTemplate, long ulAttributeCount, byte[] pCiphertext, LongRef pulCiphertextLen, LongRef phKey);
+    public native long C_DecapsulateKey(long hSession, CKM pMechanism, long hPrivateKey, CKA[] pTemplate, long ulAttributeCount, byte[] pCiphertext, long ulCiphertextLen, LongRef phKey);
     public native long C_SeedRandom(long hSession, byte[] pSeed, long ulSeedLen);
     public native long C_GenerateRandom(long hSession, byte[] pRandom, long ulRandomLen);
     public native long C_GetFunctionStatus(long hSession);

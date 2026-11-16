@@ -1303,6 +1303,61 @@ public class Cryptoki {
     }
 
     /**
+     * Encapsulates a shared secret with a public key (KEM), creating a new secret key object.
+     * @param session the session's handle
+     * @param mechanism encapsulation mechanism
+     * @param publicKey encapsulating public key
+     * @param templ new key template
+     * @param ciphertext gets ciphertext, or null to only get ciphertext length
+     * @param ciphertextLen gets ciphertext length
+     * @param key gets new handle
+     * @return {@link CKR} return code
+     * @see NativeProvider#C_EncapsulateKey(long, CKM, long, CKA[], long, byte[], LongRef, LongRef)
+     */
+    public long EncapsulateKey(long session, CKM mechanism, long publicKey, CKA[] templ,
+            byte[] ciphertext, LongRef ciphertextLen, LongRef key) {
+        if (log.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder(String.format("> C_EncapsulateKey session=0x%08x publicKey=0x%08x %s\n", session, publicKey, mechanism));
+            dumpTemplate(sb, templ);
+            log.debug(sb);
+        }
+        long rv = provider.C_EncapsulateKey(session, mechanism, publicKey, templ, templLen(templ),
+                ciphertext, ciphertextLen, key);
+        if (log.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder(String.format("< C_EncapsulateKey rv=0x%08x{%s} key=0x%08x\n  ciphertext (len=%d):\n", rv, CKR.L2S(rv), key.value(), ciphertextLen.value()));
+            hexDumpOut(rv, sb, ciphertext, (int) ciphertextLen.value());
+            log.debug(sb);
+        }
+        return rv;
+    }
+
+    /**
+     * Decapsulates a shared secret with a private key (KEM), creating a new secret key object.
+     * @param session the session's handle
+     * @param mechanism decapsulation mechanism
+     * @param privateKey decapsulating private key
+     * @param templ new key template
+     * @param ciphertext the ciphertext
+     * @param key gets new handle
+     * @return {@link CKR} return code
+     * @see NativeProvider#C_DecapsulateKey(long, CKM, long, CKA[], long, byte[], long, LongRef)
+     */
+    public long DecapsulateKey(long session, CKM mechanism, long privateKey, CKA[] templ,
+            byte[] ciphertext, LongRef key) {
+        if (log.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder(String.format("> C_DecapsulateKey session=0x%08x privateKey=0x%08x %s\n  ciphertext (len=%d):\n", session, privateKey, mechanism, baLen(ciphertext)));
+            hexDump(sb, ciphertext, baLen(ciphertext));
+            sb.append('\n');
+            dumpTemplate(sb, templ);
+            log.debug(sb);
+        }
+        long rv = provider.C_DecapsulateKey(session, mechanism, privateKey, templ, templLen(templ),
+                ciphertext, baLen(ciphertext), key);
+        if (log.isDebugEnabled()) log.debug(String.format("< C_DecapsulateKey rv=0x%08x{%s} key=0x%08x", rv, CKR.L2S(rv), key.value()));
+        return rv;
+    }
+
+    /**
      * Mixes additional seed material into the token's random number generator.
      * @param session the session's handle
      * @param seed the seed material

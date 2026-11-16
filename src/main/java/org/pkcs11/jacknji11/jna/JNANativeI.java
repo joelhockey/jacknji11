@@ -94,6 +94,8 @@ public interface JNANativeI extends com.sun.jna.Library {
     public int C_WrapKey(NativeLong hSession, JNA_CKM pMechanism, NativeLong hWrappingKey, NativeLong hKey, byte[] pWrappedKey, NativeLongByReference pulWrappedKeyLen);
     public int C_UnwrapKey(NativeLong hSession, JNA_CKM pMechanism, NativeLong hUnwrappingKey, byte[] pWrappedKey, NativeLong ulWrappedKeyLen, Template pTemplate, NativeLong ulAttributeCount, NativeLongByReference phKey);
     public int C_DeriveKey(NativeLong hSession, JNA_CKM pMechanism, NativeLong hBaseKey, Template pTemplate, NativeLong ulAttributeCount, NativeLongByReference phKey);
+    public int C_EncapsulateKey(NativeLong hSession, JNA_CKM pMechanism, NativeLong hPublicKey, Template pTemplate, NativeLong ulAttributeCount, byte[] pCiphertext, NativeLongByReference pulCiphertextLen, NativeLongByReference phKey);
+    public int C_DecapsulateKey(NativeLong hSession, JNA_CKM pMechanism, NativeLong hPrivateKey, Template pTemplate, NativeLong ulAttributeCount, byte[] pCiphertext, NativeLong ulCiphertextLen, NativeLongByReference phKey);
     public int C_SeedRandom(NativeLong hSession, byte[] pSeed, NativeLong ulSeedLen);
     public int C_GenerateRandom(NativeLong hSession, byte[] pRandom, NativeLong ulRandomLen);
     public int C_GetFunctionStatus(NativeLong hSession);
