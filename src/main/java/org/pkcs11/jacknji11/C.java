@@ -887,6 +887,39 @@ public class C {
     }
 
     /**
+     * Encapsulates a shared secret with a public key (KEM), creating a new secret key object. Introduced in PKCS#11 v3.2.
+     * @param session the session's handle
+     * @param mechanism encapsulation mechanism
+     * @param publicKey encapsulating public key
+     * @param templ new key template
+     * @param ciphertext gets ciphertext, or null to only get ciphertext length
+     * @param ciphertextLen gets ciphertext length
+     * @param key gets new handle
+     * @return {@link CKR} return code
+     * @see NativeProvider#C_EncapsulateKey(long, CKM, long, CKA[], long, byte[], LongRef, LongRef)
+     */
+    public static long EncapsulateKey(long session, CKM mechanism, long publicKey, CKA[] templ,
+            byte[] ciphertext, LongRef ciphertextLen, LongRef key) {
+        return CRYPTOKI.EncapsulateKey(session, mechanism, publicKey, templ, ciphertext, ciphertextLen, key);
+    }
+
+    /**
+     * Decapsulates a shared secret with a private key (KEM), creating a new secret key object. Introduced in PKCS#11 v3.2.
+     * @param session the session's handle
+     * @param mechanism decapsulation mechanism
+     * @param privateKey decapsulating private key
+     * @param templ new key template
+     * @param ciphertext the ciphertext
+     * @param key gets new handle
+     * @return {@link CKR} return code
+     * @see NativeProvider#C_DecapsulateKey(long, CKM, long, CKA[], long, byte[], long, LongRef)
+     */
+    public static long DecapsulateKey(long session, CKM mechanism, long privateKey, CKA[] templ,
+            byte[] ciphertext, LongRef key) {
+        return CRYPTOKI.DecapsulateKey(session, mechanism, privateKey, templ, ciphertext, key);
+    }
+
+    /**
      * Mixes additional seed material into the token's random number generator.
      * @param session the session's handle
      * @param seed the seed material

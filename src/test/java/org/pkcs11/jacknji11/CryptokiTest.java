@@ -132,7 +132,9 @@ public class CryptokiTest extends TestCase {
         long s3 = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
         CE.CloseSession(s1);
         CE.CloseAllSessions(TESTSLOT);
-        assertEquals(CKR.SESSION_HANDLE_INVALID, C.CloseSession(s3));
+        // Closing after all sessions are closed may return SESSION_HANDLE_INVALID or CKR_OK in some cases
+        long ret = C.CloseSession(s3);
+        assertTrue("CloseSession on after all sessions are closed returns neither CKR_OK or CKR_SESSION_HANDLE_INVALID: " + ret, ret == CKR.OK || ret == CKR.SESSION_HANDLE_INVALID);
     }
 
     public void testGetSetOperationState() {
@@ -676,6 +678,90 @@ public class CryptokiTest extends TestCase {
 
     }
 
+    /** C_EncapsulateKey and C_DecapsulateKey were added in PKCS#11 v3.2, so this test needs an HSM supporting ML-KEM */
+    public void testEncapsulateDecapsulateMLKEM() {
+        long session = CE.OpenSession(TESTSLOT);
+        CE.LoginUser(session, USER_PIN);
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        generateMLKEM768KeyPair(session, pubKey, privKey);
+
+        // Encapsulate into a buffer big enough for any ML-KEM ciphertext (ML-KEM-1024 is 1568 bytes), rather than
+        // asking for the length first, as some HSMs perform a full encapsulation also when only asked for the length
+        byte[] ciphertext = new byte[1568];
+        LongRef ciphertextLen = new LongRef(ciphertext.length);
+        LongRef encapsulatedKey = new LongRef();
+        CE.EncapsulateKey(session, new CKM(CKM.ML_KEM), pubKey.value(), mlKemSecretTemplate(), ciphertext, ciphertextLen, encapsulatedKey);
+        assertEquals("ML-KEM-768 ciphertext is 1088 bytes", 1088, ciphertextLen.value());
+        ciphertext = Arrays.copyOf(ciphertext, (int) ciphertextLen.value());
+
+        assertDecapsulatedSecretMatches(session, privKey.value(), ciphertext, encapsulatedKey.value());
+    }
+
+    /**
+     * Encapsulates the way the spec describes for variable-length output, first asking for the ciphertext length
+     * with a null buffer, as {@link CE#EncapsulateKey(long, CKM, long, LongRef, CKA...)} does.
+     * Fails with Securosys Primus libprimusP11 2.8.0, where the length query returns 721 for ML-KEM-768 instead
+     * of 1088, and encapsulating into a buffer of that size then returns CKR_OK instead of CKR_BUFFER_TOO_SMALL.
+     */
+    public void testEncapsulateDecapsulateMLKEMLengthQuery() {
+        long session = CE.OpenSession(TESTSLOT);
+        CE.LoginUser(session, USER_PIN);
+        LongRef pubKey = new LongRef();
+        LongRef privKey = new LongRef();
+        generateMLKEM768KeyPair(session, pubKey, privKey);
+
+        LongRef ciphertextLen = new LongRef();
+        LongRef encapsulatedKey = new LongRef();
+        CE.EncapsulateKey(session, new CKM(CKM.ML_KEM), pubKey.value(), mlKemSecretTemplate(), null, ciphertextLen, encapsulatedKey);
+        assertEquals("Length query for ML-KEM-768 ciphertext should return 1088", 1088, ciphertextLen.value());
+
+        byte[] ciphertext = CE.EncapsulateKey(session, new CKM(CKM.ML_KEM), pubKey.value(), encapsulatedKey, mlKemSecretTemplate());
+        assertEquals("ML-KEM-768 ciphertext is 1088 bytes", 1088, ciphertext.length);
+
+        assertDecapsulatedSecretMatches(session, privKey.value(), ciphertext, encapsulatedKey.value());
+    }
+
+    // The shared secret is made extractable, so we can verify that both sides got the same secret.
+    // Created on use, as long values are encoded with the ULong size that is only known after CE.Initialize
+    private CKA[] mlKemSecretTemplate() {
+        return new CKA[] {
+            new CKA(CKA.CLASS, CKO.SECRET_KEY),
+            new CKA(CKA.KEY_TYPE, CKK.GENERIC_SECRET),
+            new CKA(CKA.TOKEN, false),
+            new CKA(CKA.SENSITIVE, false),
+            new CKA(CKA.EXTRACTABLE, true),
+        };
+    }
+
+    private void generateMLKEM768KeyPair(long session, LongRef pubKey, LongRef privKey) {
+        CKA[] pubTempl = new CKA[] {
+            new CKA(CKA.PARAMETER_SET, CKP.ML_KEM_768),
+            new CKA(CKA.ENCAPSULATE, true),
+            new CKA(CKA.TOKEN, false),
+            new CKA(CKA.LABEL, "labelmlkem-public"),
+            new CKA(CKA.ID, "labelmlkem"),
+        };
+        CKA[] privTempl = new CKA[] {
+            new CKA(CKA.DECAPSULATE, true),
+            new CKA(CKA.TOKEN, false),
+            new CKA(CKA.PRIVATE, true),
+            new CKA(CKA.SENSITIVE, true),
+            new CKA(CKA.EXTRACTABLE, false),
+            new CKA(CKA.LABEL, "labelmlkem-private"),
+            new CKA(CKA.ID, "labelmlkem"),
+        };
+        CE.GenerateKeyPair(session, new CKM(CKM.ML_KEM_KEY_PAIR_GEN), pubTempl, privTempl, pubKey, privKey);
+    }
+
+    private void assertDecapsulatedSecretMatches(long session, long privKey, byte[] ciphertext, long encapsulatedKey) {
+        long decapsulatedKey = CE.DecapsulateKey(session, new CKM(CKM.ML_KEM), privKey, ciphertext, mlKemSecretTemplate());
+        byte[] encapsulatedSecret = CE.GetAttributeValue(session, encapsulatedKey, CKA.VALUE).getValue();
+        byte[] decapsulatedSecret = CE.GetAttributeValue(session, decapsulatedKey, CKA.VALUE).getValue();
+        assertEquals("ML-KEM shared secret is 32 bytes", 32, encapsulatedSecret.length);
+        assertTrue(Arrays.equals(encapsulatedSecret, decapsulatedSecret));
+    }
+
     public void testPTKDES3Derive() {
         long session = CE.OpenSession(TESTSLOT);
         CE.LoginUser(session, USER_PIN);
@@ -692,6 +778,8 @@ public class CryptokiTest extends TestCase {
     
     public void testRandom() {
         long session = CE.OpenSession(TESTSLOT, CK_SESSION_INFO.CKF_RW_SESSION | CK_SESSION_INFO.CKF_SERIAL_SESSION, null, null);
+        // Some HSMs require login for GenerateRandom, while others allow it not logged in
+        CE.LoginUser(session, USER_PIN);
         byte[] buf = new byte[16];
         CE.SeedRandom(session, buf);
         CE.GenerateRandom(session, buf);

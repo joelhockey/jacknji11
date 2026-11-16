@@ -454,6 +454,30 @@ long rv = JFFINative.C_OpenSession(slotID, flags, jffi_application, null, jffi_p
         return rv;
     }
 
+    public long C_EncapsulateKey(long hSession, CKM pMechanism, long hPublicKey, CKA[] pTemplate, long ulAttributeCount,
+            byte[] pCiphertext, LongRef pulCiphertextLen, LongRef phKey) {
+        JFFI_CKM jffi_pMechanism = new JFFI_CKM().readFrom(pMechanism);
+        Pointer jffi_pTemplate = Template.templ(pTemplate);
+        NativeLongByReference jffi_pulCiphertextLen = NLP(pulCiphertextLen.value);
+        NativeLongByReference jffi_phKey = NLP(phKey.value);
+        long rv = JFFINative.C_EncapsulateKey(hSession, jffi_pMechanism, hPublicKey, jffi_pTemplate, ulAttributeCount,
+            pCiphertext, jffi_pulCiphertextLen, jffi_phKey);
+        pulCiphertextLen.value = jffi_pulCiphertextLen.getValue().longValue();
+        phKey.value = jffi_phKey.getValue().longValue();
+        return rv;
+    }
+
+    public long C_DecapsulateKey(long hSession, CKM pMechanism, long hPrivateKey, CKA[] pTemplate, long ulAttributeCount,
+            byte[] pCiphertext, long ulCiphertextLen, LongRef phKey) {
+        JFFI_CKM jffi_pMechanism = new JFFI_CKM().readFrom(pMechanism);
+        Pointer jffi_pTemplate = Template.templ(pTemplate);
+        NativeLongByReference jffi_phKey = NLP(phKey.value);
+        long rv = JFFINative.C_DecapsulateKey(hSession, jffi_pMechanism, hPrivateKey, jffi_pTemplate, ulAttributeCount,
+            pCiphertext, ulCiphertextLen, jffi_phKey);
+        phKey.value = jffi_phKey.getValue().longValue();
+        return rv;
+    }
+
     public long C_SeedRandom(long hSession, byte[] pSeed, long ulSeedLen) {
         return JFFINative.C_SeedRandom(hSession, pSeed, ulSeedLen);
     }

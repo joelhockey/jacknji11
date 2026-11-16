@@ -483,6 +483,30 @@ public class JNA implements NativeProvider {
         return rv;
     }
 
+    public long C_EncapsulateKey(long hSession, CKM pMechanism, long hPublicKey, CKA[] pTemplate, long ulAttributeCount,
+            byte[] pCiphertext, LongRef pulCiphertextLen, LongRef phKey) {
+        JNA_CKM jna_pMechanism = new JNA_CKM().readFrom(pMechanism);
+        Template jna_pTemplate = new Template(pTemplate);
+        NativeLongByReference jna_pulCiphertextLen = NLP(pulCiphertextLen.value);
+        NativeLongByReference jna_phKey = NLP(phKey.value);
+        long rv = jnaNative.C_EncapsulateKey(NL(hSession), jna_pMechanism, NL(hPublicKey), jna_pTemplate, NL(ulAttributeCount),
+            pCiphertext, jna_pulCiphertextLen, jna_phKey);
+        pulCiphertextLen.value = jna_pulCiphertextLen.getValue().longValue();
+        phKey.value = jna_phKey.getValue().longValue();
+        return rv;
+    }
+
+    public long C_DecapsulateKey(long hSession, CKM pMechanism, long hPrivateKey, CKA[] pTemplate, long ulAttributeCount,
+            byte[] pCiphertext, long ulCiphertextLen, LongRef phKey) {
+        JNA_CKM jna_pMechanism = new JNA_CKM().readFrom(pMechanism);
+        Template jna_pTemplate = new Template(pTemplate);
+        NativeLongByReference jna_phKey = NLP(phKey.value);
+        long rv = jnaNative.C_DecapsulateKey(NL(hSession), jna_pMechanism, NL(hPrivateKey), jna_pTemplate, NL(ulAttributeCount),
+            pCiphertext, NL(ulCiphertextLen), jna_phKey);
+        phKey.value = jna_phKey.getValue().longValue();
+        return rv;
+    }
+
     public long C_SeedRandom(long hSession, byte[] pSeed, long ulSeedLen) {
         return jnaNative.C_SeedRandom(NL(hSession), pSeed, NL(ulSeedLen));
     }

@@ -100,6 +100,8 @@ public class JFFINative {
     public static native int C_WrapKey(@In long hSession, @In JFFI_CKM pMechanism, @In long hWrappingKey, @In long hKey, @Out byte[] pWrappedKey, @In @Out NativeLongByReference pulWrappedKeyLen);
     public static native int C_UnwrapKey(@In long hSession, @In JFFI_CKM pMechanism, @In long hUnwrappingKey, @In byte[] pWrappedKey, @In long ulWrappedKeyLen, @In Pointer pTemplate, @In long ulAttributeCount, @Out NativeLongByReference phKey);
     public static native int C_DeriveKey(@In long hSession, @In JFFI_CKM pMechanism, @In long hBaseKey, @In Pointer pTemplate, @In long ulAttributeCount, @Out NativeLongByReference phKey);
+    public static native int C_EncapsulateKey(@In long hSession, @In JFFI_CKM pMechanism, @In long hPublicKey, @In Pointer pTemplate, @In long ulAttributeCount, @Out byte[] pCiphertext, @In @Out NativeLongByReference pulCiphertextLen, @Out NativeLongByReference phKey);
+    public static native int C_DecapsulateKey(@In long hSession, @In JFFI_CKM pMechanism, @In long hPrivateKey, @In Pointer pTemplate, @In long ulAttributeCount, @In byte[] pCiphertext, @In long ulCiphertextLen, @Out NativeLongByReference phKey);
     public static native int C_SeedRandom(@In long hSession, @In byte[] pSeed, @In long ulSeedLen);
     public static native int C_GenerateRandom(@In long hSession, @In byte[] pRandomData, @In long ulRandomLen);
     public static native int C_GetFunctionStatus(@In long hSession);
